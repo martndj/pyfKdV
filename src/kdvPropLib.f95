@@ -1,61 +1,24 @@
-!--------------------------------------------------------------------!
-!
-!   PDE solver library for KdV2
-!   ===========================
-!
-!    Martin Deshaies-Jacques
-!        deshaies.martin@sca.uqam.ca
-!
-!        GPL v3 license
-!        http://www.gnu.org/licenses/gpl.html
-!
-!    v3
-!
-!    Copyright 2011, Martin Deshaies-Jacques
-!
-!   This file is part of fKdV.
-!
-!   fKdV is free software: you can redistribute it and/or modify
-!   it under the terms of the GNU General Public License as published by
-!   the Free Software Foundation, either version 3 of the License, or
-!   (at your option) any later version.
-!
-!   fKdV is distributed in the hope that it will be useful,
-!   but WITHOUT ANY WARRANTY; without even the implied warranty of
-!   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-!   GNU General Public License for more details.
-!
-!   You should have received a copy of the GNU General Public License
-!   along with fKdV.  If not, see <http://www.gnu.org/licenses/>.
-!--------------------------------------------------------------------!
+module kdvProp
 
-module kdv
-!--------------------------------------------------------------------!
-!
-!--------------------------------------------------------------------!
 use spectral
 implicit none
 
-interface kdvPropagator
-    module procedure kdvProp_Mixed_Leapfrog_Centered
-end interface
-
 
 contains
+!====================================================================
 
 
-
-
-subroutine kdvProp_Mixed_Leapfrog_Centered(&
-                N, Ntrc, L, dt, nDt, ic, traj, &
-                alph, beta, gamm, rho, forc)
+function kdvPropagator(N, Ntrc, L, dt, nDt, tReal, ic, &
+                            alph, beta, gamm, rho, forc) &
+                            result(traj)
     !    Integral propagator
     !
     !    <@> TODO
     !        slow start 
     !-----------------------------------------------------------
-    intent(in)              ::  N, Ntrc, L, dt, nDt, ic, &
+    intent(in)              ::  N, Ntrc, L, dt, nDt, &
                                 alph, beta, gamm, rho, forc
+    intent(inout)           ::  ic, tReal
 
     double precision        ::  L, dt, tReal
     integer                 ::  N, Ntrc, nDt, j
@@ -64,13 +27,15 @@ subroutine kdvProp_Mixed_Leapfrog_Centered(&
                                                 ic, forc
     double precision, dimension(nDt+1, N)   ::  traj
 
+    ! explicit filtering of the IC
+    call specFilt(ic, N, Ntrc)
 
     ! first step : Euler-forward
     traj(1,:)=ic
     traj(2,:)=traj(1,:)+dt*kdvPseudoSpec(N, Ntrc, L, traj(1,:), &
                                          alph, beta, gamm, rho, forc)
 
-    tReal=dt
+    tReal=tReal+dt
 
     ! subsequent step with mised Leapfrog-centered scheme
     !   leapfrog : Ax.A, Axxx, f'(x)
@@ -82,7 +47,7 @@ subroutine kdvProp_Mixed_Leapfrog_Centered(&
        
         tReal=tReal+dt
     end do
-end subroutine kdvProp_Mixed_Leapfrog_Centered
+end function kdvPropagator
 
 !--------------------------------------------------------------------
 
@@ -148,5 +113,5 @@ function kdvPseudoSpec(N, Ntrc, L, u, alph, beta, gamm, rho, forc)
 
 end function kdvPseudoSpec
 
-!-------------------------------------------------------------------!
-end module kdv
+!====================================================================
+end module kdvProp

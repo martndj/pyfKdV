@@ -44,7 +44,8 @@ double precision, parameter    ::    PI=3.141592653589793
 complex, parameter             ::    ii=(0.,1.)
 
 contains
-!--------------------------------------------------------------------!
+!====================================================================
+
     function cfft(f, N, Tinv)
     !    
     !   Fast-fourier transform of a complex vector
@@ -284,4 +285,5 @@ contains
 
     end function rfft 
 
+!====================================================================
 end module

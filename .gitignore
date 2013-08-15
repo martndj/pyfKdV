@@ -1,0 +1,14 @@
+*.pyc
+*.c
+*.o
+*.so
+*.x
+*.mod
+*.swp
+*.swo
+*.trj
+*.vec
+*.out
+*.png
+*.nml
+work/

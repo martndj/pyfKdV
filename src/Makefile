@@ -21,10 +21,14 @@ wrapLib=kdvWrapC.o
 
 kdv: $(baseLib) $(kdvLib)
 
-#pyKdV:
+pyKdV: kdvLib.so
+	python setup.py build_ext --inplace
 
 %.o: %.f95
 	$(compiler) -o $@ -c $< $(optflag)
+
+%.so: $(baseLib) $(kdvLib) $(wrapLib)
+	$(compiler) -shared -o $@ $^ $(optflag)
 
 clean:
 	rm -rf *.o *.mod build fKdV.c

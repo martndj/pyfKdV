@@ -126,5 +126,5 @@ if __name__=='__main__':
     launcher=Launcher(param, ic)
     
     traj=launcher.integrate(tInt, maxA)
-    axe=traj.waterfall()
-    plt.show()
+    #axe=traj.waterfall()
+    #plt.show()

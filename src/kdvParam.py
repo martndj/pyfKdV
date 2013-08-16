@@ -27,6 +27,8 @@ class Param(object):
                             return 0.*x + 0.1*t**2
                 the later being the more general, we'll use this one
                 for start
+
+        <TODO>  if param=None return null function
     """
 
     def __init__(self, grid, forcing, alpha, beta, gamma, rho):

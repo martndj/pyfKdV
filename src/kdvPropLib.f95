@@ -85,7 +85,6 @@ function kdvPseudoSpec(N, Ntrc, L, u, alph, beta, gamm, rho, forc)
     optional                        ::  rho, forc 
     integer                         ::  N, Ntrc, j
     double precision                ::  L
-    logical                         ::  incRho
     double precision, dimension(N)  ::  kdvPseudoSpec, &
                                         u, udu, du, d3u, &
                                         alph, beta, gamm, rho, forc

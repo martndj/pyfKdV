@@ -15,11 +15,15 @@ compiler=gfortran
 
 optflag=-fbounds-check -fPIC
 libflag=-L$(libDir) -larpack -lfftw3 -lm
-baseLib=spectralLib.o
+baseLib=spectralLib.o matrixLib.o
 kdvLib=kdvPropLib.o kdvTLMPropLib.o
+kdvTests=kdvTestAdj.x
 wrapLib=kdvWrapC.o
 
 kdv: $(baseLib) $(kdvLib)
+
+tests: $(kdvTests)
+	./kdvTestAdj.x
 
 pyKdV: kdvLib.so
 	python setup.py build_ext --inplace
@@ -28,10 +32,15 @@ pyKdV: kdvLib.so
 	$(compiler) -o $@ -c $< $(optflag)
 
 %.so: $(baseLib) $(kdvLib) $(wrapLib)
-	$(compiler) -shared -o $@ $^ $(optflag)
+	$(compiler) -shared -o $@ $? $(optflag)
+
+%.x: $(baseLib) $(kdvLib)
+	$(compiler) -c $*.f95 $(optflag)
+	$(compiler) $*.o $? -o $@ $(libflag) $(optflag)
+	chmod +x $@
 
 clean:
 	rm -rf *.o *.mod build fKdV.c
 
 wipe:
-	rm -rf *.o *.mod *.x build fKdV.c *.so
+	rm -rf *.o *.mod *.x build fKdV.c *.so *.pyc

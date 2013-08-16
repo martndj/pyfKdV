@@ -89,12 +89,14 @@ function kdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, tReal, u, pf, &
     aBuff(2,:)=0.0D0
     aBuff(1,:)=0.0D0
 
-    if (present(aTraj)) aTraj(nDt+1,:)=pf
     tReal=0D0
 
     ! Leapfrog
     ! Qj*, j=nDt,2
     do j=nDt, 2, -1
+
+        if (present(aTraj)) aTraj(j+1,:)=aBuff(3,:)
+        tReal=tReal+dt
 
         ! S*
         aBuff(3,:)=aBuff(3,:)+aBuff(2,:)
@@ -110,18 +112,17 @@ function kdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, tReal, u, pf, &
         aBuff(3,:)=0D0
 
 
-        if (present(aTraj)) aTraj(j,:)=aBuff(1,:)
-        tReal=tReal+dt
     end do
 
     ! E1*                 (vaut 0?)
+    if (present(aTraj)) aTraj(2,:)=aBuff(2,:)
+    tReal=tReal+dt
 
     aBuff(1,:)=aBuff(1,:)+aBuff(2,:)+dt&
                           *kdvTLMPseudoSpecAdj(N, Ntrc, L, u(1,:),&
                                     aBuff(2,:), alph, beta, gamm, rho)
     aBuff(2,:)=0D0
 
-    tReal=tReal+dt
 
     ! I*
     adj=aBuff(1,:)

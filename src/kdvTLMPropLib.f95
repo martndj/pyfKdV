@@ -10,17 +10,19 @@ contains
 
 
 function kdvTLMPropagator(N, Ntrc, L, dt, nDt, tReal, u, p0, &
-                            alph, beta, gamm, rho) &
-                            result(pTraj)
+                            alph, beta, gamm, rho, pTraj) &
+                            result(pf)
 
     intent(in)              ::  N, Ntrc, L, dt, nDt, u, &
                                 alph, beta, gamm, rho
     !intent(inout)           ::  p0, tReal
+    optional                ::  pTraj
 
     double precision        ::  L, dt, tReal
     integer                 ::  N, Ntrc, nDt, j
     
-    double precision, dimension(N)          ::  alph, beta, gamm, rho, p0
+    double precision, dimension(N)          ::  alph, beta, gamm, rho, &
+                                                p0, pf
 
     double precision, dimension(3, N)       ::  pBuff
     double precision, dimension(nDt+1, N)   ::  u, pTraj
@@ -30,14 +32,14 @@ function kdvTLMPropagator(N, Ntrc, L, dt, nDt, tReal, u, p0, &
     ! Filtration
     call specFilt(p0, N, Ntrc)
     pBuff(1,:)=p0
-    pTraj(1,:)=p0
+    if (present(pTraj)) pTraj(1,:)=p0
     
     !premier pas avec Euler-avant
     ! E1
     pBuff(2,:)=pBuff(1,:)+dt*kdvTLMPseudoSpec(N, Ntrc, L, u(1,:), &
                                         pBuff(1,:), alph, beta, gamm, rho)
 
-    pTraj(2,:)=pBuff(2,:)
+    if (present(pTraj)) pTraj(2,:)=pBuff(2,:)
     tReal=tReal+dt
 
     !pas subsequents avec Leapfrog et trapezoidal
@@ -53,29 +55,31 @@ function kdvTLMPropagator(N, Ntrc, L, dt, nDt, tReal, u, p0, &
         pBuff(2,:)=pBuff(3,:)
 
 
-        pTraj(j+1,:)=pBuff(3,:)
+        if (present(pTraj)) pTraj(j+1,:)=pBuff(3,:)
         tReal=tReal+dt
     end do
 
     ! R
-    !pf=pBuff(3,:)
+    pf=pBuff(3,:)
 end function kdvTLMPropagator
 
 
 !-------------------------------------------------------------------!
 
 function kdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, tReal, u, pf, &
-                            alph, beta, gamm, rho) &
-                            result(aTraj)
+                            alph, beta, gamm, rho, aTraj) &
+                            result(adj)
 
     intent(in)              ::  N, Ntrc, L, dt, nDt, u, &
                                 alph, beta, gamm, rho
     !intent(inout)           ::  pf, tReal
+    optional                ::  aTraj
 
     double precision        ::  L, dt, tReal
     integer                 ::  N, Ntrc, nDt, j
     
-    double precision, dimension(N)          ::  alph, beta, gamm, rho, pf
+    double precision, dimension(N)          ::  alph, beta, gamm, rho, &
+                                                pf, adj
 
     double precision, dimension(3, N)       ::  aBuff
     double precision, dimension(nDt+1, N)   ::  u, aTraj
@@ -85,7 +89,7 @@ function kdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, tReal, u, pf, &
     aBuff(2,:)=0.0D0
     aBuff(1,:)=0.0D0
 
-    aTraj(nDt+1,:)=pf
+    if (present(aTraj)) aTraj(nDt+1,:)=pf
 
     ! Leapfrog
     ! Qj*, j=nDt,2
@@ -105,7 +109,7 @@ function kdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, tReal, u, pf, &
         aBuff(3,:)=0D0
 
 
-        aTraj(j,:)=aBuff(1,:)
+        if (present(aTraj)) aTraj(j,:)=aBuff(1,:)
         tReal=tReal+dt
     end do
 
@@ -116,13 +120,13 @@ function kdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, tReal, u, pf, &
                                     aBuff(2,:), alph, beta, gamm, rho)
     aBuff(2,:)=0D0
 
-    aTraj(1,:)=aBuff(1,:)
+    if (present(aTraj)) aTraj(1,:)=aBuff(1,:)
     tReal=tReal+dt
 
     ! I*
-    !adj=aBuff(1,:)
+    adj=aBuff(1,:)
     ! Filtration *
-    call specFilt(aBuff(1,:), N, Ntrc)
+    call specFilt(adj, N, Ntrc)
 
 
 end function kdvTLMPropagatorAdj

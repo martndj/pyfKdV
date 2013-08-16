@@ -1,5 +1,4 @@
 import numpy as np
-import progressbar
 
 from spectralGrid import *
 from kdvParam import *
@@ -73,7 +72,7 @@ class TLMLauncher(object):
 
     #-------------------------------------------------------
 
-    def integrate(self, tInt, progress=False, fullPertTraj=False,
+    def integrate(self, tInt, fullPertTraj=False,
                   adjoint=False, resetTReal=True):
         
 
@@ -91,23 +90,19 @@ class TLMLauncher(object):
 
         if not adjoint:
             integratedPert=self.propagator(dt, nDt,
-                progress=progress, fullPertTraj=fullPertTraj)
+                                            fullPertTraj=fullPertTraj)
         else:
             integratedPert=self.propagator_Adj(dt, nDt, 
-                progress=progress, fullPertTraj=fullPertTraj)
+                                            fullPertTraj=fullPertTraj)
 
         return integratedPert
     
     #------------------------------------------------------
 
     
-    def singular(self, tInt, progress=False):
+    #def singular(self, tInt):
         
-        pert=self.integrate(tInt, progress=progress)
-        pert=self.integrate(tInt, progress=progress,
-                            resetTReal=False,adjoint=True)
 
-        return pert
 
     #------------------------------------------------------
     #----| Private methods |-------------------------------
@@ -117,51 +112,60 @@ class TLMLauncher(object):
     #------------------------------------------------------
 
     def __kdvTLMProp_Fortran(
-            self, dt, nDt, progress=False,fullPertTraj=True):
+            self, dt, nDt, fullPertTraj=True):
 
         # Local variables names
         grid=self.grid
 
-        
+        if fullPertTraj:
+            self.pertTraj.putData(fKdV.fKdVTLMPropagator(
+                                grid.N, grid.Ntrc, grid.L, dt, nDt,
+                                self.pert, self.refTraj.getData(),
+                                param[1], param[2], param[3], param[4], 
+                                fullTraj=True))
 
-
-        pertTrajArr=fKdV.fKdVTLMPropagator(
-                    grid.N, grid.Ntrc, grid.L, dt, nDt,
-                    self.pert, self.refTraj.getData(),
-                    param[1], param[2], param[3], param[4], param[0])
-
-        tReal=nDt*dt
-        fPert=np.array(pertTrajArr[nDt])
-        self.incrmTReal(finished=True, tReal=tReal)
-        if True:
-            self.pertTraj.putData(pertTrajArr)
+            tReal=nDt*dt
             self.pertTraj.incrmTReal(finished=True, tReal=tReal)
+            fPert=self.pertTraj[nDt]
+        else:
+            fPert=fKdV.fKdVTLMPropagator(
+                                grid.N, grid.Ntrc, grid.L, dt, nDt,
+                                self.pert, self.refTraj.getData(),
+                                param[1], param[2], param[3], param[4], 
+                                fullTraj=False)
+            tReal=nDt*dt
 
+        self.incrmTReal(finished=True, tReal=tReal)
         return fPert
 
 
     #------------------------------------------------------
 
     def __kdvTLMProp_Fortran_Adj(
-            self, dt, nDt, progress=False,fullPertTraj=True):
+            self, dt, nDt, fullPertTraj=True):
 
         # Local variables names
         grid=self.grid
 
-        
+        if fullPertTraj:
+            self.pertTraj.putData(fKdV.fKdVTLMPropagatorAdj(
+                                grid.N, grid.Ntrc, grid.L, dt, nDt,
+                                self.pert, self.refTraj.getData(),
+                                param[1], param[2], param[3], param[4], 
+                                fullTraj=True))
 
-
-        adjTrajArr=fKdV.fKdVTLMPropagatorAdj(
-                    grid.N, grid.Ntrc, grid.L, dt, nDt,
-                    self.pert, self.refTraj.getData(),
-                    param[1], param[2], param[3], param[4], param[0])
-
-        tReal=nDt*dt
-        aPert=np.array(adjTrajArr[nDt])
-        self.incrmTReal(finished=True, tReal=tReal)
-        if True:
-            self.pertTraj.putData(adjTrajArr)
+            tReal=nDt*dt
             self.pertTraj.incrmTReal(finished=True, tReal=tReal)
+            aPert=self.pertTraj[0]
+        else:
+            aPert=fKdV.fKdVTLMPropagator(
+                                grid.N, grid.Ntrc, grid.L, dt, nDt,
+                                self.pert, self.refTraj.getData(),
+                                param[1], param[2], param[3], param[4], 
+                                fullTraj=False)
+            tReal=nDt*dt
+
+        self.incrmTReal(finished=True, tReal=tReal)
 
         return aPert
 
@@ -214,17 +218,10 @@ if __name__=='__main__':
 
     tLauncher=TLMLauncher(grid, param, traj, pert)
 
-#    print('Testing differential operator adjoint validity')
-#    testAdj=tLauncher.testKdvPseudoSpecTLM_Adj(p4Term=True)
-#    if testAdj[3]:
-    if True:
-#        print('Validating the test:'+str(testAdj[2]))
-        fPert=tLauncher.integrate(tInt, fullPertTraj=True)
-        aLauncher=TLMLauncher(grid, param, traj, fPert)
-        aPert=aLauncher.integrate(tInt, fullPertTraj=True, adjoint=True)
-        plt.plot(grid.x, fPert)
-        plt.plot(grid.x, aPert)
-    else:
-        print('Test failed!:'+str(testAdj[2]))
+    fPert=tLauncher.integrate(tInt, fullPertTraj=False)
+    aLauncher=TLMLauncher(grid, param, traj, fPert)
+    aPert=aLauncher.integrate(tInt, fullPertTraj=False, adjoint=True)
+    plt.plot(grid.x, fPert)
+    plt.plot(grid.x, aPert)
         
     plt.show()

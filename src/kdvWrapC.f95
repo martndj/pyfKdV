@@ -29,9 +29,10 @@ end subroutine c_kdvPropagator
 
 
 !--------------------------------------------------------------------
+!--------------------------------------------------------------------
 
 
-subroutine c_kdvTLMPropagator(N, Ntrc, L, dt, nDt, u, p0, pTraj, &
+subroutine c_kdvTLMPropagator(N, Ntrc, L, dt, nDt, u, p0, pf, &
                              alph, beta, gamm, rho) bind(c)
 
     integer(c_int), intent(in), value           ::  N, Ntrc, nDt
@@ -40,24 +41,47 @@ subroutine c_kdvTLMPropagator(N, Ntrc, L, dt, nDt, u, p0, pTraj, &
 
     real(c_double), intent(in), dimension(N)    ::  alph, beta, gamm, rho, &
                                                     p0
+    real(c_double), intent(out), dimension(N)   ::  pf
+
+    ! note that in C the indices will be reversed!:
+    real(c_double), intent(in), dimension(N, nDt+1)     ::  u
+    
+    ! ...hence the transpose:
+    pf=kdvTLMPropagator(N, Ntrc, L, dt, nDt, tReal,&
+                        transpose(u), p0, alph, beta, gamm, rho)
+
+end subroutine c_kdvTLMPropagator
+
+!--------------------------------------------------------------------
+
+subroutine c_kdvTLMPropagatorFullTraj(N, Ntrc, L, dt, nDt, u, p0, pf, &
+                        pTraj, alph, beta, gamm, rho) bind(c)
+
+    integer(c_int), intent(in), value           ::  N, Ntrc, nDt
+    real(c_double), intent(in), value           ::  L, dt
+    real(c_double)               ::  tReal
+
+    real(c_double), intent(in), dimension(N)    ::  alph, beta, gamm, rho, &
+                                                    p0
+    real(c_double), intent(out), dimension(N)   ::  pf
 
     ! note that in C the indices will be reversed!:
     real(c_double), intent(in), dimension(N, nDt+1)     ::  u
     real(c_double), intent(out), dimension(N, nDt+1)    ::  pTraj
+    real(c_double), dimension(nDt+1, N)    ::  f_pTraj
     
     ! ...hence the transpose:
-    pTraj=transpose(kdvTLMPropagator(N, Ntrc, L, dt, nDt, tReal,&
-                                    transpose(u), p0, &
-                                    alph, beta, gamm, rho))
+    pf=kdvTLMPropagator(N, Ntrc, L, dt, nDt, tReal, &
+                        transpose(u), p0, alph, beta, gamm, rho, f_pTraj)
+    pTraj=transpose(f_pTraj)
 
-end subroutine c_kdvTLMPropagator
-
+end subroutine c_kdvTLMPropagatorFullTraj
 
 !--------------------------------------------------------------------
+!--------------------------------------------------------------------
 
-
-subroutine c_kdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, u, pf, aTraj, &
-                                    alph, beta, gamm, rho) bind(c)
+subroutine c_kdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, u, pf, adj, &
+                             alph, beta, gamm, rho) bind(c)
 
     integer(c_int), intent(in), value           ::  N, Ntrc, nDt
     real(c_double), intent(in), value           ::  L, dt
@@ -65,17 +89,41 @@ subroutine c_kdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, u, pf, aTraj, &
 
     real(c_double), intent(in), dimension(N)    ::  alph, beta, gamm, rho, &
                                                     pf
+    real(c_double), intent(out), dimension(N)   ::  adj
+
+    ! note that in C the indices will be reversed!:
+    real(c_double), intent(in), dimension(N, nDt+1)     ::  u
+    
+    ! ...hence the transpose:
+    adj=kdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, tReal,&
+                        transpose(u), pf, alph, beta, gamm, rho)
+
+end subroutine c_kdvTLMPropagatorAdj
+
+!--------------------------------------------------------------------
+
+subroutine c_kdvTLMPropagatorAdjFullTraj(N, Ntrc, L, dt, nDt, u, pf, & 
+                             adj, aTraj, alph, beta, gamm, rho) bind(c)
+
+    integer(c_int), intent(in), value           ::  N, Ntrc, nDt
+    real(c_double), intent(in), value           ::  L, dt
+    real(c_double)               ::  tReal
+
+    real(c_double), intent(in), dimension(N)    ::  alph, beta, gamm, rho, &
+                                                    pf
+    real(c_double), intent(out), dimension(N)   ::  adj
 
     ! note that in C the indices will be reversed!:
     real(c_double), intent(in), dimension(N, nDt+1)     ::  u
     real(c_double), intent(out), dimension(N, nDt+1)    ::  aTraj
+    real(c_double), dimension(nDt+1, N)    ::  f_aTraj
     
     ! ...hence the transpose:
-    aTraj=transpose(kdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, tReal,&
-                                    transpose(u), pf, &
-                                    alph, beta, gamm, rho))
+    adj=kdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, tReal, &
+                        transpose(u), pf, alph, beta, gamm, rho, f_aTraj)
+    aTraj=transpose(f_aTraj)
 
-end subroutine c_kdvTLMPropagatorAdj
+end subroutine c_kdvTLMPropagatorAdjFullTraj
 
 
 !====================================================================

@@ -218,9 +218,9 @@ if __name__=='__main__':
 
     tLauncher=TLMLauncher(grid, param, traj, pert)
 
-    fPert=tLauncher.integrate(tInt, fullPertTraj=False)
+    fPert=tLauncher.integrate(tInt, fullPertTraj=True)
     aLauncher=TLMLauncher(grid, param, traj, fPert)
-    aPert=aLauncher.integrate(tInt, fullPertTraj=False, adjoint=True)
+    aPert=aLauncher.integrate(tInt, fullPertTraj=True, adjoint=True)
     plt.plot(grid.x, fPert)
     plt.plot(grid.x, aPert)
         

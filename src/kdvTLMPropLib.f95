@@ -90,6 +90,7 @@ function kdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, tReal, u, pf, &
     aBuff(1,:)=0.0D0
 
     if (present(aTraj)) aTraj(nDt+1,:)=pf
+    tReal=0D0
 
     ! Leapfrog
     ! Qj*, j=nDt,2
@@ -120,13 +121,13 @@ function kdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, tReal, u, pf, &
                                     aBuff(2,:), alph, beta, gamm, rho)
     aBuff(2,:)=0D0
 
-    if (present(aTraj)) aTraj(1,:)=aBuff(1,:)
     tReal=tReal+dt
 
     ! I*
     adj=aBuff(1,:)
     ! Filtration *
     call specFilt(adj, N, Ntrc)
+    if (present(aTraj)) aTraj(1,:)=aBuff(1,:)
 
 
 end function kdvTLMPropagatorAdj
@@ -296,55 +297,63 @@ end function testKdvTLMPseudoSpecAdj
 !-------------------------------------------------------------------!
 
 
-!function testKdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, pAmp, diff)
-!    intent(in)                      ::  N, Ntrc, L, dt, nDt, pAmp
-!    intent(out)                     ::  diff
-!
-!    integer                         ::  N, Ntrc, j, k
-!    
-!    double precision, dimension(N)  ::  alph, beta, gamm, rho, &
-!                                        x, y, Ly, LAdj_x
-!    double precision                ::  L, diff, pAmp
-!    logical                         ::  testKdvTLMPropagatorAdj
-!    
-!    double precision, dimension(nDt+1, N)  ::  u
-!
-!    integer, parameter              :: seed=816322
-!    double precision, parameter     :: tolerance=1D-14
-!
-!    ! Generating random fields
-!    call srand(seed)
-!    do j=1, nDt+1
-!        do k=1, N
-!            u(j,k)=(rand()-5D-1)
-!        end do
-!    end do
-!    do j=1, N
-!        x(j)=pAmp*(rand()-5D-1)
-!        y(j)=pAmp*(rand()-5D-1)
-!        alph(j)=(rand()-5D-1)
-!        beta(j)=(rand()-5D-1)
-!        gamm(j)=(rand()-5D-1)
-!        rho(j)=(rand()-5D-1)
-!    end do
-!
-!    ! explicit filtering
-!    call specFilt(u, N, Ntrc)
-!    call specFilt(x, N, Ntrc)
-!    call specFilt(y, N, Ntrc)
-!    call specFilt(alph, N, Ntrc)
-!    call specFilt(beta, N, Ntrc)
-!    call specFilt(gamm, N, Ntrc)
-!    call specFilt(rho, N, Ntrc)
-!
-!    Ly=kdvTLMPseudoSpec(N, Ntrc, L, u, y, alph, beta, gamm, rho)
-!    LAdj_x=kdvTLMPseudoSpecAdj(N, Ntrc, L, u, x, alph, beta, gamm, rho)
-!
-!    ! adjoint validity test
-!    diff=abs(scalar_product(x,Ly)-scalar_product(LAdj_x,y))
-!    testKdvTLMPseudoSpecAdj=(diff .le. tolerance)
-!
-!end function testKdvTLMPseudoSpecAdj
+function testKdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, pAmp, diff)
+    intent(in)                      ::  N, Ntrc, L, dt, nDt, pAmp
+    intent(out)                     ::  diff
+
+    integer                         ::  N, Ntrc, nDt, j, k
+    
+    double precision, dimension(N)  ::  alph, beta, gamm, rho, &
+                                        x, y, Ly, LAdj_x
+    double precision                ::  L, diff, pAmp, dt, tReal, tRealAdj
+    logical                         ::  testKdvTLMPropagatorAdj
+    
+    double precision, dimension(nDt+1, N)  ::  u
+
+    integer, parameter              :: seed=816322
+    double precision, parameter     :: tolerance=1D-14
+
+    ! Generating random fields
+    call srand(seed)
+    do j=1, nDt+1
+        do k=1, N
+            u(j,k)=(rand()-5D-1)
+        end do
+    end do
+    do j=1, N
+        x(j)=pAmp*(rand()-5D-1)
+        y(j)=pAmp*(rand()-5D-1)
+        alph(j)=(rand()-5D-1)
+        beta(j)=(rand()-5D-1)
+        gamm(j)=(rand()-5D-1)
+        rho(j)=(rand()-5D-1)
+    end do
+
+    ! explicit filtering
+    call specFilt(u, N, Ntrc)
+    call specFilt(x, N, Ntrc)
+    call specFilt(y, N, Ntrc)
+    call specFilt(alph, N, Ntrc)
+    call specFilt(beta, N, Ntrc)
+    call specFilt(gamm, N, Ntrc)
+    call specFilt(rho, N, Ntrc)
+
+    Ly=kdvTLMPropagator(N, Ntrc, L, dt, nDt, tReal,&
+                        u, y, alph, beta, gamm, rho)
+    LAdj_x=kdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, tRealAdj, &
+                        u, x, alph, beta, gamm, rho)
+    ! tReal coherence
+    if (tRealAdj.ne.tReal) then 
+        print *, 'testKdvTLMPropagatorAdj: tReal coherence fail', &
+                    tRealAdj, tReal
+        stop
+    end if
+
+    ! adjoint validity test
+    diff=abs(scalar_product(x,Ly)-scalar_product(LAdj_x,y))
+    testKdvTLMPropagatorAdj=(diff .le. tolerance)
+
+end function testKdvTLMPropagatorAdj
 
 
 end module kdvTLMProp

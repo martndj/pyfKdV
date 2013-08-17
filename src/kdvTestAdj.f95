@@ -11,10 +11,20 @@ double precision        ::  L, pAmp, diff, dt
 Ntrc=150
 N=3*Ntrc+1
 L=3D2
-pAmp=1D-2
+
+
+print *, 'Testing autoadjoint of specFilt'
+print *, '  |<x, Ly>-<Lx, y>| <= 1D-14 ?|'
+if (testAutoadjointSpecFilt(N, Ntrc, L, diff)) then 
+    print *, 'Test succeeded:', diff
+else
+    print *, 'Test failed', diff
+end if
+
 
 print *, 'Testing adjoint validity of kdvTLMPseudoSpec and adjoint'
 print *, '  |<x, Ly>-<L*x, y>| <= 1D-14 ?|'
+pAmp=1D-2
 if (testKdvTLMPseudoSpecAdj(N, Ntrc, L, pAmp, diff)) then 
     print *, 'Test succeeded:', diff
 else

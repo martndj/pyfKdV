@@ -38,7 +38,9 @@
 
 
 module spectral
+use matrix, only: scalar_product
 implicit none
+
 include "./fftw3.f"
 double precision, parameter    ::    PI=3.141592653589793
 complex, parameter             ::    ii=(0.,1.)
@@ -284,6 +286,40 @@ contains
         end do
 
     end function rfft 
+
+
+
+function testAutoAdjointSpecFilt(N, Ntrc, L, diff)
+    intent(in)                      ::  N, Ntrc, L
+    intent(out)                     ::  diff
+
+    integer                         ::  N, Ntrc, j
+    
+    double precision, dimension(N)  ::  x, y, Ly, Lx
+    double precision                ::  L, diff
+    logical                         ::  testAutoadjointSpecFilt
+
+    integer, parameter              :: seed=816322
+    double precision, parameter     :: tolerance=1D-14
+
+    ! Generating random fields
+    call srand(seed)
+    do j=1, N
+        x(j)=(rand()-5D-1)
+        y(j)=(rand()-5D-1)
+    end do
+
+    Lx=x
+    Ly=y
+    call specFilt(Lx, N, Ntrc)
+    call specFilt(Ly, N, Ntrc)
+
+
+    ! adjoint validity test
+    diff=abs(scalar_product(x,Ly)-scalar_product(Lx,y))
+    testAutoadjointSpecFilt=(diff .le. tolerance)
+
+end function testAutoAdjointSpecFilt
 
 !====================================================================
 end module

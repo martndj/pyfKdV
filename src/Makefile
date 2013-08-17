@@ -15,7 +15,7 @@ compiler=gfortran
 
 optflag=-fbounds-check -fPIC
 libflag=-L$(libDir) -larpack -lfftw3 -lm
-baseLib=spectralLib.o matrixLib.o
+baseLib=matrixLib.o spectralLib.o
 kdvLib=kdvPropLib.o kdvTLMPropLib.o
 kdvTests=kdvTestAdj.x
 wrapLib=kdvWrapC.o

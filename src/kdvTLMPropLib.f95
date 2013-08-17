@@ -28,9 +28,10 @@ function kdvTLMPropagator(N, Ntrc, L, dt, nDt, tReal, u, p0, &
     double precision, dimension(nDt+1, N)   ::  u, pTraj
 
 
-    ! I
-    ! Filtration
+    ! F : Filtration
     call specFilt(p0, N, Ntrc)
+
+    ! I : initialisation
     pBuff(1,:)=p0
     if (present(pTraj)) pTraj(1,:)=p0
     
@@ -83,7 +84,7 @@ function kdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, tReal, u, pf, &
 
     double precision, dimension(3, N)       ::  aBuff
     double precision, dimension(nDt+1, N)   ::  u, aTraj
-    ! Initialisationuu
+    
     ! R*
     aBuff(3,:)=pf
     aBuff(2,:)=0.0D0
@@ -118,15 +119,16 @@ function kdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, tReal, u, pf, &
     if (present(aTraj)) aTraj(2,:)=aBuff(2,:)
     tReal=tReal+dt
 
-    aBuff(1,:)=aBuff(1,:)+aBuff(2,:)+dt&
-                          *kdvTLMPseudoSpecAdj(N, Ntrc, L, u(1,:),&
+    aBuff(1,:)=aBuff(1,:)+aBuff(2,:) &
+                         +dt*kdvTLMPseudoSpecAdj(N, Ntrc, L, u(1,:),&
                                     aBuff(2,:), alph, beta, gamm, rho)
     aBuff(2,:)=0D0
 
 
     ! I*
     adj=aBuff(1,:)
-    ! Filtration *
+
+    ! F* : Filtration *
     call specFilt(adj, N, Ntrc)
     if (present(aTraj)) aTraj(1,:)=aBuff(1,:)
 

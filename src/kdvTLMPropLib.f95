@@ -156,7 +156,7 @@ function opE1(N, Ntrc, L, dt, u, pBuff, alph, beta, gamm, rho)
     opE1(1,:)=pBuff(1,:)
     opE1(2,:)=pBuff(1,:)+dt*kdvTLMPseudoSpec(N, Ntrc, L, u, &
                                         pBuff(1,:), alph, beta, gamm, rho)
-    opE1(3,:)=pBuff(3,:)
+    opE1(3,:)=0D0
     
 end function opE1
 
@@ -175,7 +175,7 @@ function opE1Adj(N, Ntrc, L, dt, u, aBuff, alph, beta, gamm, rho)
                  +dt*kdvTLMPseudoSpecAdj(N, Ntrc, L, u, aBuff(2,:),&
                                             alph, beta, gamm, rho)
     opE1Adj(2,:)=0D0
-    opE1Adj(3,:)=aBuff(3,:)
+    opE1Adj(3,:)=0D0
     
 end function opE1Adj
 

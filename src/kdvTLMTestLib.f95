@@ -199,7 +199,7 @@ end function testOpSAdj
 
 !-------------------------------------------------------------------!
 
-function testOpQnAdj(N, Ntrc, L, dt, pAmp, diff)
+function testOpSPnAdj(N, Ntrc, L, dt, pAmp, diff)
     intent(in)                      ::  N, Ntrc, L, dt, pAmp
     intent(out)                     ::  diff
 
@@ -208,7 +208,7 @@ function testOpQnAdj(N, Ntrc, L, dt, pAmp, diff)
     double precision, dimension(N)  ::  u, alph, beta, gamm, rho
     double precision, dimension(3,N)::  x, y, Ly, LAdj_x
     double precision                ::  L, diff, dt, pAmp
-    logical                         ::  testOpQnAdj
+    logical                         ::  testOpSPnAdj
 
     double precision, parameter     :: tolerance=1D-14
 
@@ -246,13 +246,72 @@ function testOpQnAdj(N, Ntrc, L, dt, pAmp, diff)
 
     ! adjoint validity test
     diff=dabs(scalarNVec(x,Ly,3, N)-scalarNVec(LAdj_x,y,3, N))
-    testOpQnAdj=(diff .le. tolerance)
+    testOpSPnAdj=(diff .le. tolerance)
 
-end function testOpQnAdj
+end function testOpSPnAdj
 
 
 !-------------------------------------------------------------------!
 
+
+function testOpSPnE1Adj(N, Ntrc, L, dt, pAmp, diff)
+    intent(in)                      ::  N, Ntrc, L, dt, pAmp
+    intent(out)                     ::  diff
+
+    integer                         ::  N, Ntrc, j, i
+    
+    double precision, dimension(N)  ::  alph, beta, gamm, rho
+    double precision, dimension(2,N)::  u
+    double precision, dimension(3,N)::  x, y, Ly, LAdj_x
+    double precision                ::  L, diff, dt, pAmp
+    logical                         ::  testOpSPnE1Adj
+
+    double precision, parameter     :: tolerance=1D-14
+
+    ! Generating random fields
+    call random_seed()
+    do j=1, N
+        u(1,j)=centeredRand()
+        u(2,j)=centeredRand()
+        do i=1,3
+            x(i,j)=pAmp*centeredRand()
+            y(i,j)=pAmp*centeredRand()
+        end do
+        alph(j)=centeredRand()
+        beta(j)=centeredRand()
+        gamm(j)=centeredRand()
+        rho(j)=centeredRand()
+    end do
+
+    ! explicit filtering
+    call specFilt(u(1,:), N, Ntrc)
+    call specFilt(u(2,:), N, Ntrc)
+    do i=1,3
+        call specFilt(x(i,:), N, Ntrc)
+        call specFilt(y(i,:), N, Ntrc)
+    end do
+    call specFilt(alph, N, Ntrc)
+    call specFilt(beta, N, Ntrc)
+    call specFilt(gamm, N, Ntrc)
+    call specFilt(rho, N, Ntrc)
+
+    Ly=y
+    Ly=opE1(N, Ntrc, L, dt, u(1,:), Ly,  alph, beta, gamm, rho)
+    Ly=opPn(N, Ntrc, L, dt, u(2,:), Ly, alph, beta, gamm, rho)
+    Ly=opS(N, Ly)
+    LAdj_x=x
+    LAdj_x=opSAdj(N, LAdj_x)
+    LAdj_x=opPnAdj(N, Ntrc, L, dt, u(2,:), LAdj_x, alph, beta, gamm, rho)
+    LAdj_x=opE1Adj(N, Ntrc, L, dt, u(1,:), LAdj_x, alph, beta, gamm, rho)
+
+    ! adjoint validity test
+    diff=dabs(scalarNVec(x,Ly,3, N)-scalarNVec(LAdj_x,y,3, N))
+    testOpSPnE1Adj=(diff .le. tolerance)
+
+end function testOpSPnE1Adj
+
+
+!-------------------------------------------------------------------!
 function testOpAllAdj(N, Ntrc, L, dt, pAmp, diff)
     intent(in)                      ::  N, Ntrc, L, dt, pAmp
     intent(out)                     ::  diff

@@ -35,7 +35,7 @@ end if
 
 if (.not.test) stop
 print *, 
-print *, 'Testing adjoint validity of kdvTLMPseudoSpec and adjoint'
+print *, 'Testing adjoint validity of kdvTLMPseudoSpec'
 print *, N, Ntrc, L, pAmp
 if (testKdvTLMPseudoSpecAdj(N, Ntrc, L, pAmp, diff)) then 
     print *, 'Test succeeded:', diff
@@ -45,7 +45,7 @@ else
 end if
 
 print *, 
-print *, 'Testing adjoint validity of rhoCenteredImplicit and adjoint'
+print *, 'Testing adjoint validity of rhoCenteredImplicit'
 print *, N, Ntrc, L, dt
 if (testRhoCenteredImplicitAdj(N, Ntrc, L, dt, diff)) then 
     print *, 'Test succeeded:', diff
@@ -58,7 +58,7 @@ end if
 
 if (.not.test) stop
 print *, 
-print *, 'Testing autoadjoint of opE1'
+print *, 'Testing adjoint validity of opE1'
 print *, N, Ntrc, L, dt, pAmp
 if (testOpE1Adj(N, Ntrc, L, dt, pAmp, diff)) then 
     print *, 'Test succeeded:', diff
@@ -69,7 +69,7 @@ end if
 
 
 print *, 
-print *, 'Testing autoadjoint of opPn'
+print *, 'Testing adjoint validity of opPn'
 print *, N, Ntrc, L, dt, pAmp
 if (testOpPnAdj(N, Ntrc, L, dt, pAmp, diff)) then 
     print *, 'Test succeeded:', diff
@@ -80,7 +80,7 @@ end if
 
 
 print *, 
-print *, 'Testing autoadjoint of opS'
+print *, 'Testing adjoint validity of opS'
 print *, N
 if (testOpSAdj(N, diff)) then 
     print *, 'Test succeeded:', diff
@@ -91,9 +91,20 @@ end if
 
 
 print *, 
-print *, 'Testing autoadjoint of opQn'
+print *, 'Testing adjoint validity of S.Pn'
 print *, N, Ntrc, L, dt, pAmp
-if (testOpQnAdj(N, Ntrc, L, dt, pAmp, diff)) then 
+if (testOpSPnAdj(N, Ntrc, L, dt, pAmp, diff)) then 
+    print *, 'Test succeeded:', diff
+else
+    print *, 'Test FAILED', diff
+    test=.false.
+end if
+
+
+print *, 
+print *, 'Testing adjoint validity of S.Pn.E1'
+print *, N, Ntrc, L, dt, pAmp
+if (testOpSPnE1Adj(N, Ntrc, L, dt, pAmp, diff)) then 
     print *, 'Test succeeded:', diff
 else
     print *, 'Test FAILED', diff
@@ -103,7 +114,7 @@ end if
 
 if (.not.test) stop
 print *, 
-print *, 'Testing autoadjoint of the serie of operators'
+print *, 'Testing adjoint validity of the sequence R.S.Pn.E1.I.F'
 print *, N, Ntrc, L, dt, pAmp
 if (testOpAllAdj(N, Ntrc, L, dt, pAmp, diff)) then 
     print *, 'Test succeeded:', diff
@@ -115,7 +126,7 @@ end if
 
 if (.not.test) stop
 print *, 
-print *, 'Testing adjoint validity of kdvTLMPropagator and adjoint'
+print *, 'Testing adjoint validity of kdvTLMPropagator'
 print *, N, Ntrc, L, dt, nDt, pAmp
 if (testKdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, pAmp, diff)) then 
     print *, 'Test succeeded:', diff

@@ -51,10 +51,6 @@ class TLMLauncher(object):
         # Time attribute
         self.tInt=0.
         self.tReal=0.
-
-        # Propagator
-        self.propagator=self.__kdvTLMProp_Fortran
-        self.propagator_Adj=self.__kdvTLMProp_Fortran_Adj
     
     #------------------------------------------------------
     #----| Public methods |--------------------------------
@@ -69,39 +65,48 @@ class TLMLauncher(object):
         else:
             self.tReal+=self.refTraj.dt
 
-
     #-------------------------------------------------------
 
-    def integrate(self, tInt, fullPertTraj=False,
-                  adjoint=False, resetTReal=True):
+    def integrate(self, tInt, fullPertTraj=False):
         
 
         dt=self.refTraj.dt
         nDt=int(tInt/dt)
-        if resetTReal: self.tReal=0.
 
         if fullPertTraj:
             self.fullPertTraj=True
             self.pertTraj=Trajectory(self.grid)
             self.pertTraj.initialize(self.pert, tInt, dt)
 
-        # calling the Tangent model
-        #   defined in the herited classes (initial and final perturbations)
-
-        if not adjoint:
-            integratedPert=self.propagator(dt, nDt,
-                                            fullPertTraj=fullPertTraj)
-        else:
-            integratedPert=self.propagator_Adj(dt, nDt, 
-                                            fullPertTraj=fullPertTraj)
-
-        return integratedPert
+        return self.__kdvTLMProp_Fortran(dt, nDt, fullPertTraj=fullPertTraj)
     
-    #------------------------------------------------------
+    #-------------------------------------------------------
 
-    
-    #def singular(self, tInt):
+    def adjoint(self, tInt, fullPertTraj=False, resetTReal=True):
         
+
+        dt=self.refTraj.dt
+        nDt=int(tInt/dt)
+        
+        if fullPertTraj:
+            self.fullPertTraj=True
+            self.pertTraj=Trajectory(self.grid)
+            self.pertTraj.initialize(self.pert, tInt, dt)
+
+
+        return self.__kdvTLMProp_Fortran_Adj(dt, nDt, 
+                                fullPertTraj=fullPertTraj)
+
+    
+    #-------------------------------------------------------
+
+    def singularOp(self, tInt):
+        
+
+        dt=self.refTraj.dt
+        nDt=int(tInt/dt)
+
+        return self.__kdvTLMSingularOp_Fortran(dt, nDt)
 
 
     #------------------------------------------------------
@@ -169,6 +174,24 @@ class TLMLauncher(object):
 
         return aPert
 
+    #------------------------------------------------------
+
+    def __kdvTLMSingularOp_Fortran(self, dt, nDt):
+
+        # Local variables names
+        grid=self.grid
+
+        LAdjLx=fKdV.fKdVTLMSingularOp(
+                                grid.N, grid.Ntrc, grid.L, dt, nDt,
+                                self.pert, self.refTraj.getData(),
+                                param[1], param[2], param[3], param[4])
+        tReal=2.*nDt*dt
+
+        self.incrmTReal(finished=True, tReal=tReal)
+        return LAdjLx
+
+
+
 #--------------------------------------------------------------------
 #====================================================================
 #--------------------------------------------------------------------
@@ -217,11 +240,16 @@ if __name__=='__main__':
     pert=0.1*np.exp(-(5.*np.pi*(grid.x-10)/grid.L)**2)
 
     tLauncher=TLMLauncher(grid, param, traj, pert)
-
     fPert=tLauncher.integrate(tInt, fullPertTraj=True)
+
     aLauncher=TLMLauncher(grid, param, traj, fPert)
-    aPert=aLauncher.integrate(tInt, fullPertTraj=True, adjoint=True)
+    aPert=aLauncher.adjoint(tInt, fullPertTraj=True)
+
+    sLauncher=TLMLauncher(grid, param, traj, pert)
+    sPert=sLauncher.singularOp(tInt)
+
     plt.plot(grid.x, fPert)
     plt.plot(grid.x, aPert)
+    plt.plot(grid.x, sPert)
         
     plt.show()

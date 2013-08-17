@@ -25,6 +25,7 @@ def fKdVPropagator(int N, int Ntrc, double L,
     return c_traj
 
 #--------------------------------------------------------------------
+#--------------------------------------------------------------------
 
 cdef extern:
     void c_kdvtlmpropagator(int N, int Ntrc, double L,
@@ -108,4 +109,30 @@ def fKdVTLMPropagatorAdj(int N, int Ntrc, double L,
                         &pf[0], &adj[0], 
                         &alph[0], &beta[0], &gamm[0], &rho[0])
         return np.array(adj)
+
+#--------------------------------------------------------------------
+#--------------------------------------------------------------------
+
+cdef extern:
+    void c_kdvtlmsingularop(int N, int Ntrc, double L,
+                            double dt, int nDt, double* u,
+                            double* x, double* y, 
+                            double* alph, double* beta, double* gamm,
+                            double* rho)
+
+def fKdVTLMSingularOp(int N, int Ntrc, double L,
+                    double dt, int nDt,
+                    double[::1] x not None,
+                    double[:,::1] u not None,
+                    double[::1] alph not None,
+                    double[::1] beta not None,
+                    double[::1] gamm not None,
+                    double[::1] rho not None):
+
+    cdef double[::1] y = np.empty(N)
+
+    c_kdvtlmsingularop(N, Ntrc, L, dt, nDt, &u[0,0], 
+                        &x[0], &y[0], 
+                        &alph[0], &beta[0], &gamm[0], &rho[0])
+    return np.array(y)
 

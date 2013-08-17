@@ -125,6 +125,30 @@ subroutine c_kdvTLMPropagatorAdjFullTraj(N, Ntrc, L, dt, nDt, u, pf, &
 
 end subroutine c_kdvTLMPropagatorAdjFullTraj
 
+!--------------------------------------------------------------------
+!--------------------------------------------------------------------
+
+
+subroutine c_kdvTLMSingularOp(N, Ntrc, L, dt, nDt, u, x, y, &
+                             alph, beta, gamm, rho) bind(c)
+
+    integer(c_int), intent(in), value           ::  N, Ntrc, nDt
+    real(c_double), intent(in), value           ::  L, dt
+    real(c_double)               ::  tReal
+
+    real(c_double), intent(in), dimension(N)    ::  alph, beta, gamm, rho, &
+                                                    x
+    real(c_double), intent(out), dimension(N)   ::  y
+
+    ! note that in C the indices will be reversed!:
+    real(c_double), intent(in), dimension(N, nDt+1)     ::  u
+    
+    ! ...hence the transpose:
+    y=kdvTLMSingularOp(N, Ntrc, L, dt, nDt, tReal,&
+                        transpose(u), x, alph, beta, gamm, rho)
+
+end subroutine c_kdvTLMSingularOp
+
 
 !====================================================================
 end module kdvWrapC

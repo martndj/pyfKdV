@@ -12,9 +12,8 @@ function kdvTLMPropagator(N, Ntrc, L, dt, nDt, tReal, u, p0, &
                             alph, beta, gamm, rho, pTraj) &
                             result(pf)
 
-    intent(in)              ::  N, Ntrc, L, dt, nDt, u, &
+    intent(in)              ::  N, Ntrc, L, dt, nDt, u, p0, &
                                 alph, beta, gamm, rho
-    !intent(inout)           ::  p0, tReal
     optional                ::  pTraj
 
     double precision        ::  L, dt, tReal
@@ -65,7 +64,7 @@ function kdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, tReal, u, pf, &
                             alph, beta, gamm, rho, aTraj) &
                             result(adj)
 
-    intent(in)              ::  N, Ntrc, L, dt, nDt, u, &
+    intent(in)              ::  N, Ntrc, L, dt, nDt, u, pf, &
                                 alph, beta, gamm, rho
     optional                ::  aTraj
 
@@ -113,32 +112,26 @@ end function kdvTLMPropagatorAdj
 
 !-------------------------------------------------------------------!
 
-!function kdvTLMSingularOp(N, Ntrc, L, dt, nDt, tReal, u, p0, &
-!                            alph, beta, gamm, rho) &
-!                            result(v)
-!
-!    intent(in)              ::  N, Ntrc, L, dt, nDt, u, &
-!                                alph, beta, gamm, rho
-!    !intent(inout)           ::  p0, tReal
-!
-!    double precision        ::  L, dt, tReal
-!    integer                 ::  N, Ntrc, nDt, j
-!    
-!    double precision, dimension(N)          ::  alph, beta, gamm, rho, p0
-!
-!    double precision, dimension(3, N)       ::  pBuff
-!    double precision, dimension(nDt+1, N)   ::  
-!
-!    ! no need for fullTraj !
-!
-!    kdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, tReal, u, pf, &
-!                            alph, beta, gamm, rho)
-!
-!end function kdvTLMSingularOp
 
-!-------------------------------------------------------------------!
+function kdvTLMSingularOp(N, Ntrc, L, dt, nDt, tReal, u, x, &
+                            alph, beta, gamm, rho) &
+                            result(y)
 
+    intent(in)              ::  N, Ntrc, L, dt, nDt, u, x, &
+                                alph, beta, gamm, rho
 
+    double precision        ::  L, dt, tReal
+    integer                 ::  N, Ntrc, nDt
+    
+    double precision, dimension(N)          ::  alph, beta, gamm, rho, &
+                                                x, y
+    double precision, dimension(nDt+1, N)   ::  u
+
+    y=kdvTLMPropagator(N, Ntrc, L, dt, nDt, tReal, u, x, &
+                            alph, beta, gamm, rho)
+    y=kdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, tReal, u, y, &
+                        alph, beta, gamm, rho)
+end function kdvTLMSingularOp
 
 !----| Linear differential operators and adjoint |------------------!
 !-------------------------------------------------------------------!

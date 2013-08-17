@@ -32,6 +32,8 @@ function kdvTLMPropagator(N, Ntrc, L, dt, nDt, tReal, u, p0, &
 
     ! I : initialisation
     pBuff(1,:)=p0
+    pBuff(2,:)=0D0
+    pBuff(3,:)=0D0
     if (present(pTraj)) pTraj(1,:)=p0
 
     !premier pas avec Euler-avant
@@ -324,15 +326,15 @@ end function kdvTLMPseudoSpecAdj
 
 !--------------------------------------------------------------------
 
-!function rhoCenteredImplicitAdj(N, Ntrc, dt, u, rho)
-!    intent (in)                     ::  N, Ntrc, dt, u, rho
-!    integer                         ::  N, Ntrc
-!    double precision                ::  dt
-!    double precision, dimension(N)  ::  u, rho, rhoCenteredImplicitAdj
-!
-!    rhoCenteredImplicitAdj=specFiltCopy(u, N, Ntrc)
-!    rhoCenteredImplicitAdj=(1D0-dt*rho)/(1D0+dt*rho)*rhoCenteredImplicitAdj
-!end function rhoCenteredImplicitAdj
+function rhoCenteredImplicitAdj(N, Ntrc, dt, u, rho)
+    intent (in)                     ::  N, Ntrc, dt, u, rho
+    integer                         ::  N, Ntrc
+    double precision                ::  dt
+    double precision, dimension(N)  ::  u, rho, rhoCenteredImplicitAdj
+
+    rhoCenteredImplicitAdj=specFiltCopy(u, N, Ntrc)
+    rhoCenteredImplicitAdj=(1D0-dt*rho)/(1D0+dt*rho)*rhoCenteredImplicitAdj
+end function rhoCenteredImplicitAdj
 
 
 
@@ -350,6 +352,44 @@ function scalarNVec(a,b, nVec, N) result(r)
     end do
 end function scalarNVec
 
+!-------------------------------------------------------------------!
+!-------------------------------------------------------------------!
+
+function testRhoCenteredImplicitAdj(N, Ntrc, L, dt, diff)
+    intent(in)                      ::  N, Ntrc, L, dt
+    intent(out)                     ::  diff
+
+    integer                         ::  N, Ntrc, j
+    
+    double precision, dimension(N)  ::  rho, x, y, Ly, LAdj_x
+    double precision                ::  L, diff, dt
+    logical                         ::  testRhoCenteredImplicitAdj
+
+    integer, parameter              :: seed=816322
+    double precision, parameter     :: tolerance=1D-14
+
+    ! Generating random fields
+    call srand(seed)
+    do j=1, N
+        x(j)=(rand()-5D-1)
+        y(j)=(rand()-5D-1)
+        rho(j)=(rand()-5D-1)
+    end do
+
+
+    Ly=rhoCenteredImplicit(N, Ntrc, dt, y,rho)
+    LAdj_x=rhoCenteredImplicitAdj(N, Ntrc, dt, x,rho)
+
+    !LAdj_x=rhoCenteredImplicitAdj(N, Ntrc, dt, x,rho)
+    !  NOT AUTOADJOINT!
+
+    ! adjoint validity test
+    diff=abs(scalar_product(x,Ly)-scalar_product(LAdj_x,y))
+    testRhoCenteredImplicitAdj=(diff .le. tolerance)
+
+end function testRhoCenteredImplicitAdj
+
+!-------------------------------------------------------------------!
 !-------------------------------------------------------------------!
 
 function testOpE1Adj(N, Ntrc, L, dt, pAmp, diff)

@@ -131,7 +131,16 @@ contains
         f=real(cf, kind=8)/N  !normalization
     end subroutine specFilt
 
+!--------------------------------------------------------------------!
+    function specFiltCopy(f, N, Ntr) result(fTr)
+    ! not 'inplace' truncature
+        intent(in)                      ::    N, Ntr, f
+        integer                         ::    N, Ntr
+        double precision, dimension(N)  ::    f, fTr
 
+        fTr=f
+        call specFilt(fTr, N, Ntr)
+    end function specFiltCopy
 !--------------------------------------------------------------------!
     subroutine specDDiag(D, order ,N, L)
     !

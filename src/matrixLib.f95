@@ -145,7 +145,7 @@ contains
 
     if (size(a,1) /= size(b,1)) stop " scalar_product :: Incompatibilité dimensionnelle"
 
-    r=0.
+    r=0D0
     do i=1,size(a,1)
       r=r+a(i)*b(i)
     end do

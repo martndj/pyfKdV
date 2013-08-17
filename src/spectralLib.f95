@@ -42,8 +42,8 @@ use matrix, only: scalar_product
 implicit none
 
 include "./fftw3.f"
-double precision, parameter    ::    PI=3.141592653589793
-complex, parameter             ::    ii=(0.,1.)
+double precision, parameter    ::    PI=3.141592653589793D0
+double complex, parameter             ::    ii=(0D0,1D0)
 
 contains
 !====================================================================
@@ -99,7 +99,7 @@ contains
         end if
 
         do j=Ntr+1, N-Ntr+1
-            g(j)=(0.0d0, 0.0d0)
+            g(j)=(0.0D0, 0.0D0)
         end do
     end subroutine specCoupe
 
@@ -124,7 +124,7 @@ contains
             stop
         end if
 
-        cf=cmplx(f,0.,kind=8)
+        cf=cmplx(f,0D0,kind=16)
         cf=cfft(cf,N,-1)
         call specCoupe(cf,N,Ntr)
         cf=cfft(cf,N,1)
@@ -206,7 +206,7 @@ contains
         ! spectral differentiation matrix 
         call specDDiag(Ds, ordre, N, L)
 
-        cf=cmplx(f, 0., kind=8)
+        cf=cmplx(f, 0D0, kind=16)
         cf=cfft(cf,N, -1)
         do j=1, N
             cf(j)=Ds(j)*cf(j)
@@ -252,7 +252,7 @@ contains
         call specDDiag(Ds, order, N, L)
 
         ! start of the adjoint code
-        cf=cmplx(f, 0., kind=8)
+        cf=cmplx(f, 0D0, kind=16)
         cf=cfft(cf,N, -1)
         call specCoupe(cf, N, Ntr)
         do j=1, N
@@ -287,7 +287,7 @@ contains
             stop
         end if
 
-        cf=cmplx(f,0.,kind=8)
+        cf=cmplx(f,0D0,kind=16)
         cf=cfft(cf,N,-1)
         do j=1,(N-1)/2+1
             cf(j)=cf(j)*conjg(cf(j))

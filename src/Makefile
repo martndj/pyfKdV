@@ -16,13 +16,13 @@ compiler=gfortran
 optflag=-fbounds-check -fPIC
 libflag=-L$(libDir) -larpack -lfftw3 -lm
 baseLib=matrixLib.o spectralLib.o
-kdvLib=kdvPropLib.o kdvTLMPropLib.o
+kdvLib=kdvPropLib.o kdvTLMPropLib.o kdvTLMTestLib.o 
 kdvTests=kdvTestAdj.x
 wrapLib=kdvWrapC.o
 
 kdv: $(baseLib) $(kdvLib)
 
-tests: $(kdvTests)
+tests:  $(baseLib) $(kdvLib) $(kdvTests)
 	./kdvTestAdj.x
 
 pyKdV: kdvLib.so

@@ -1,6 +1,7 @@
 program kdvTestAdj
 
-use kdvTLMProp
+!use kdvTLMProp
+use kdvTLMTest
 implicit none
 
 integer                 ::  N, Ntrc, nDt
@@ -13,8 +14,8 @@ N=3*Ntrc+1
 L=3D2
 
 pAmp=1D-1
-dt=0.01
-nDt=2
+dt=1D-2
+nDt=10
 
 test=.true.
 

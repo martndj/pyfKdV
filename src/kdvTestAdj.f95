@@ -15,7 +15,7 @@ L=3D2
 
 pAmp=1D-1
 dt=1D-2
-nDt=10
+nDt=2
 
 test=.true.
 
@@ -25,6 +25,7 @@ print *, '  |<x, Ly>-<Lx, y>| <= 1D-14 ?|'
 
 print *, 
 print *, 'Testing autoadjoint of specFilt'
+print *, N, Ntrc, L
 if (testAutoadjointSpecFilt(N, Ntrc, L, diff)) then 
     print *, 'Test succeeded:', diff
 else
@@ -82,6 +83,29 @@ print *,
 print *, 'Testing autoadjoint of opS'
 print *, N
 if (testOpSAdj(N, diff)) then 
+    print *, 'Test succeeded:', diff
+else
+    print *, 'Test FAILED', diff
+    test=.false.
+end if
+
+
+print *, 
+print *, 'Testing autoadjoint of opQn'
+print *, N, Ntrc, L, dt, pAmp
+if (testOpQnAdj(N, Ntrc, L, dt, pAmp, diff)) then 
+    print *, 'Test succeeded:', diff
+else
+    print *, 'Test FAILED', diff
+    test=.false.
+end if
+
+
+if (.not.test) stop
+print *, 
+print *, 'Testing autoadjoint of the serie of operators'
+print *, N, Ntrc, L, dt, pAmp
+if (testOpAllAdj(N, Ntrc, L, dt, pAmp, diff)) then 
     print *, 'Test succeeded:', diff
 else
     print *, 'Test FAILED', diff

@@ -128,7 +128,7 @@ contains
         cf=cfft(cf,N,-1)
         call specCoupe(cf,N,Ntr)
         cf=cfft(cf,N,1)
-        f=real(cf, kind=8)/N  !normalization
+        f=dble(cf)/dble(N)  !normalization
     end subroutine specFilt
 
 !--------------------------------------------------------------------!
@@ -214,7 +214,7 @@ contains
         call specCoupe(cf, N, Ntr)
         cf=cfft(cf,N,1)
         ! normalization
-        diff=real(cf, kind=8)/dble(N)
+        diff=dble(cf)/dble(N)
     end function specDiff
 
 
@@ -260,7 +260,7 @@ contains
         end do
         cf=cfft(cf,N,1)
         ! normalization
-        diff=real(cf, kind=8)/dble(N)
+        diff=dble(cf)/dble(N)
 
     end function specDiffAdj
 
@@ -291,7 +291,7 @@ contains
         cf=cfft(cf,N,-1)
         do j=1,(N-1)/2+1
             cf(j)=cf(j)*conjg(cf(j))
-            tf(j)=sqrt(real(cf(j), kind=8))
+            tf(j)=sqrt(dble(cf(j)))
         end do
 
     end function rfft 
@@ -308,14 +308,13 @@ function testAutoAdjointSpecFilt(N, Ntrc, L, diff)
     double precision                ::  L, diff
     logical                         ::  testAutoadjointSpecFilt
 
-    integer, parameter              :: seed=816322
     double precision, parameter     :: tolerance=1D-14
 
     ! Generating random fields
-    call srand(seed)
+    call random_seed()
     do j=1, N
-        x(j)=(rand()-5D-1)
-        y(j)=(rand()-5D-1)
+        x(j)=centeredRand()
+        y(j)=centeredRand()
     end do
 
     Lx=x
@@ -325,9 +324,15 @@ function testAutoAdjointSpecFilt(N, Ntrc, L, diff)
 
 
     ! adjoint validity test
-    diff=abs(scalar_product(x,Ly)-scalar_product(Lx,y))
+    diff=dabs(scalar_product(x,Ly)-scalar_product(Lx,y))
     testAutoadjointSpecFilt=(diff .le. tolerance)
 
+    contains
+        function centeredRand()
+            double precision        :: centeredRand, r
+            call random_number(r)
+            centeredRand=r-5D-1
+        end function centeredRand
 end function testAutoAdjointSpecFilt
 
 !====================================================================

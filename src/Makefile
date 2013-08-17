@@ -11,6 +11,8 @@
 
 #----| variables |---------------------------------------------------#
 libDir=/usr/lib
+pyKdVDir=../pyKdV/
+userLibDir=/home/martn/lib/
 compiler=gfortran
 
 optflag=-fbounds-check -fPIC
@@ -25,8 +27,11 @@ kdv: $(baseLib) $(kdvLib)
 tests:  $(baseLib) $(kdvLib) $(kdvTests)
 	./kdvTestAdj.x
 
-pyKdV: kdvLib.so
+pyKdV: libKdV.so
 	python setup.py build_ext --inplace
+	cp fKdV.so $(pyKdVDir)
+	cp libKdV.so $(userLibDir)
+    
 
 %.o: %.f95
 	$(compiler) -o $@ -c $< $(optflag)

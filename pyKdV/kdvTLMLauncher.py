@@ -1,6 +1,6 @@
 import numpy as np
 
-from spectralGrid import *
+from pseudoSpec1D import *
 from kdvParam import *
 #from kdvLauncher import *
 
@@ -121,6 +121,7 @@ class TLMLauncher(object):
 
         # Local variables names
         grid=self.grid
+        param=self.param
 
         if fullPertTraj:
             self.pertTraj.putData(fKdV.fKdVTLMPropagator(
@@ -151,6 +152,7 @@ class TLMLauncher(object):
 
         # Local variables names
         grid=self.grid
+        param=self.param
 
         if fullPertTraj:
             self.pertTraj.putData(fKdV.fKdVTLMPropagatorAdj(
@@ -180,6 +182,7 @@ class TLMLauncher(object):
 
         # Local variables names
         grid=self.grid
+        param=self.param
 
         LAdjLx=fKdV.fKdVTLMSingularOp(
                                 grid.N, grid.Ntrc, grid.L, dt, nDt,

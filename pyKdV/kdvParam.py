@@ -1,5 +1,5 @@
 import numpy as np
-from spectralGrid import SpectralGrid
+from pseudoSpec1D import *
 
 class ParamError(Exception):
     pass

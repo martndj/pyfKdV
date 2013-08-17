@@ -1,7 +1,6 @@
 import numpy as np
 
-from spectralGrid import *
-from trajectory import *
+from pseudoSpec1D import *
 from kdvParam import *
 
 import fKdV

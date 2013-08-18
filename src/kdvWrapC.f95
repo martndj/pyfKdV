@@ -3,6 +3,7 @@ module kdvWrapC
 use iso_c_binding, only: c_double, c_int
 use kdvProp
 use kdvTLMProp
+use kdvLanczos
 
 contains
 !====================================================================
@@ -149,6 +150,30 @@ subroutine c_kdvTLMSingularOp(N, Ntrc, L, dt, nDt, u, x, y, &
 
 end subroutine c_kdvTLMSingularOp
 
+!--------------------------------------------------------------------
+!--------------------------------------------------------------------
+
+
+subroutine c_kdvLanczos(N, Ntrc, L, dt, nDt, u, Nev, V, sv, &
+                             alph, beta, gamm, rho) bind(c)
+
+    integer(c_int), intent(in), value           ::  N, Ntrc, nDt, Nev
+    real(c_double), intent(in), value           ::  L, dt
+    real(c_double)               ::  tReal
+
+    real(c_double), intent(in), dimension(N)    ::  alph, beta, gamm, rho
+                                                  
+    real(c_double), intent(out), dimension(Nev)     ::  sv
+    real(c_double), intent(out), dimension(Nev,N)   ::  V
+
+    ! note that in C the indices will be reversed!:
+    real(c_double), intent(in), dimension(N, nDt+1)     ::  u
+    
+    ! ...hence the transpose:
+    V=transpose(lanczos(N, Ntrc, L, dt, nDt, tReal, transpose(u), &
+                    alph, beta, gamm, rho, Nev, sv, Nconv))
+
+end subroutine c_kdvLanczos
 
 !====================================================================
 end module kdvWrapC

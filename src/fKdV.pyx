@@ -136,3 +136,30 @@ def fKdVTLMSingularOp(int N, int Ntrc, double L,
                         &alph[0], &beta[0], &gamm[0], &rho[0])
     return np.array(y)
 
+#--------------------------------------------------------------------
+#--------------------------------------------------------------------
+
+cdef extern:
+    void c_kdvlanczos(int N, int Ntrc, double L,
+                            double dt, int nDt, double* u,
+                            int Nev, double* V, double* sv, 
+                            double* alph, double* beta, double* gamm,
+                            double* rho)
+
+def fKdVLanczos(int N, int Ntrc, double L,
+                    double dt, int nDt,
+                    double[:,::1] u not None,
+                    int Nev,
+                    double[::1] alph not None,
+                    double[::1] beta not None,
+                    double[::1] gamm not None,
+                    double[::1] rho not None):
+
+    cdef double[:,::1] V = np.empty(shape=(N,Nev))
+    cdef double[::1] sv = np.empty(Nev)
+
+    c_kdvlanczos(N, Ntrc, L, dt, nDt, &u[0,0], 
+                    Nev, &V[0,0], &sv[0], 
+                    &alph[0], &beta[0], &gamm[0], &rho[0])
+    return np.array(sv), np.array(V)
+

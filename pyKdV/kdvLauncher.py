@@ -57,6 +57,18 @@ class Launcher():
         traj=self.propagator(traj)
 
         return traj
+    
+    #------------------------------------------------------
+
+    def lanczos(self, traj, Nev):
+
+        grid=self.grid
+        param=self.param
+
+        sVal, sVec=fKdV.fKdVLanczos(grid.N, grid.Ntrc, grid.L,
+                                    traj.dt, traj.nDt, traj.getData(), Nev,
+                                    param[1], param[2], param[3], param[4])
+        return sVal, sVec
 
     #------------------------------------------------------
     #----| Private methods |-------------------------------
@@ -125,5 +137,5 @@ if __name__=='__main__':
     launcher=Launcher(param, ic)
     
     traj=launcher.integrate(tInt, maxA)
-    #axe=traj.waterfall()
-    #plt.show()
+    axe=traj.waterfall()
+    plt.show()

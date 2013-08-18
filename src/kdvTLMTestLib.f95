@@ -458,7 +458,9 @@ function testKdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, pAmp, diff)
     end do
 
     ! explicit filtering
-    call specFilt(u, N, Ntrc)
+    do j=1, nDt+1
+        call specFilt(u(j,:), N, Ntrc)
+    end do
     call specFilt(x, N, Ntrc)
     call specFilt(y, N, Ntrc)
     call specFilt(alph, N, Ntrc)
@@ -482,5 +484,121 @@ function testKdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, pAmp, diff)
     testKdvTLMPropagatorAdj=(diff .le. tolerance)
 
 end function testKdvTLMPropagatorAdj
+
+!-------------------------------------------------------------------!
+!-------------------------------------------------------------------!
+
+subroutine testGradient(N, Ntrc, L, dt, nDt, pAmp, maxPower)
+    !
+    !   J(x-eps\grad J)-J(x)
+    !   --------------------  -1 < O(eps) ?
+    !     eps||\grad J||^2
+    !
+    !   <!> doit être valable jusqu'à la 
+    !       *moitié* de la précision du type
+    !------------------------------------------------------
+    intent(in)                      ::  N, Ntrc, L, dt, nDt, pAmp, maxPower
+
+    integer                         ::  N, Ntrc, nDt, maxPower, j, k, pow
+    
+    double precision, dimension(N)  ::  alph, beta, gamm, rho, &
+                                        x, grad
+    double precision                ::  L, res, pAmp, dt, &
+                                        tRealFct, tRealGrad, &
+                                        eps, Jeps, J0
+    
+    double precision, dimension(nDt+1, N)  ::  u
+
+    double precision, parameter     :: tolerance=1D-14
+
+    ! Generating random fields
+    call random_seed()
+    do j=1, nDt+1
+        do k=1, N
+            u(j,k)=centeredRand()
+        end do
+    end do
+    do j=1, N
+        x(j)=pAmp*centeredRand()
+        alph(j)=centeredRand()
+        beta(j)=centeredRand()
+        gamm(j)=centeredRand()
+        rho(j)=centeredRand()
+    end do
+
+    ! explicit filtering
+    do j=1, nDt+1
+        call specFilt(u(j,:), N, Ntrc)
+    end do
+    call specFilt(x, N, Ntrc)
+    call specFilt(alph, N, Ntrc)
+    call specFilt(beta, N, Ntrc)
+    call specFilt(gamm, N, Ntrc)
+    call specFilt(rho, N, Ntrc)
+    
+
+    J0=fctCout(N, Ntrc, L, dt, nDt, tRealFct, u, x, &
+                        alph, beta, gamm, rho )
+
+    grad=gradFC(N, Ntrc, L, dt, nDt, tRealGrad, u, x, &
+                        alph, beta, gamm, rho )
+
+
+    print"(A E23.15)", "  J(x):         ",J0 
+    print"(A E23.15)", "  |gradJ(x)|^2: ", scalar_product(grad,grad)
+
+    print*,"------------------------------------------------------"
+    
+    print"(A 5X A 18X A 13X A 20X)", "eps","J(x-eps.gradJ)","res", "1D0-res"
+    do pow=-1,maxPower, -1
+        eps=1D1**pow
+        Jeps=fctCout(N, Ntrc, L, dt, nDt, tRealFct, u, x-eps*grad, &
+                        alph, beta, gamm, rho )
+
+        res=((J0-Jeps)/(eps*scalar_product(grad,grad)))
+
+        if (pow.eq.-8) then
+            print*,"--------------| half type precision |-----------------"
+        end if
+        print"(A I3  E23.15  F20.15 F20.15 A L1)",&
+             "10^",pow, Jeps, res, 1D0-res, " ",(abs(1D0-res).lt.eps)
+    end do
+    contains
+    !------------------------------------------------------
+    function fctCout(N, Ntrc, L, dt, nDt, tReal, u, x, &
+                        alph, beta, gamm, rho )
+
+        intent(in)                      ::  N, Ntrc, L, dt, nDt, u, x, &
+                                            alph, beta, gamm, rho
+        integer                         ::  N, Ntrc, nDt
+    
+        double precision, dimension(N)  ::  alph, beta, gamm, rho, &
+                                            x, Lx
+        double precision                ::  fctCout, dt, L, tReal
+        double precision, dimension(nDt+1,N)    ::  u
+        
+        Lx=kdvTLMPropagator(N, Ntrc, L, dt, nDt, tReal,&
+                            u, x, alph, beta, gamm, rho)
+        
+        fctCout=scalar_product(Lx,Lx)/2D0
+    end function fctCout
+
+    function gradFC(N, Ntrc, L, dt, nDt, tReal, u, x, &
+                        alph, beta, gamm, rho )
+        intent(in)                      ::  N, Ntrc, L, dt, nDt, u, x, &
+                                            alph, beta, gamm, rho
+        integer                         ::  N, Ntrc, nDt
+    
+        double precision, dimension(N)  ::  alph, beta, gamm, rho, &
+                                            x, gradFC
+        double precision                ::  dt, L, tReal
+        double precision, dimension(nDt+1,N)    ::  u
+
+
+        gradFC=kdvTLMSingularOp(N, Ntrc, L, dt, nDt, tReal, u, x, &
+                                alph, beta, gamm, rho) 
+    end function gradFC
+
+end subroutine testGradient
 
 end module kdvTLMTest

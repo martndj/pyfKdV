@@ -166,7 +166,7 @@ subroutine c_kdvLanczos(N, Ntrc, L, dt, nDt, u, Nev, V, sv, &
     real(c_double), intent(out), dimension(Nev)     ::  sv
     
     ! note that in C the indices will be reversed!:
-    real(c_double), intent(out), dimension(N, Nev)   ::  V
+    real(c_double), intent(out), dimension(Nev, N)   ::  V
     real(c_double), intent(in), dimension(N, nDt+1)     ::  u
     
     ! ...hence the transpose:

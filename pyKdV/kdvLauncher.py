@@ -5,7 +5,7 @@ from kdvParam import *
 
 import fKdV
 
-class Launcher():
+class Launcher(object):
     """
     """
     class LauncherError(Exception):
@@ -58,17 +58,6 @@ class Launcher():
 
         return traj
     
-    #------------------------------------------------------
-
-    def lanczos(self, traj, Nev):
-
-        grid=self.grid
-        param=self.param
-
-        sVal, sVec=fKdV.fKdVLanczos(grid.N, grid.Ntrc, grid.L,
-                                    traj.dt, traj.nDt, traj.getData(), Nev,
-                                    param[1], param[2], param[3], param[4])
-        return sVal, sVec
 
     #------------------------------------------------------
     #----| Private methods |-------------------------------

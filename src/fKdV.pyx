@@ -155,7 +155,7 @@ def fKdVLanczos(int N, int Ntrc, double L,
                     double[::1] gamm not None,
                     double[::1] rho not None):
 
-    cdef double[:,::1] V = np.empty(shape=(N,Nev))
+    cdef double[:,::1] V = np.empty(shape=(Nev, N))
     cdef double[::1] sv = np.empty(Nev)
 
     c_kdvlanczos(N, Ntrc, L, dt, nDt, &u[0,0], 

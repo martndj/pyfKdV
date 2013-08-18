@@ -161,5 +161,7 @@ def fKdVLanczos(int N, int Ntrc, double L,
     c_kdvlanczos(N, Ntrc, L, dt, nDt, &u[0,0], 
                     Nev, &V[0,0], &sv[0], 
                     &alph[0], &beta[0], &gamm[0], &rho[0])
-    return np.array(sv), (np.array(V)).transpose()
+
+    # descending sv order
+    return np.array(sv[::-1]), ((np.array(V)).transpose())[::-1,:]
 

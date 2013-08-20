@@ -1,9 +1,6 @@
 import numpy as np
 from pseudoSpec1D import *
 
-class ParamError(Exception):
-    pass
-
 class Param(object):
     """
      augmented dufferential system parameters
@@ -30,20 +27,40 @@ class Param(object):
 
         <TODO>  if param=None return null function
     """
+    class ParamError(Exception):
+        pass
 
-    def __init__(self, grid, forcing, alpha, beta, gamma, rho):
+
+    def __init__(self, grid, alpha=None, beta=None, gamma=None, rho=None,
+                    forcing=None):
 
         if not (isinstance(grid, SpectralGrid)):
-            raise ParamError("grid must be an instance of SpectralGrid")
+            raise self.ParamError("grid must be an instance of SpectralGrid")
 
         self.grid=grid
-        self.forcing=forcing
-        self.alpha=alpha
-        self.beta=beta
-        self.gamma=gamma
-        self.rho=rho
+        self.forcing=self.__setFunc(forcing)
+        self.alpha=self.__setFunc(alpha)
+        self.beta=self.__setFunc(beta)
+        self.gamma=self.__setFunc(gamma)
+        self.rho=self.__setFunc(rho)
 
         self.shape=(5,grid.N)
+
+    #----------------------------------------------------------------
+
+    def __setFunc(self, fct):
+        def funcNulle(x):
+            return 0.
+        if fct==None:
+            return funcNulle
+        elif callable(fct):
+            return fct
+        else:
+            raise self.ParamError("<None|function>")
+            
+
+
+    #----------------------------------------------------------------
 
     def __getitem__(self,i):
         if i==0:

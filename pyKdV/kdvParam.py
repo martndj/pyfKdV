@@ -49,10 +49,15 @@ class Param(object):
     #----------------------------------------------------------------
 
     def __setFunc(self, fct):
-        def funcNulle(x):
-            return 0.
+        def wrapper(c):
+            def funcConst(x):
+                return float(c)
+            return funcConst
+        
         if fct==None:
-            return funcNulle
+            return wrapper(0.)
+        elif isinstance(fct, (int, float)):
+            return wrapper(fct)
         elif callable(fct):
             return fct
         else:

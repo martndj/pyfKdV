@@ -22,7 +22,7 @@ def fKdVPropagator(int N, int Ntrc, double L,
     c_kdvpropagator(N, Ntrc, L, dt, nDt, &ic[0], &c_traj[0,0], 
                     &alph[0], &beta[0], &gamm[0], &rho[0], &forc[0])
 
-    return c_traj
+    return np.array(c_traj)
 
 #--------------------------------------------------------------------
 #--------------------------------------------------------------------
@@ -163,5 +163,5 @@ def fKdVLanczos(int N, int Ntrc, double L,
                     &alph[0], &beta[0], &gamm[0], &rho[0])
 
     # descending sv order
-    return np.array(sv[::-1]), ((np.array(V)).transpose())[::-1,:]
+    return np.array(sv[::-1]), np.array(V[::-1,:]).transpose()
 

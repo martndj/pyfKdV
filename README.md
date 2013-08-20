@@ -131,4 +131,4 @@ Configuring and launching an integration
 
 Acknoledgement
 --------------
-A special thank to [Mauro Werder](http://www.sfu.ca/~mawerder/), through the blog of whom I could understand [how to link python and fortran](htt    p://www.sfu.ca/~mawerder/notes/calling_fortran_from_python.html)!
+A special thank to [Mauro Werder](http://www.sfu.ca/~mawerder/), through the blog of whom I could understand [how to link python and fortran](http://www.sfu.ca/~mawerder/notes/calling_fortran_from_python.html)!

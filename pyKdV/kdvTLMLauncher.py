@@ -19,15 +19,12 @@ class TLMLauncher(object):
     #----| Init |------------------------------------------
     #------------------------------------------------------
 
-    def __init__(self, grid, param, traj, pert):
-        if not(isinstance(grid, SpectralGrid)):
-            raise TLMLauncherError("grid <SpectralGrid>")
-        self.grid=grid
-
-        if not(isinstance(grid, SpectralGrid)):
+    def __init__(self, param, traj, pert):
+        if not(isinstance(param, Param)):
             raise TLMLauncherError("param <Param>")
 
         self.param=param
+        self.grid=param.grid
         
         if not(isinstance(traj, Trajectory)):
             raise TLMLauncherError("traj <Trajectory>")
@@ -82,20 +79,20 @@ class TLMLauncher(object):
     
     #-------------------------------------------------------
 
-    def adjoint(self, tInt, fullPertTraj=False, resetTReal=True):
+    def adjoint(self, tInt, resetTReal=True): #, fullPertTraj=False
         
 
         dt=self.refTraj.dt
         nDt=int(tInt/dt)
         
-        if fullPertTraj:
-            self.fullPertTraj=True
-            self.pertTraj=Trajectory(self.grid)
-            self.pertTraj.initialize(self.pert, tInt, dt)
+        #if fullPertTraj:
+        #    self.fullPertTraj=True
+        #    self.pertTraj=Trajectory(self.grid)
+        #    self.pertTraj.initialize(self.pert, tInt, dt)
 
 
-        return self.__kdvTLMProp_Fortran_Adj(dt, nDt, 
-                                fullPertTraj=fullPertTraj)
+        return self.__kdvTLMProp_Fortran_Adj(dt, nDt) 
+        #                        fullPertTraj=fullPertTraj)
 
     
     #-------------------------------------------------------
@@ -204,35 +201,16 @@ class TLMLauncher(object):
 if __name__=='__main__':
     import matplotlib.pyplot as plt
     from kdvLauncher import *
+    from kdvMisc import soliton, gauss
 
     grid=SpectralGrid(150,300.)
     tInt=3.
     maxA=2.
 
-    def funcNulle(x):
-        return 0.
-    def funcNeg(x):
-        return -1.
-    def funcPos(x):
-        return 1.
 
-    param=Param(grid, funcNulle, funcNulle, funcPos, funcNeg, funcNulle)
+    param=Param(grid, beta=1., gamma=-1.)
 
-    def soliton(grid, x0, amp, alpha, beta, gamma):
-        """ 
-        Eigen solution of the  system
-    
-        """
-        N=grid.N
-        fct=np.zeros(N, dtype=np.float64)
-    
-        sgn=beta*gamma/np.abs(beta*gamma)
-        amp=np.abs(amp)*sgn
-        discr=np.sqrt(amp*beta/(12.*gamma))*(grid.x-x0)
-        fct=amp*np.cosh(discr)**(-2)
-    
-        return fct 
-    ic=soliton(grid, 0., 1., 0., 1., -1.)
+    ic=soliton(param, 0., 1.)
 
     # NL model integration
     launcher=Launcher(param, ic)
@@ -240,15 +218,14 @@ if __name__=='__main__':
     traj=launcher.integrate(tInt, maxA)
 
 
-    pert=0.1*np.exp(-(5.*np.pi*(grid.x-10)/grid.L)**2)
+    pert=0.1*gauss(param, -10., grid.L/25. )
 
-    tLauncher=TLMLauncher(grid, param, traj, pert)
+    tLauncher=TLMLauncher(param, traj, pert)
     fPert=tLauncher.integrate(tInt, fullPertTraj=True)
 
-    aLauncher=TLMLauncher(grid, param, traj, fPert)
-    aPert=aLauncher.adjoint(tInt, fullPertTraj=True)
+    aPert=tLauncher.adjoint(tInt)
 
-    sLauncher=TLMLauncher(grid, param, traj, pert)
+    sLauncher=TLMLauncher(param, traj, pert)
     sPert=sLauncher.singularOp(tInt)
 
     plt.plot(grid.x, fPert)

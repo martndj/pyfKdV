@@ -22,8 +22,8 @@ TODO:
  * Minizing algorithm
  * Data Assimilation OSSE
 
-About Korteweg-de-Vrie system and it's use in atmospheric dynamics
-------------------------------------------------------------------
+About Korteweg-de-Vrie _augmented_ system and it's use in atmospheric dynamics
+---------------------------------------------------------------------------
 
  * [Warn, T. and Brasnett, B. The amplification and capture of atmospheric solitons by topography:38, 1982.](http://journals.ametsoc.org/doi/abs/10.1175/1520-0469(1983\)040%3C0028%3ATAACOA%3E2.0.CO%3B2)
  * [Hodyss, D. and Nathan, T. R. Solitary rossby waves in zonally varying jet ows. Geophys. Astrophys., 262, 2002.](http://www.tandfonline.com/doi/abs/10.1080/03091920290011012#.Ug1egSHPTMU)
@@ -31,7 +31,7 @@ About Korteweg-de-Vrie system and it's use in atmospheric dynamics
 
 Compiling informations
 ----------------------
-### Fortrab Dependencies
+### Fortran Dependencies
  * [FFTW3](http://www.fftw.org/): fortran 77 fast-fourier transform librairy (http://www.fftw.org/)
  * [ARPACK](http://www.caam.rice.edu/software/ARPACK/) is a collection of Fortran77 subroutines designed to solve large scale eigenvalue problems.
 
@@ -75,7 +75,7 @@ Compiling informations
  
         export PYTHONPATH=".:<path to ./pyKdV>"
 
-    Adding this line to your startup script (.bashrc or .profile) is a way to do it.
+    Adding these export lines to your startup script (.bashrc or .profile) is a way to do it.
 
  4. Have fun!
 

@@ -30,6 +30,22 @@ function centeredRand()
 end function centeredRand
 
 !-------------------------------------------------------------------!
+
+function initRandVec(N, Ntrc)
+    intent(in)                      ::  N, Ntrc
+    double precision, dimension(N)  ::  initRandVec
+    integer                         ::  j, N, Ntrc
+
+    call random_seed()
+    do j=1,N
+        initRandVec(j)=centeredRand()
+    end do
+    ! explicit filtering
+    call specFilt(initRandVec, N, Ntrc)
+end function
+
+
+!-------------------------------------------------------------------!
 !-------------------------------------------------------------------!
 function testRhoCenteredImplicitAdj(N, Ntrc, L, dt, diff)
     intent(in)                      ::  N, Ntrc, L, dt
@@ -44,19 +60,15 @@ function testRhoCenteredImplicitAdj(N, Ntrc, L, dt, diff)
     double precision, parameter     :: tolerance=1D-14
 
     ! Generating random fields
-    call random_seed()
-    do j=1, N
-        x(j)=centeredRand()
-        y(j)=centeredRand()
-        rho(j)=centeredRand()
-    end do
+    x=initRandVec(N, Ntrc)
+    y=initRandVec(N, Ntrc)
+    rho=initRandVec(N, Ntrc)
 
 
     Ly=rhoCenteredImplicit(N, Ntrc, dt, y,rho)
-    LAdj_x=rhoCenteredImplicitAdj(N, Ntrc, dt, x,rho)
-
-    !LAdj_x=rhoCenteredImplicitAdj(N, Ntrc, dt, x,rho)
-    !  NOT AUTOADJOINT!
+    !LAdj_x=rhoCenteredImplicitAdj(N, Ntrc, dt, x, rho)
+    LAdj_x=rhoCenteredImplicit(N, Ntrc, dt, x,rho)
+    !  AUTOADJOINT?
 
     ! adjoint validity test
     diff=dabs(scalar_product(x,Ly)-scalar_product(LAdj_x,y))
@@ -73,7 +85,7 @@ function testOpE1Adj(N, Ntrc, L, dt, pAmp, diff)
 
     integer                         ::  N, Ntrc, j, i
     
-    double precision, dimension(N)  ::  u, alph, beta, gamm, rho
+    double precision, dimension(N)  ::  alph, beta, gamm, rho, u
     double precision, dimension(3,N)::  x, y, Ly, LAdj_x
     double precision                ::  L, diff, dt, pAmp
     logical                         ::  testOpE1Adj
@@ -81,30 +93,16 @@ function testOpE1Adj(N, Ntrc, L, dt, pAmp, diff)
     double precision, parameter     :: tolerance=1D-14
 
     ! Generating random fields
-    call random_seed()
-    do j=1, N
-        u(j)=centeredRand()
-        do i=1,3
-            x(i,j)=pAmp*centeredRand()
-            y(i,j)=pAmp*centeredRand()
-        end do
-        alph(j)=centeredRand()
-        beta(j)=centeredRand()
-        gamm(j)=centeredRand()
-        rho(j)=centeredRand()
-    end do
-
-    ! explicit filtering
-    call specFilt(u, N, Ntrc)
+    u=initRandVec(N, Ntrc)
     do i=1,3
-        call specFilt(x(i,:), N, Ntrc)
-        call specFilt(y(i,:), N, Ntrc)
+        x(i,:)=pAmp*initRandVec(N, Ntrc)
+        y(i,:)=pAmp*initRandVec(N, Ntrc)
     end do
-    call specFilt(alph, N, Ntrc)
-    call specFilt(beta, N, Ntrc)
-    call specFilt(gamm, N, Ntrc)
-    call specFilt(rho, N, Ntrc)
-
+    alph=initRandVec(N, Ntrc)
+    beta=initRandVec(N, Ntrc)
+    gamm=initRandVec(N, Ntrc)
+    rho=initRandVec(N, Ntrc)
+    
     Ly=opE1(N, Ntrc, L, dt, u, y, alph, beta, gamm, rho)
     LAdj_x=opE1Adj(N, Ntrc, L, dt, u, x, alph, beta, gamm, rho)
 
@@ -123,7 +121,7 @@ function testOpPnAdj(N, Ntrc, L, dt, pAmp, diff)
 
     integer                         ::  N, Ntrc, j, i
     
-    double precision, dimension(N)  ::  u, alph, beta, gamm, rho
+    double precision, dimension(N)  ::  alph, beta, gamm, rho, u
     double precision, dimension(3,N)::  x, y, Ly, LAdj_x
     double precision                ::  L, diff, dt, pAmp
     logical                         ::  testOpPnAdj
@@ -131,29 +129,16 @@ function testOpPnAdj(N, Ntrc, L, dt, pAmp, diff)
     double precision, parameter     :: tolerance=1D-14
 
     ! Generating random fields
-    call random_seed()
-    do j=1, N
-        u(j)=centeredRand()
-        do i=1,3
-            x(i,j)=pAmp*centeredRand()
-            y(i,j)=pAmp*centeredRand()
-        end do
-        alph(j)=centeredRand()
-        beta(j)=centeredRand()
-        gamm(j)=centeredRand()
-        rho(j)=centeredRand()
-    end do
-
-    ! explicit filtering
-    call specFilt(u, N, Ntrc)
+    u=initRandVec(N, Ntrc)
     do i=1,3
-        call specFilt(x(i,:), N, Ntrc)
-        call specFilt(y(i,:), N, Ntrc)
+        x(i,:)=pAmp*initRandVec(N, Ntrc)
+        y(i,:)=pAmp*initRandVec(N, Ntrc)
     end do
-    call specFilt(alph, N, Ntrc)
-    call specFilt(beta, N, Ntrc)
-    call specFilt(gamm, N, Ntrc)
-    call specFilt(rho, N, Ntrc)
+    alph=initRandVec(N, Ntrc)
+    beta=initRandVec(N, Ntrc)
+    gamm=initRandVec(N, Ntrc)
+    rho=initRandVec(N, Ntrc)
+
 
     Ly=opPn(N, Ntrc, L, dt, u, y, alph, beta, gamm, rho)
     LAdj_x=opPnAdj(N, Ntrc, L, dt, u, x, alph, beta, gamm, rho)
@@ -167,11 +152,11 @@ end function testOpPnAdj
 
 !-------------------------------------------------------------------!
 
-function testOpSAdj(N, diff)
-    intent(in)                      ::  N
+function testOpSAdj(N, Ntrc, diff)
+    intent(in)                      ::  N, Ntrc
     intent(out)                     ::  diff
 
-    integer                         ::  N, j, i
+    integer                         ::  N, Ntrc, j, i
     double precision                ::  diff
     
     double precision, dimension(3,N)::  x, y, Ly, LAdj_x
@@ -180,12 +165,9 @@ function testOpSAdj(N, diff)
     double precision, parameter     :: tolerance=1D-14
 
     ! Generating random fields
-    call random_seed()
-    do j=1, N
-        do i=1,3
-            x(i,j)=centeredRand()
-            y(i,j)=centeredRand()
-        end do
+    do i=1,3
+        x(i,:)=initRandVec(N, Ntrc)
+        y(i,:)=initRandVec(N, Ntrc)
     end do
 
     Ly=opS(N, y)
@@ -213,35 +195,18 @@ function testOpSPnAdj(N, Ntrc, L, dt, pAmp, diff)
     double precision, parameter     :: tolerance=1D-14
 
     ! Generating random fields
-    call random_seed()
-    do j=1, N
-        u(j)=centeredRand()
-        do i=1,3
-            x(i,j)=pAmp*centeredRand()
-            y(i,j)=pAmp*centeredRand()
-        end do
-        alph(j)=centeredRand()
-        beta(j)=centeredRand()
-        gamm(j)=centeredRand()
-        rho(j)=centeredRand()
-    end do
-
-    ! explicit filtering
-    call specFilt(u, N, Ntrc)
+    u=initRandVec(N, Ntrc)
     do i=1,3
-        call specFilt(x(i,:), N, Ntrc)
-        call specFilt(y(i,:), N, Ntrc)
+        x(i,:)=pAmp*initRandVec(N, Ntrc)
+        y(i,:)=pAmp*initRandVec(N, Ntrc)
     end do
-    call specFilt(alph, N, Ntrc)
-    call specFilt(beta, N, Ntrc)
-    call specFilt(gamm, N, Ntrc)
-    call specFilt(rho, N, Ntrc)
+    alph=initRandVec(N, Ntrc)
+    beta=initRandVec(N, Ntrc)
+    gamm=initRandVec(N, Ntrc)
+    rho=initRandVec(N, Ntrc)
 
-    Ly=y
-    Ly=opPn(N, Ntrc, L, dt, u, Ly, alph, beta, gamm, rho)
     Ly=opS(N, Ly)
-    LAdj_x=x
-    LAdj_x=opSAdj(N, LAdj_x)
+    LAdj_x=opSAdj(N, x)
     LAdj_x=opPnAdj(N, Ntrc, L, dt, u, LAdj_x, alph, beta, gamm, rho)
 
     ! adjoint validity test
@@ -250,6 +215,47 @@ function testOpSPnAdj(N, Ntrc, L, dt, pAmp, diff)
 
 end function testOpSPnAdj
 
+
+!-------------------------------------------------------------------!
+
+
+function testOpPnE1Adj(N, Ntrc, L, dt, pAmp, diff)
+    intent(in)                      ::  N, Ntrc, L, dt, pAmp
+    intent(out)                     ::  diff
+
+    integer                         ::  N, Ntrc, j, i
+    
+    double precision, dimension(N)  ::  alph, beta, gamm, rho
+    double precision, dimension(2,N)::  u
+    double precision, dimension(3,N)::  x, y, Ly, LAdj_x
+    double precision                ::  L, diff, dt, pAmp
+    logical                         ::  testOpPnE1Adj
+
+    double precision, parameter     :: tolerance=1D-14
+
+    ! Generating random fields
+    u(1,:)=initRandVec(N, Ntrc)
+    u(2,:)=initRandVec(N, Ntrc)
+    do i=1,3
+        x(i,:)=pAmp*initRandVec(N, Ntrc)
+        y(i,:)=pAmp*initRandVec(N, Ntrc)
+    end do
+    alph=initRandVec(N, Ntrc)
+    beta=initRandVec(N, Ntrc)
+    gamm=initRandVec(N, Ntrc)
+    rho=initRandVec(N, Ntrc)
+
+    
+    Ly=opE1(N, Ntrc, L, dt, u(1,:), y,  alph, beta, gamm, rho)
+    Ly=opPn(N, Ntrc, L, dt, u(2,:), Ly, alph, beta, gamm, rho)
+    LAdj_x=opPnAdj(N, Ntrc, L, dt, u(2,:), x, alph, beta, gamm, rho)
+    LAdj_x=opE1Adj(N, Ntrc, L, dt, u(1,:), LAdj_x, alph, beta, gamm, rho)
+
+    ! adjoint validity test
+    diff=dabs(scalarNVec(x,Ly,3, N)-scalarNVec(LAdj_x,y,3, N))
+    testOpPnE1Adj=(diff .le. tolerance)
+
+end function testOpPnE1Adj
 
 !-------------------------------------------------------------------!
 
@@ -268,39 +274,22 @@ function testOpSPnE1Adj(N, Ntrc, L, dt, pAmp, diff)
 
     double precision, parameter     :: tolerance=1D-14
 
-    ! Generating random fields
-    call random_seed()
-    do j=1, N
-        u(1,j)=centeredRand()
-        u(2,j)=centeredRand()
-        do i=1,3
-            x(i,j)=pAmp*centeredRand()
-            y(i,j)=pAmp*centeredRand()
-        end do
-        alph(j)=centeredRand()
-        beta(j)=centeredRand()
-        gamm(j)=centeredRand()
-        rho(j)=centeredRand()
-    end do
-
-    ! explicit filtering
-    call specFilt(u(1,:), N, Ntrc)
-    call specFilt(u(2,:), N, Ntrc)
+    u(1,:)=initRandVec(N, Ntrc)
+    u(2,:)=initRandVec(N, Ntrc)
     do i=1,3
-        call specFilt(x(i,:), N, Ntrc)
-        call specFilt(y(i,:), N, Ntrc)
+        x(i,:)=pAmp*initRandVec(N, Ntrc)
+        y(i,:)=pAmp*initRandVec(N, Ntrc)
     end do
-    call specFilt(alph, N, Ntrc)
-    call specFilt(beta, N, Ntrc)
-    call specFilt(gamm, N, Ntrc)
-    call specFilt(rho, N, Ntrc)
+    alph=initRandVec(N, Ntrc)
+    beta=initRandVec(N, Ntrc)
+    gamm=initRandVec(N, Ntrc)
+    rho=initRandVec(N, Ntrc)
 
-    Ly=y
-    Ly=opE1(N, Ntrc, L, dt, u(1,:), Ly,  alph, beta, gamm, rho)
+
+    Ly=opE1(N, Ntrc, L, dt, u(1,:), y,  alph, beta, gamm, rho)
     Ly=opPn(N, Ntrc, L, dt, u(2,:), Ly, alph, beta, gamm, rho)
     Ly=opS(N, Ly)
-    LAdj_x=x
-    LAdj_x=opSAdj(N, LAdj_x)
+    LAdj_x=opSAdj(N, x)
     LAdj_x=opPnAdj(N, Ntrc, L, dt, u(2,:), LAdj_x, alph, beta, gamm, rho)
     LAdj_x=opE1Adj(N, Ntrc, L, dt, u(1,:), LAdj_x, alph, beta, gamm, rho)
 
@@ -309,6 +298,7 @@ function testOpSPnE1Adj(N, Ntrc, L, dt, pAmp, diff)
     testOpSPnE1Adj=(diff .le. tolerance)
 
 end function testOpSPnE1Adj
+
 
 
 !-------------------------------------------------------------------!
@@ -328,25 +318,14 @@ function testOpAllAdj(N, Ntrc, L, dt, pAmp, diff)
     double precision, parameter     :: tolerance=1D-14
 
     ! Generating random fields
-    call random_seed()
-    do j=1, N
-        u(1,j)=centeredRand()
-        u(2,j)=centeredRand()
-        x(j)=pAmp*centeredRand()
-        y(j)=pAmp*centeredRand()
-        alph(j)=centeredRand()
-        beta(j)=centeredRand()
-        gamm(j)=centeredRand()
-        rho(j)=centeredRand()
-    end do
-
-    ! explicit filtering
-    call specFilt(u(1,:), N, Ntrc)
-    call specFilt(u(2,:), N, Ntrc)
-    call specFilt(alph, N, Ntrc)
-    call specFilt(beta, N, Ntrc)
-    call specFilt(gamm, N, Ntrc)
-    call specFilt(rho, N, Ntrc)
+    u(1,:)=initRandVec(N, Ntrc)
+    u(2,:)=initRandVec(N, Ntrc)
+    x=pAmp*initRandVec(N, Ntrc)
+    y=pAmp*initRandVec(N, Ntrc)
+    alph=initRandVec(N, Ntrc)
+    beta=initRandVec(N, Ntrc)
+    gamm=initRandVec(N, Ntrc)
+    rho=initRandVec(N, Ntrc)
 
 
     ! Direct
@@ -393,25 +372,14 @@ function testKdvTLMPseudoSpecAdj(N, Ntrc, L, pAmp, diff)
     double precision, parameter     :: tolerance=1D-14
 
     ! Generating random fields
-    call random_seed()
-    do j=1, N
-        u(j)=centeredRand()
-        x(j)=pAmp*centeredRand()
-        y(j)=pAmp*centeredRand()
-        alph(j)=centeredRand()
-        beta(j)=centeredRand()
-        gamm(j)=centeredRand()
-        rho(j)=centeredRand()
-    end do
+    u=initRandVec(N, Ntrc)
+    x=pAmp*initRandVec(N, Ntrc)
+    y=pAmp*initRandVec(N, Ntrc)
+    alph=initRandVec(N, Ntrc)
+    beta=initRandVec(N, Ntrc)
+    gamm=initRandVec(N, Ntrc)
+    rho=initRandVec(N, Ntrc)
 
-    ! explicit filtering
-    call specFilt(u, N, Ntrc)
-    call specFilt(x, N, Ntrc)
-    call specFilt(y, N, Ntrc)
-    call specFilt(alph, N, Ntrc)
-    call specFilt(beta, N, Ntrc)
-    call specFilt(gamm, N, Ntrc)
-    call specFilt(rho, N, Ntrc)
 
     Ly=kdvTLMPseudoSpec(N, Ntrc, L, u, y, alph, beta, gamm, rho)
     LAdj_x=kdvTLMPseudoSpecAdj(N, Ntrc, L, u, x, alph, beta, gamm, rho)
@@ -442,31 +410,16 @@ function testKdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, pAmp, diff)
     double precision, parameter     :: tolerance=1D-14
 
     ! Generating random fields
-    call random_seed()
     do j=1, nDt+1
-        do k=1, N
-            u(j,k)=centeredRand()
-        end do
+        u(j,:)=initRandVec(N, Ntrc)
     end do
-    do j=1, N
-        x(j)=pAmp*centeredRand()
-        y(j)=pAmp*centeredRand()
-        alph(j)=centeredRand()
-        beta(j)=centeredRand()
-        gamm(j)=centeredRand()
-        rho(j)=centeredRand()
-    end do
+    x=pAmp*initRandVec(N, Ntrc)
+    y=pAmp*initRandVec(N, Ntrc)
+    alph=initRandVec(N, Ntrc)
+    beta=initRandVec(N, Ntrc)
+    gamm=initRandVec(N, Ntrc)
+    rho=initRandVec(N, Ntrc)
 
-    ! explicit filtering
-    do j=1, nDt+1
-        call specFilt(u(j,:), N, Ntrc)
-    end do
-    call specFilt(x, N, Ntrc)
-    call specFilt(y, N, Ntrc)
-    call specFilt(alph, N, Ntrc)
-    call specFilt(beta, N, Ntrc)
-    call specFilt(gamm, N, Ntrc)
-    call specFilt(rho, N, Ntrc)
 
     Ly=kdvTLMPropagator(N, Ntrc, L, dt, nDt, tReal,&
                         u, y, alph, beta, gamm, rho)
@@ -512,30 +465,15 @@ subroutine testGradient(N, Ntrc, L, dt, nDt, pAmp, maxPower)
     double precision, parameter     :: tolerance=1D-14
 
     ! Generating random fields
-    call random_seed()
     do j=1, nDt+1
-        do k=1, N
-            u(j,k)=centeredRand()
-        end do
+        u(j,:)=initRandVec(N, Ntrc)
     end do
-    do j=1, N
-        x(j)=pAmp*centeredRand()
-        alph(j)=centeredRand()
-        beta(j)=centeredRand()
-        gamm(j)=centeredRand()
-        rho(j)=centeredRand()
-    end do
+    x=pAmp*initRandVec(N, Ntrc)
+    alph=initRandVec(N, Ntrc)
+    beta=initRandVec(N, Ntrc)
+    gamm=initRandVec(N, Ntrc)
+    rho=initRandVec(N, Ntrc)
 
-    ! explicit filtering
-    do j=1, nDt+1
-        call specFilt(u(j,:), N, Ntrc)
-    end do
-    call specFilt(x, N, Ntrc)
-    call specFilt(alph, N, Ntrc)
-    call specFilt(beta, N, Ntrc)
-    call specFilt(gamm, N, Ntrc)
-    call specFilt(rho, N, Ntrc)
-    
 
     J0=fctCout(N, Ntrc, L, dt, nDt, tRealFct, u, x, &
                         alph, beta, gamm, rho )

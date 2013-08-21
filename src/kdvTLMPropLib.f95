@@ -204,7 +204,7 @@ function opPnAdj(N, Ntrc, L, dt, u, aBuff, alph, beta, gamm, rho)
     double precision, dimension(3,N)::  aBuff, opPnAdj
 
     opPnAdj(1,:)=aBuff(1,:) &
-                 +rhoCenteredImplicit(N, Ntrc, dt, aBuff(3,:), rho) 
+                 +rhoCenteredImplicitAdj(N, Ntrc, dt, aBuff(3,:), rho) 
     opPnAdj(2,:)=aBuff(2,:) &
                  +2D0*dt*kdvTLMPseudoSpecAdj(N, Ntrc, L, u, aBuff(3,:),&
                                             alph, beta, gamm)
@@ -330,7 +330,8 @@ function rhoCenteredImplicitAdj(N, Ntrc, dt, u, rho)
     double precision                ::  dt
     double precision, dimension(N)  ::  u, rho, rhoCenteredImplicitAdj
 
-    rhoCenteredImplicitAdj=specFiltCopy(u, N, Ntrc)
+    rhoCenteredImplicitAdj=u
+    call specFilt(rhoCenteredImplicitAdj, N, Ntrc)
     rhoCenteredImplicitAdj=(1D0-dt*rho)/(1D0+dt*rho)*rhoCenteredImplicitAdj
 end function rhoCenteredImplicitAdj
 

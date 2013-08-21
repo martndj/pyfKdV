@@ -92,7 +92,6 @@ Configuring and launching an integration
         import random as rnd 
         from pyfKdV import *
         import matplotlib.pyplot as plt 
-        import pickle
         
         #----| Grid configuration |-------------------
         grid=SpectralGrid(150,300.)

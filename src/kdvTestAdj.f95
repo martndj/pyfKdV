@@ -14,7 +14,7 @@ N=3*Ntrc+1
 L=3D2
 
 pAmp=1D-1
-dt=1D-2
+dt=1D-1
 nDt=5
 
 maxPower=-10
@@ -37,6 +37,7 @@ else
 end if
 
 if (test) then
+    print *, 
     print *, 
     print *, '============================================================='
     print *, '============================================================='
@@ -65,6 +66,7 @@ end if
 
 if (test) then
     print *, 
+    print *, 
     print *, '============================================================='
     print *, '============================================================='
     print *, 'Testing adjoint validity of opE1'
@@ -92,8 +94,8 @@ if (test) then
     print *, 
     print *, '============================================================='
     print *, 'Testing adjoint validity of opS'
-    print *, N
-    if (testOpSAdj(N, diff)) then 
+    print *, N, Ntrc
+    if (testOpSAdj(N, Ntrc, diff)) then 
         print *, ' >>Test succeeded:', diff
     else
         print *, ' >>Test FAILED', diff
@@ -103,6 +105,7 @@ end if
 
 
 if (test) then
+    print *, 
     print *, 
     print *, '============================================================='
     print *, '============================================================='
@@ -118,6 +121,22 @@ if (test) then
     
     print *, 
     print *, '============================================================='
+    print *, 'Testing adjoint validity of Pn.E1'
+    print *, N, Ntrc, L, dt, pAmp
+    if (testOpPnE1Adj(N, Ntrc, L, dt, pAmp, diff)) then 
+        print *, ' >>Test succeeded:', diff
+    else
+        print *, ' >>Test FAILED', diff
+        test=.false.
+    end if
+end if 
+
+
+if (test) then
+    print *, 
+    print *, 
+    print *, '============================================================='
+    print *, '============================================================='
     print *, 'Testing adjoint validity of S.Pn.E1'
     print *, N, Ntrc, L, dt, pAmp
     if (testOpSPnE1Adj(N, Ntrc, L, dt, pAmp, diff)) then 
@@ -126,7 +145,7 @@ if (test) then
         print *, ' >>Test FAILED', diff
         test=.false.
     end if
-end if 
+end if
 
 
 if (test) then
@@ -159,6 +178,8 @@ end if
 
 
 print *, 
+print *, 
+print *, '============================================================='
 print *, '============================================================='
 print *, 'Gradient test'
 call testGradient(N, Ntrc, L, dt, nDt, pAmp, maxPower)

@@ -1,8 +1,9 @@
 module kdvWrapC
 
-use iso_c_binding, only: c_double, c_int
+use iso_c_binding, only: c_double, c_int, c_bool
 use kdvProp
 use kdvTLMProp
+use kdvTLMTest
 use kdvLanczos
 
 contains
@@ -175,5 +176,25 @@ subroutine c_kdvLanczos(N, Ntrc, L, dt, nDt, u, Nev, V, sv, &
 
 end subroutine c_kdvLanczos
 
+!--------------------------------------------------------------------
+!--------------------------------------------------------------------
+
+subroutine c_testGradient(N, Ntrc, L, dt, nDt, maxPower, &
+                        u, p, alph, beta, gamm, rho, test) bind(c)
+    integer(c_int), intent(in), value           ::  N, Ntrc, nDt, maxPower
+    real(c_double), intent(in), value           ::  L, dt
+
+    real(c_double), intent(in), dimension(N)    ::  alph, beta, gamm, rho,&
+                                                    p
+    logical(c_bool), intent(out)                ::  test
+
+    ! note that in C the indices will be reversed!:
+    real(c_double), intent(in), dimension(N, nDt+1)     ::  u
+    
+    ! ...hence the transpose:
+    test=testGradient(N, Ntrc, L, dt, nDt, maxPower, &
+                        transpose(u), p, alph, beta, gamm, rho)
+
+end subroutine c_testGradient
 !====================================================================
 end module kdvWrapC

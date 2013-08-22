@@ -53,8 +53,8 @@ function kdvTLMPropagator(N, Ntrc, L, dt, nDt, tReal, u, p0, &
     ! R
     pf=pBuff(3,:)
     
-    ! Fr : Filtration
-    !call specFilt(pf, N, Ntrc)
+    !Fr : Filtration
+    call specFilt(pf, N, Ntrc)
 end function kdvTLMPropagator
 
 
@@ -78,7 +78,7 @@ function kdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, tReal, u, pf, &
     double precision, dimension(nDt+1, N)   ::  u, aTraj
     
     ! Fr* : Filtration
-    !call specFilt(pf, N, Ntrc)
+    call specFilt(pf, N, Ntrc)
 
     ! R*
     aBuff(3,:)=pf

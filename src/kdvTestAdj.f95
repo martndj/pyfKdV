@@ -24,7 +24,7 @@ allocate(ic(N), alph(N), beta(N), gamm(N), rho(N), forc(N))
 
 pAmp=1.D-1
 dt=1.D-2
-nDt=20
+nDt=10
 
 allocate(u(nDt+1, N))
 
@@ -52,15 +52,18 @@ print *,
 print *, 'Testing adjoint property with filtered noise initialisation'
 print *, '  |<x, Ly>-<L*x, y>| <= 1D-14 ?'
 
-print *, 
-print *, '============================================================='
-print *, 'Testing autoadjoint of specFilt'
-print *, N, Ntrc, L
-if (testAutoadjointSpecFilt(N, Ntrc, L, diff, xBuff(1,:), yBuff(1,:))) then 
-    print *, ' >>Test succeeded:', diff
-else
-    print *, ' >>Test FAILED', diff
-    test=.false.
+if (test) then
+    print *, 
+    print *, '============================================================='
+    print *, 'Testing autoadjoint of specFilt'
+    print *, N, Ntrc, L
+    if (testAutoadjointSpecFilt(N, Ntrc, L, diff, &
+                                xBuff(1,:), yBuff(1,:))) then 
+        print *, ' >>Test succeeded:', diff
+    else
+        print *, ' >>Test FAILED', diff
+        test=.false.
+    end if
 end if
 
 if (test) then
@@ -218,18 +221,20 @@ end if
 
 
 
-print *, 
-print *, 
-print *, '============================================================='
-print *, '============================================================='
-print *, 'Gradient test'
-    print *, N, Ntrc, L, dt, nDt, pAmp, maxPower
-if (testGradient(N, Ntrc, L, dt, nDt, pAmp, maxPower,&
-                                    u, xBuff(1,:), &
-                                    alph, beta, gamm, rho))  then
-    print *, ' >>Test succeeded!'
-else
-    print *, ' >>Test FAILED'
-    test=.false.
+if (test) then
+    print *, 
+    print *, 
+    print *, '============================================================='
+    print *, '============================================================='
+    print *, 'Gradient test'
+        print *, N, Ntrc, L, dt, nDt, maxPower
+    if (testGradient(N, Ntrc, L, dt, nDt, maxPower,&
+                                        u, xBuff(1,:), &
+                                        alph, beta, gamm, rho))  then
+        print *, ' >>Test succeeded!'
+    else
+        print *, ' >>Test FAILED'
+        test=.false.
+    end if
 end if
 end program kdvTestAdj

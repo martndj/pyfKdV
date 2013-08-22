@@ -438,7 +438,7 @@ end function testKdvTLMPropagatorAdj
 !-------------------------------------------------------------------!
 !-------------------------------------------------------------------!
 
-function testGradient(N, Ntrc, L, dt, nDt, pAmp, maxPower, &
+function testGradient(N, Ntrc, L, dt, nDt, maxPower, &
                         u, x, alph, beta, gamm, rho)
     !
     !   J(x-eps\grad J)-J(x)
@@ -448,7 +448,7 @@ function testGradient(N, Ntrc, L, dt, nDt, pAmp, maxPower, &
     !   <!> doit être valable jusqu'à la 
     !       *moitié* de la précision du type
     !------------------------------------------------------
-    intent(in)                      ::  N, Ntrc, L, dt, nDt, pAmp, &
+    intent(in)                      ::  N, Ntrc, L, dt, nDt, &
                                         maxPower, &
                                         u, x, alph, beta, gamm, rho
 

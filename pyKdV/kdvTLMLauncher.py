@@ -105,7 +105,19 @@ class TLMLauncher(object):
 
         return self.__kdvTLMSingularOp_Fortran(dt, nDt)
 
+    #-------------------------------------------------------
 
+    def gradTest(self):
+        
+        dt=self.refTraj.dt
+        nDt=int(tInt/dt)
+        grid=self.grid
+        param=self.param
+        fKdV.fKdVTestGradient(grid.N, grid.Ntrc, grid.L, 
+                                dt, nDt, -10, self.pert,
+                                self.refTraj.getData(),
+                                param[1], param[2], param[3], param[4])
+                                
     #------------------------------------------------------
     #----| Private methods |-------------------------------
     #------------------------------------------------------
@@ -221,6 +233,7 @@ if __name__=='__main__':
     pert=0.1*gauss(param, -10., grid.L/25. )
 
     tLauncher=TLMLauncher(param, traj, pert)
+    tLauncher.gradTest()
     fPert=tLauncher.integrate(tInt, fullPertTraj=True)
 
     aPert=tLauncher.adjoint(tInt)

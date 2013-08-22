@@ -275,7 +275,8 @@ function kdvTLMPseudoSpec(N, Ntrc, L, u, p, alph, beta, gamm, rho)
     if (present(rho)) then
         kdvTLMPseudoSpec= kdvTLMPseudoSpec - rho*dp 
     end if
-
+    
+    ! FR
     call specFilt(kdvTLMPseudoSpec, N, Ntrc)
 end function kdvTLMPseudoSpec
 
@@ -294,6 +295,9 @@ function kdvTLMPseudoSpecAdj(N, Ntrc, L, u, p, alph, beta, gamm, rho)
 
 
     du=specDiff(u, 1, N, Ntrc, L)
+
+    ! FR
+    call specFilt(p, N, Ntrc)
 
     ! R*
     d3p=-gamm*p

@@ -16,15 +16,15 @@ double precision, dimension(:, :), allocatable  ::  u
 
 Ntrc=150
 N=3*Ntrc+1
-L=3D2
+L=3.D2
 
 
 allocate(xBuff(3,N), yBuff(3, N))
 allocate(ic(N), alph(N), beta(N), gamm(N), rho(N), forc(N))
 
-pAmp=1D-1
-dt=1D-2
-nDt=5
+pAmp=1.D-1
+dt=1.D-2
+nDt=20
 
 allocate(u(nDt+1, N))
 
@@ -166,7 +166,6 @@ if (test) then
     end if
 end if 
 
-test=.true.
 if (test) then
     print *, 
     print *, 
@@ -185,9 +184,9 @@ if (test) then
 end if
 
 
-test=.true.
 if (test) then
     print *, 
+    print *, '============================================================='
     print *, '============================================================='
     print *, 'Testing adjoint validity of the sequence R.S.Pn.E1.I.F'
     print *, N, Ntrc, L, dt, pAmp
@@ -202,7 +201,6 @@ if (test) then
 end if
 
 
-test=.true.
 if (test) then
     print *, 
     print *, '============================================================='

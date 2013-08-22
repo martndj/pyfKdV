@@ -167,8 +167,8 @@ function opE1Adj(N, Ntrc, L, dt, u, aBuff, alph, beta, gamm, rho)
     opE1Adj(1,:)=aBuff(1,:)+aBuff(2,:) &
                  +dt*kdvTLMPseudoSpecAdj(N, Ntrc, L, u, aBuff(2,:),&
                                             alph, beta, gamm, rho)
-    opE1Adj(2,:)=0D0
-    opE1Adj(3,:)=0D0
+    opE1Adj(2,:)=0.0D0
+    opE1Adj(3,:)=0.0D0
     
 end function opE1Adj
 

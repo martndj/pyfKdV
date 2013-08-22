@@ -23,7 +23,7 @@ allocate(xBuff(3,N), yBuff(3, N))
 allocate(ic(N), alph(N), beta(N), gamm(N), rho(N), forc(N))
 
 pAmp=1D-1
-dt=1D-1
+dt=1D-2
 nDt=5
 
 allocate(u(nDt+1, N))
@@ -157,7 +157,8 @@ if (test) then
     print *, 'Testing adjoint validity of Pn.E1'
     print *, N, Ntrc, L, dt, pAmp
     if (testOpPnE1Adj(N, Ntrc, L, dt, pAmp, diff, &
-                        u(1,:), xBuff, yBuff, alph, beta, gamm, rho)) then 
+                       u(1,:), u(2,:), xBuff, yBuff,&
+                       alph, beta, gamm, rho)) then 
         print *, ' >>Test succeeded:', diff
     else
         print *, ' >>Test FAILED', diff
@@ -165,7 +166,7 @@ if (test) then
     end if
 end if 
 
-
+test=.true.
 if (test) then
     print *, 
     print *, 
@@ -174,7 +175,7 @@ if (test) then
     print *, 'Testing adjoint validity of S.Pn.E1'
     print *, N, Ntrc, L, dt, pAmp
     if (testOpSPnE1Adj(N, Ntrc, L, dt, pAmp, diff, &
-                        u(1:2,:), xBuff, yBuff, &
+                        u(1,:), u(2,:), xBuff, yBuff, &
                         alph, beta, gamm, rho)) then 
         print *, ' >>Test succeeded:', diff
     else
@@ -184,13 +185,14 @@ if (test) then
 end if
 
 
+test=.true.
 if (test) then
     print *, 
     print *, '============================================================='
     print *, 'Testing adjoint validity of the sequence R.S.Pn.E1.I.F'
     print *, N, Ntrc, L, dt, pAmp
     if (testOpAllAdj(N, Ntrc, L, dt, pAmp, diff, &
-                        u(1:2,:), xBuff, yBuff, &
+                        u(1,:),u(2,:), xBuff, yBuff, &
                         alph, beta, gamm, rho)) then 
         print *, ' >>Test succeeded:', diff
     else
@@ -200,6 +202,7 @@ if (test) then
 end if
 
 
+test=.true.
 if (test) then
     print *, 
     print *, '============================================================='

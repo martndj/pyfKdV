@@ -48,7 +48,7 @@ end function
 !-------------------------------------------------------------------!
 
 function testAutoAdjointSpecFilt(N, Ntrc, L, diff, x, y)
-    intent(in)                      ::  N, Ntrc, L
+    intent(in)                      ::  N, Ntrc, L, x, y
     intent(out)                     ::  diff
 
     integer                         ::  N, Ntrc, j
@@ -93,7 +93,7 @@ function testRhoCenteredImplicitAdj(N, Ntrc, L, dt, diff, x, y, rho)
     !  AUTOADJOINT?
 
     ! adjoint validity test
-    print *, '<x,Ly>=', scalar_product(x,Ly)
+    print *, '<x,Ly>= ', scalar_product(x,Ly)
     print *, '<L*x,y>=', scalar_product(LAdj_x,y)
     diff=dabs(scalar_product(x,Ly)-scalar_product(LAdj_x,y))
     testRhoCenteredImplicitAdj=(diff .le. tolerance)
@@ -105,7 +105,8 @@ end function testRhoCenteredImplicitAdj
 
 function testOpE1Adj(N, Ntrc, L, dt, pAmp, diff, &
                         u, x, y, alph, beta, gamm, rho)
-    intent(in)                      ::  N, Ntrc, L, dt, pAmp
+    intent(in)                      ::  N, Ntrc, L, dt, pAmp, &
+                                        u, x, y, alph, beta, gamm, rho
     intent(out)                     ::  diff
 
     integer                         ::  N, Ntrc, j, i
@@ -122,7 +123,7 @@ function testOpE1Adj(N, Ntrc, L, dt, pAmp, diff, &
     LAdj_x=opE1Adj(N, Ntrc, L, dt, u, x, alph, beta, gamm, rho)
 
     ! adjoint validity test
-    print *, '<x,Ly>=',scalarNVec(x,Ly,3, N)
+    print *, '<x,Ly>= ',scalarNVec(x,Ly,3, N)
     print *, '<L*x,y>=',scalarNVec(LAdj_x,y,3, N)
     diff=dabs(scalarNVec(x,Ly,3, N)-scalarNVec(LAdj_x,y,3, N))
     testOpE1Adj=(diff .le. tolerance)
@@ -134,7 +135,8 @@ end function testOpE1Adj
 
 function testOpPnAdj(N, Ntrc, L, dt, pAmp, diff, &
                         u, x, y, alph, beta, gamm, rho)
-    intent(in)                      ::  N, Ntrc, L, dt, pAmp
+    intent(in)                      ::  N, Ntrc, L, dt, pAmp, &
+                                        u, x, y, alph, beta, gamm, rho
     intent(out)                     ::  diff
 
     integer                         ::  N, Ntrc, j, i
@@ -151,7 +153,7 @@ function testOpPnAdj(N, Ntrc, L, dt, pAmp, diff, &
     LAdj_x=opPnAdj(N, Ntrc, L, dt, u, x, alph, beta, gamm, rho)
 
     ! adjoint validity test
-    print *, '<x,Ly>=',scalarNVec(x,Ly,3, N)
+    print *, '<x,Ly>= ',scalarNVec(x,Ly,3, N)
     print *, '<L*x,y>=',scalarNVec(LAdj_x,y,3, N)
     diff=dabs(scalarNVec(x,Ly,3, N)-scalarNVec(LAdj_x,y,3, N))
     testOpPnAdj=(diff .le. tolerance)
@@ -162,7 +164,7 @@ end function testOpPnAdj
 !-------------------------------------------------------------------!
 
 function testOpSAdj(N,  diff, x, y)
-    intent(in)                      ::  N
+    intent(in)                      ::  N, x, y
     intent(out)                     ::  diff
 
     integer                         ::  N, j, i
@@ -177,7 +179,7 @@ function testOpSAdj(N,  diff, x, y)
     LAdj_x=opSAdj(N, x)
 
     ! adjoint validity test
-    print *, '<x,Ly>=',scalarNVec(x,Ly,3, N)
+    print *, '<x,Ly>= ',scalarNVec(x,Ly,3, N)
     print *, '<L*x,y>=',scalarNVec(LAdj_x,y,3, N)
     diff=dabs(scalarNVec(x,Ly,3, N)-scalarNVec(LAdj_x,y,3, N))
     testOpSAdj=(diff .le. tolerance)
@@ -188,7 +190,8 @@ end function testOpSAdj
 
 function testOpSPnAdj(N, Ntrc, L, dt, pAmp, diff, &
                         u, x, y, alph, beta, gamm, rho)
-    intent(in)                      ::  N, Ntrc, L, dt, pAmp
+    intent(in)                      ::  N, Ntrc, L, dt, pAmp, &
+                                        u, x, y, alph, beta, gamm, rho
     intent(out)                     ::  diff
 
     integer                         ::  N, Ntrc, j, i
@@ -201,12 +204,12 @@ function testOpSPnAdj(N, Ntrc, L, dt, pAmp, diff, &
     double precision, parameter     :: tolerance=1D-14
 
 
-    Ly=opS(N, Ly)
+    Ly=opS(N, y)
     LAdj_x=opSAdj(N, x)
     LAdj_x=opPnAdj(N, Ntrc, L, dt, u, LAdj_x, alph, beta, gamm, rho)
 
     ! adjoint validity test
-    print *, '<x,Ly>=',scalarNVec(x,Ly,3, N)
+    print *, '<x,Ly>= ',scalarNVec(x,Ly,3, N)
     print *, '<L*x,y>=',scalarNVec(LAdj_x,y,3, N)
     diff=dabs(scalarNVec(x,Ly,3, N)-scalarNVec(LAdj_x,y,3, N))
     testOpSPnAdj=(diff .le. tolerance)
@@ -219,7 +222,8 @@ end function testOpSPnAdj
 
 function testOpPnE1Adj(N, Ntrc, L, dt, pAmp, diff, &
                         u, x, y, alph, beta, gamm, rho)
-    intent(in)                      ::  N, Ntrc, L, dt, pAmp
+    intent(in)                      ::  N, Ntrc, L, dt, pAmp, &
+                                        u, x, y, alph, beta, gamm, rho
     intent(out)                     ::  diff
 
     integer                         ::  N, Ntrc, j, i
@@ -239,7 +243,7 @@ function testOpPnE1Adj(N, Ntrc, L, dt, pAmp, diff, &
     LAdj_x=opE1Adj(N, Ntrc, L, dt, u(1,:), LAdj_x, alph, beta, gamm, rho)
 
     ! adjoint validity test
-    print *, '<x,Ly>=',scalarNVec(x,Ly,3, N)
+    print *, '<x,Ly>= ',scalarNVec(x,Ly,3, N)
     print *, '<L*x,y>=',scalarNVec(LAdj_x,y,3, N)
     diff=dabs(scalarNVec(x,Ly,3, N)-scalarNVec(LAdj_x,y,3, N))
     testOpPnE1Adj=(diff .le. tolerance)
@@ -251,7 +255,8 @@ end function testOpPnE1Adj
 
 function testOpSPnE1Adj(N, Ntrc, L, dt, pAmp, diff, &
                         u, x, y, alph, beta, gamm, rho)
-    intent(in)                      ::  N, Ntrc, L, dt, pAmp
+    intent(in)                      ::  N, Ntrc, L, dt, pAmp, &
+                                        u, x, y, alph, beta, gamm, rho
     intent(out)                     ::  diff
 
     integer                         ::  N, Ntrc, j, i
@@ -273,7 +278,7 @@ function testOpSPnE1Adj(N, Ntrc, L, dt, pAmp, diff, &
     LAdj_x=opE1Adj(N, Ntrc, L, dt, u(1,:), LAdj_x, alph, beta, gamm, rho)
 
     ! adjoint validity test
-    print *, '<x,Ly>=',scalarNVec(x,Ly,3, N)
+    print *, '<x,Ly>= ',scalarNVec(x,Ly,3, N)
     print *, '<L*x,y>=',scalarNVec(LAdj_x,y,3, N)
     diff=dabs(scalarNVec(x,Ly,3, N)-scalarNVec(LAdj_x,y,3, N))
     testOpSPnE1Adj=(diff .le. tolerance)
@@ -285,7 +290,8 @@ end function testOpSPnE1Adj
 !-------------------------------------------------------------------!
 function testOpAllAdj(N, Ntrc, L, dt, pAmp, diff, &
                         u, x, y, alph, beta, gamm, rho)
-    intent(in)                      ::  N, Ntrc, L, dt, pAmp
+    intent(in)                      ::  N, Ntrc, L, dt, pAmp, &
+                                        u, x, y, alph, beta, gamm, rho
     intent(out)                     ::  diff
 
     integer                         ::  N, Ntrc, j
@@ -321,7 +327,7 @@ function testOpAllAdj(N, Ntrc, L, dt, pAmp, diff, &
     call specFilt(LAdj_x, N, Ntrc)
 
     ! adjoint validity test
-    print *, '<x,Ly>=', scalar_product(x,Ly)
+    print *, '<x,Ly>= ', scalar_product(x,Ly)
     print *, '<L*x,y>=', scalar_product(LAdj_x,y)
     diff=dabs(scalar_product(x,Ly)-scalar_product(LAdj_x,y))
     testOpAllAdj=(diff .le. tolerance)
@@ -335,7 +341,8 @@ end function testOpAllAdj
 function testKdvTLMPseudoSpecAdj(N, Ntrc, L, pAmp, diff, &
                         u, x, y, alph, beta, gamm, rho)
 
-    intent(in)                      ::  N, Ntrc, L, pAmp
+    intent(in)                      ::  N, Ntrc, L, pAmp, &
+                                        u, x, y, alph, beta, gamm, rho
     intent(out)                     ::  diff
 
     integer                         ::  N, Ntrc, j
@@ -352,7 +359,7 @@ function testKdvTLMPseudoSpecAdj(N, Ntrc, L, pAmp, diff, &
     LAdj_x=kdvTLMPseudoSpecAdj(N, Ntrc, L, u, x, alph, beta, gamm, rho)
 
     ! adjoint validity test
-    print *, '<x,Ly>=', scalar_product(x,Ly)
+    print *, '<x,Ly>= ', scalar_product(x,Ly)
     print *, '<L*x,y>=', scalar_product(LAdj_x,y)
     diff=dabs(scalar_product(x,Ly)-scalar_product(LAdj_x,y))
     testKdvTLMPseudoSpecAdj=(diff .le. tolerance)
@@ -366,7 +373,8 @@ end function testKdvTLMPseudoSpecAdj
 function testKdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, pAmp, diff,&
                                     u, x, y, alph, beta, gamm, rho)
 
-    intent(in)                      ::  N, Ntrc, L, dt, nDt, pAmp
+    intent(in)                      ::  N, Ntrc, L, dt, nDt, pAmp, &
+                                        u, x, y, alph, beta, gamm, rho
     intent(out)                     ::  diff
 
     integer                         ::  N, Ntrc, nDt, j, k
@@ -393,7 +401,7 @@ function testKdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, pAmp, diff,&
     end if
 
     ! adjoint validity test
-    print *, '<x,Ly>=', scalar_product(x,Ly)
+    print *, '<x,Ly>= ', scalar_product(x,Ly)
     print *, '<L*x,y>=', scalar_product(LAdj_x,y)
     diff=dabs(scalar_product(x,Ly)-scalar_product(LAdj_x,y))
     testKdvTLMPropagatorAdj=(diff .le. tolerance)
@@ -413,7 +421,9 @@ function testGradient(N, Ntrc, L, dt, nDt, pAmp, maxPower, &
     !   <!> doit être valable jusqu'à la 
     !       *moitié* de la précision du type
     !------------------------------------------------------
-    intent(in)                      ::  N, Ntrc, L, dt, nDt, pAmp, maxPower
+    intent(in)                      ::  N, Ntrc, L, dt, nDt, pAmp, &
+                                        maxPower, &
+                                        u, x, alph, beta, gamm, rho
 
     integer                         ::  N, Ntrc, nDt, maxPower, j, k, pow
     

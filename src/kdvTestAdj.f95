@@ -115,7 +115,7 @@ if (test) then
     print *, 'Testing adjoint validity of opPn'
     print *, N, Ntrc, L, dt, pAmp
     if (testOpPnAdj(N, Ntrc, L, dt, pAmp, diff, &
-                        u(1,:), xBuff, yBuff, alph, beta, gamm, rho)) then 
+                        u(2,:), xBuff, yBuff, alph, beta, gamm, rho)) then 
         print *, ' >>Test succeeded:', diff
     else
         print *, ' >>Test FAILED', diff
@@ -144,7 +144,7 @@ if (test) then
     print *, 'Testing adjoint validity of S.Pn'
     print *, N, Ntrc, L, dt, pAmp
     if (testOpSPnAdj(N, Ntrc, L, dt, pAmp, diff, &
-                        u(1,:), xBuff, yBuff, alph, beta, gamm, rho)) then 
+                        u(2,:), xBuff, yBuff, alph, beta, gamm, rho)) then 
         print *, ' >>Test succeeded:', diff
     else
         print *, ' >>Test FAILED', diff

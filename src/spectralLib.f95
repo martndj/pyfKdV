@@ -298,42 +298,6 @@ contains
 
 
 
-function testAutoAdjointSpecFilt(N, Ntrc, L, diff)
-    intent(in)                      ::  N, Ntrc, L
-    intent(out)                     ::  diff
-
-    integer                         ::  N, Ntrc, j
-    
-    double precision, dimension(N)  ::  x, y, Ly, Lx
-    double precision                ::  L, diff
-    logical                         ::  testAutoadjointSpecFilt
-
-    double precision, parameter     :: tolerance=1D-14
-
-    ! Generating random fields
-    call random_seed()
-    do j=1, N
-        x(j)=centeredRand()
-        y(j)=centeredRand()
-    end do
-
-    Lx=x
-    Ly=y
-    call specFilt(Lx, N, Ntrc)
-    call specFilt(Ly, N, Ntrc)
-
-
-    ! adjoint validity test
-    diff=dabs(scalar_product(x,Ly)-scalar_product(Lx,y))
-    testAutoadjointSpecFilt=(diff .le. tolerance)
-
-    contains
-        function centeredRand()
-            double precision        :: centeredRand, r
-            call random_number(r)
-            centeredRand=r-5D-1
-        end function centeredRand
-end function testAutoAdjointSpecFilt
 
 !====================================================================
 end module

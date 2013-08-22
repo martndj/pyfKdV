@@ -44,11 +44,38 @@ function initRandVec(N, Ntrc)
     call specFilt(initRandVec, N, Ntrc)
 end function
 
+!-------------------------------------------------------------------!
+!-------------------------------------------------------------------!
 
+function testAutoAdjointSpecFilt(N, Ntrc, L, diff, x, y)
+    intent(in)                      ::  N, Ntrc, L
+    intent(out)                     ::  diff
+
+    integer                         ::  N, Ntrc, j
+    
+    double precision, dimension(N)  ::  x, y, Ly, Lx
+    double precision                ::  L, diff
+    logical                         ::  testAutoadjointSpecFilt
+
+    double precision, parameter     :: tolerance=1D-14
+
+    Lx=x
+    Ly=y
+    call specFilt(Lx, N, Ntrc)
+    call specFilt(Ly, N, Ntrc)
+
+
+    ! adjoint validity test
+    print *, '<x,Ly>=', scalar_product(x,Ly)
+    print *, '<Lx,y>=', scalar_product(Lx,y)
+    diff=dabs(scalar_product(x,Ly)-scalar_product(Lx,y))
+    testAutoadjointSpecFilt=(diff .le. tolerance)
+
+end function testAutoAdjointSpecFilt
 !-------------------------------------------------------------------!
 !-------------------------------------------------------------------!
-function testRhoCenteredImplicitAdj(N, Ntrc, L, dt, diff)
-    intent(in)                      ::  N, Ntrc, L, dt
+function testRhoCenteredImplicitAdj(N, Ntrc, L, dt, diff, x, y, rho)
+    intent(in)                      ::  N, Ntrc, L, dt, x, y, rho
     intent(out)                     ::  diff
 
     integer                         ::  N, Ntrc, j
@@ -58,11 +85,6 @@ function testRhoCenteredImplicitAdj(N, Ntrc, L, dt, diff)
     logical                         ::  testRhoCenteredImplicitAdj
 
     double precision, parameter     :: tolerance=1D-14
-
-    ! Generating random fields
-    x=initRandVec(N, Ntrc)
-    y=initRandVec(N, Ntrc)
-    rho=initRandVec(N, Ntrc)
 
 
     Ly=rhoCenteredImplicit(N, Ntrc, dt, y,rho)
@@ -81,7 +103,8 @@ end function testRhoCenteredImplicitAdj
 !-------------------------------------------------------------------!
 !-------------------------------------------------------------------!
 
-function testOpE1Adj(N, Ntrc, L, dt, pAmp, diff)
+function testOpE1Adj(N, Ntrc, L, dt, pAmp, diff, &
+                        u, x, y, alph, beta, gamm, rho)
     intent(in)                      ::  N, Ntrc, L, dt, pAmp
     intent(out)                     ::  diff
 
@@ -94,16 +117,6 @@ function testOpE1Adj(N, Ntrc, L, dt, pAmp, diff)
 
     double precision, parameter     :: tolerance=1D-14
 
-    ! Generating random fields
-    u=initRandVec(N, Ntrc)
-    do i=1,3
-        x(i,:)=pAmp*initRandVec(N, Ntrc)
-        y(i,:)=pAmp*initRandVec(N, Ntrc)
-    end do
-    alph=initRandVec(N, Ntrc)
-    beta=initRandVec(N, Ntrc)
-    gamm=initRandVec(N, Ntrc)
-    rho=initRandVec(N, Ntrc)
     
     Ly=opE1(N, Ntrc, L, dt, u, y, alph, beta, gamm, rho)
     LAdj_x=opE1Adj(N, Ntrc, L, dt, u, x, alph, beta, gamm, rho)
@@ -119,7 +132,8 @@ end function testOpE1Adj
 
 !-------------------------------------------------------------------!
 
-function testOpPnAdj(N, Ntrc, L, dt, pAmp, diff)
+function testOpPnAdj(N, Ntrc, L, dt, pAmp, diff, &
+                        u, x, y, alph, beta, gamm, rho)
     intent(in)                      ::  N, Ntrc, L, dt, pAmp
     intent(out)                     ::  diff
 
@@ -131,17 +145,6 @@ function testOpPnAdj(N, Ntrc, L, dt, pAmp, diff)
     logical                         ::  testOpPnAdj
 
     double precision, parameter     :: tolerance=1D-14
-
-    ! Generating random fields
-    u=initRandVec(N, Ntrc)
-    do i=1,3
-        x(i,:)=pAmp*initRandVec(N, Ntrc)
-        y(i,:)=pAmp*initRandVec(N, Ntrc)
-    end do
-    alph=initRandVec(N, Ntrc)
-    beta=initRandVec(N, Ntrc)
-    gamm=initRandVec(N, Ntrc)
-    rho=initRandVec(N, Ntrc)
 
 
     Ly=opPn(N, Ntrc, L, dt, u, y, alph, beta, gamm, rho)
@@ -158,24 +161,18 @@ end function testOpPnAdj
 
 !-------------------------------------------------------------------!
 
-function testOpSAdj(N, Ntrc, diff)
-    intent(in)                      ::  N, Ntrc
+function testOpSAdj(N,  diff, x, y)
+    intent(in)                      ::  N
     intent(out)                     ::  diff
 
-    integer                         ::  N, Ntrc, j, i
+    integer                         ::  N, j, i
     double precision                ::  diff
     
     double precision, dimension(3,N)::  x, y, Ly, LAdj_x
     logical                         ::  testOpSAdj
 
     double precision, parameter     :: tolerance=1D-14
-
-    ! Generating random fields
-    do i=1,3
-        x(i,:)=initRandVec(N, Ntrc)
-        y(i,:)=initRandVec(N, Ntrc)
-    end do
-
+    
     Ly=opS(N, y)
     LAdj_x=opSAdj(N, x)
 
@@ -189,7 +186,8 @@ end function testOpSAdj
 
 !-------------------------------------------------------------------!
 
-function testOpSPnAdj(N, Ntrc, L, dt, pAmp, diff)
+function testOpSPnAdj(N, Ntrc, L, dt, pAmp, diff, &
+                        u, x, y, alph, beta, gamm, rho)
     intent(in)                      ::  N, Ntrc, L, dt, pAmp
     intent(out)                     ::  diff
 
@@ -202,16 +200,6 @@ function testOpSPnAdj(N, Ntrc, L, dt, pAmp, diff)
 
     double precision, parameter     :: tolerance=1D-14
 
-    ! Generating random fields
-    u=initRandVec(N, Ntrc)
-    do i=1,3
-        x(i,:)=pAmp*initRandVec(N, Ntrc)
-        y(i,:)=pAmp*initRandVec(N, Ntrc)
-    end do
-    alph=initRandVec(N, Ntrc)
-    beta=initRandVec(N, Ntrc)
-    gamm=initRandVec(N, Ntrc)
-    rho=initRandVec(N, Ntrc)
 
     Ly=opS(N, Ly)
     LAdj_x=opSAdj(N, x)
@@ -229,7 +217,8 @@ end function testOpSPnAdj
 !-------------------------------------------------------------------!
 
 
-function testOpPnE1Adj(N, Ntrc, L, dt, pAmp, diff)
+function testOpPnE1Adj(N, Ntrc, L, dt, pAmp, diff, &
+                        u, x, y, alph, beta, gamm, rho)
     intent(in)                      ::  N, Ntrc, L, dt, pAmp
     intent(out)                     ::  diff
 
@@ -242,18 +231,6 @@ function testOpPnE1Adj(N, Ntrc, L, dt, pAmp, diff)
     logical                         ::  testOpPnE1Adj
 
     double precision, parameter     :: tolerance=1D-14
-
-    ! Generating random fields
-    u(1,:)=initRandVec(N, Ntrc)
-    u(2,:)=initRandVec(N, Ntrc)
-    do i=1,3
-        x(i,:)=pAmp*initRandVec(N, Ntrc)
-        y(i,:)=pAmp*initRandVec(N, Ntrc)
-    end do
-    alph=initRandVec(N, Ntrc)
-    beta=initRandVec(N, Ntrc)
-    gamm=initRandVec(N, Ntrc)
-    rho=initRandVec(N, Ntrc)
 
     
     Ly=opE1(N, Ntrc, L, dt, u(1,:), y,  alph, beta, gamm, rho)
@@ -272,7 +249,8 @@ end function testOpPnE1Adj
 !-------------------------------------------------------------------!
 
 
-function testOpSPnE1Adj(N, Ntrc, L, dt, pAmp, diff)
+function testOpSPnE1Adj(N, Ntrc, L, dt, pAmp, diff, &
+                        u, x, y, alph, beta, gamm, rho)
     intent(in)                      ::  N, Ntrc, L, dt, pAmp
     intent(out)                     ::  diff
 
@@ -285,17 +263,6 @@ function testOpSPnE1Adj(N, Ntrc, L, dt, pAmp, diff)
     logical                         ::  testOpSPnE1Adj
 
     double precision, parameter     :: tolerance=1D-14
-
-    u(1,:)=initRandVec(N, Ntrc)
-    u(2,:)=initRandVec(N, Ntrc)
-    do i=1,3
-        x(i,:)=pAmp*initRandVec(N, Ntrc)
-        y(i,:)=pAmp*initRandVec(N, Ntrc)
-    end do
-    alph=initRandVec(N, Ntrc)
-    beta=initRandVec(N, Ntrc)
-    gamm=initRandVec(N, Ntrc)
-    rho=initRandVec(N, Ntrc)
 
 
     Ly=opE1(N, Ntrc, L, dt, u(1,:), y,  alph, beta, gamm, rho)
@@ -316,7 +283,8 @@ end function testOpSPnE1Adj
 
 
 !-------------------------------------------------------------------!
-function testOpAllAdj(N, Ntrc, L, dt, pAmp, diff)
+function testOpAllAdj(N, Ntrc, L, dt, pAmp, diff, &
+                        u, x, y, alph, beta, gamm, rho)
     intent(in)                      ::  N, Ntrc, L, dt, pAmp
     intent(out)                     ::  diff
 
@@ -330,16 +298,6 @@ function testOpAllAdj(N, Ntrc, L, dt, pAmp, diff)
     logical                         ::  testOpAllAdj
 
     double precision, parameter     :: tolerance=1D-14
-
-    ! Generating random fields
-    u(1,:)=initRandVec(N, Ntrc)
-    u(2,:)=initRandVec(N, Ntrc)
-    x=pAmp*initRandVec(N, Ntrc)
-    y=pAmp*initRandVec(N, Ntrc)
-    alph=initRandVec(N, Ntrc)
-    beta=initRandVec(N, Ntrc)
-    gamm=initRandVec(N, Ntrc)
-    rho=initRandVec(N, Ntrc)
 
 
     ! Direct
@@ -374,7 +332,9 @@ end function testOpAllAdj
 
 !-------------------------------------------------------------------!
 
-function testKdvTLMPseudoSpecAdj(N, Ntrc, L, pAmp, diff)
+function testKdvTLMPseudoSpecAdj(N, Ntrc, L, pAmp, diff, &
+                        u, x, y, alph, beta, gamm, rho)
+
     intent(in)                      ::  N, Ntrc, L, pAmp
     intent(out)                     ::  diff
 
@@ -386,15 +346,6 @@ function testKdvTLMPseudoSpecAdj(N, Ntrc, L, pAmp, diff)
     logical                         ::  testKdvTLMPseudoSpecAdj
 
     double precision, parameter     :: tolerance=1D-14
-
-    ! Generating random fields
-    u=initRandVec(N, Ntrc)
-    x=pAmp*initRandVec(N, Ntrc)
-    y=pAmp*initRandVec(N, Ntrc)
-    alph=initRandVec(N, Ntrc)
-    beta=initRandVec(N, Ntrc)
-    gamm=initRandVec(N, Ntrc)
-    rho=initRandVec(N, Ntrc)
 
 
     Ly=kdvTLMPseudoSpec(N, Ntrc, L, u, y, alph, beta, gamm, rho)
@@ -412,7 +363,9 @@ end function testKdvTLMPseudoSpecAdj
 !-------------------------------------------------------------------!
 
 
-function testKdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, pAmp, diff)
+function testKdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, pAmp, diff,&
+                                    u, x, y, alph, beta, gamm, rho)
+
     intent(in)                      ::  N, Ntrc, L, dt, nDt, pAmp
     intent(out)                     ::  diff
 
@@ -426,17 +379,6 @@ function testKdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, pAmp, diff)
     double precision, dimension(nDt+1, N)  ::  u
 
     double precision, parameter     :: tolerance=1D-14
-
-    ! Generating random fields
-    do j=1, nDt+1
-        u(j,:)=initRandVec(N, Ntrc)
-    end do
-    x=pAmp*initRandVec(N, Ntrc)
-    y=pAmp*initRandVec(N, Ntrc)
-    alph=initRandVec(N, Ntrc)
-    beta=initRandVec(N, Ntrc)
-    gamm=initRandVec(N, Ntrc)
-    rho=initRandVec(N, Ntrc)
 
 
     Ly=kdvTLMPropagator(N, Ntrc, L, dt, nDt, tReal,&
@@ -461,7 +403,8 @@ end function testKdvTLMPropagatorAdj
 !-------------------------------------------------------------------!
 !-------------------------------------------------------------------!
 
-function testGradient(N, Ntrc, L, dt, nDt, pAmp, maxPower)
+function testGradient(N, Ntrc, L, dt, nDt, pAmp, maxPower, &
+                        u, x, alph, beta, gamm, rho)
     !
     !   J(x-eps\grad J)-J(x)
     !   --------------------  -1 < O(eps) ?
@@ -484,16 +427,6 @@ function testGradient(N, Ntrc, L, dt, nDt, pAmp, maxPower)
 
     double precision, parameter     :: tolerance=1D-14
     logical                         ::  test, testGradient
-
-    ! Generating random fields
-    do j=1, nDt+1
-        u(j,:)=initRandVec(N, Ntrc)
-    end do
-    x=pAmp*initRandVec(N, Ntrc)
-    alph=initRandVec(N, Ntrc)
-    beta=initRandVec(N, Ntrc)
-    gamm=initRandVec(N, Ntrc)
-    rho=initRandVec(N, Ntrc)
 
 
     J0=fctCout(N, Ntrc, L, dt, nDt, tRealFct, u, x, &

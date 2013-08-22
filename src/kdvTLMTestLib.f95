@@ -71,6 +71,8 @@ function testRhoCenteredImplicitAdj(N, Ntrc, L, dt, diff)
     !  AUTOADJOINT?
 
     ! adjoint validity test
+    print *, '<x,Ly>=', scalar_product(x,Ly)
+    print *, '<L*x,y>=', scalar_product(LAdj_x,y)
     diff=dabs(scalar_product(x,Ly)-scalar_product(LAdj_x,y))
     testRhoCenteredImplicitAdj=(diff .le. tolerance)
 
@@ -107,6 +109,8 @@ function testOpE1Adj(N, Ntrc, L, dt, pAmp, diff)
     LAdj_x=opE1Adj(N, Ntrc, L, dt, u, x, alph, beta, gamm, rho)
 
     ! adjoint validity test
+    print *, '<x,Ly>=',scalarNVec(x,Ly,3, N)
+    print *, '<L*x,y>=',scalarNVec(LAdj_x,y,3, N)
     diff=dabs(scalarNVec(x,Ly,3, N)-scalarNVec(LAdj_x,y,3, N))
     testOpE1Adj=(diff .le. tolerance)
 
@@ -144,6 +148,8 @@ function testOpPnAdj(N, Ntrc, L, dt, pAmp, diff)
     LAdj_x=opPnAdj(N, Ntrc, L, dt, u, x, alph, beta, gamm, rho)
 
     ! adjoint validity test
+    print *, '<x,Ly>=',scalarNVec(x,Ly,3, N)
+    print *, '<L*x,y>=',scalarNVec(LAdj_x,y,3, N)
     diff=dabs(scalarNVec(x,Ly,3, N)-scalarNVec(LAdj_x,y,3, N))
     testOpPnAdj=(diff .le. tolerance)
 
@@ -174,6 +180,8 @@ function testOpSAdj(N, Ntrc, diff)
     LAdj_x=opSAdj(N, x)
 
     ! adjoint validity test
+    print *, '<x,Ly>=',scalarNVec(x,Ly,3, N)
+    print *, '<L*x,y>=',scalarNVec(LAdj_x,y,3, N)
     diff=dabs(scalarNVec(x,Ly,3, N)-scalarNVec(LAdj_x,y,3, N))
     testOpSAdj=(diff .le. tolerance)
 
@@ -210,6 +218,8 @@ function testOpSPnAdj(N, Ntrc, L, dt, pAmp, diff)
     LAdj_x=opPnAdj(N, Ntrc, L, dt, u, LAdj_x, alph, beta, gamm, rho)
 
     ! adjoint validity test
+    print *, '<x,Ly>=',scalarNVec(x,Ly,3, N)
+    print *, '<L*x,y>=',scalarNVec(LAdj_x,y,3, N)
     diff=dabs(scalarNVec(x,Ly,3, N)-scalarNVec(LAdj_x,y,3, N))
     testOpSPnAdj=(diff .le. tolerance)
 
@@ -252,6 +262,8 @@ function testOpPnE1Adj(N, Ntrc, L, dt, pAmp, diff)
     LAdj_x=opE1Adj(N, Ntrc, L, dt, u(1,:), LAdj_x, alph, beta, gamm, rho)
 
     ! adjoint validity test
+    print *, '<x,Ly>=',scalarNVec(x,Ly,3, N)
+    print *, '<L*x,y>=',scalarNVec(LAdj_x,y,3, N)
     diff=dabs(scalarNVec(x,Ly,3, N)-scalarNVec(LAdj_x,y,3, N))
     testOpPnE1Adj=(diff .le. tolerance)
 
@@ -294,6 +306,8 @@ function testOpSPnE1Adj(N, Ntrc, L, dt, pAmp, diff)
     LAdj_x=opE1Adj(N, Ntrc, L, dt, u(1,:), LAdj_x, alph, beta, gamm, rho)
 
     ! adjoint validity test
+    print *, '<x,Ly>=',scalarNVec(x,Ly,3, N)
+    print *, '<L*x,y>=',scalarNVec(LAdj_x,y,3, N)
     diff=dabs(scalarNVec(x,Ly,3, N)-scalarNVec(LAdj_x,y,3, N))
     testOpSPnE1Adj=(diff .le. tolerance)
 
@@ -349,6 +363,8 @@ function testOpAllAdj(N, Ntrc, L, dt, pAmp, diff)
     call specFilt(LAdj_x, N, Ntrc)
 
     ! adjoint validity test
+    print *, '<x,Ly>=', scalar_product(x,Ly)
+    print *, '<L*x,y>=', scalar_product(LAdj_x,y)
     diff=dabs(scalar_product(x,Ly)-scalar_product(LAdj_x,y))
     testOpAllAdj=(diff .le. tolerance)
 
@@ -385,6 +401,8 @@ function testKdvTLMPseudoSpecAdj(N, Ntrc, L, pAmp, diff)
     LAdj_x=kdvTLMPseudoSpecAdj(N, Ntrc, L, u, x, alph, beta, gamm, rho)
 
     ! adjoint validity test
+    print *, '<x,Ly>=', scalar_product(x,Ly)
+    print *, '<L*x,y>=', scalar_product(LAdj_x,y)
     diff=dabs(scalar_product(x,Ly)-scalar_product(LAdj_x,y))
     testKdvTLMPseudoSpecAdj=(diff .le. tolerance)
 
@@ -433,6 +451,8 @@ function testKdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, pAmp, diff)
     end if
 
     ! adjoint validity test
+    print *, '<x,Ly>=', scalar_product(x,Ly)
+    print *, '<L*x,y>=', scalar_product(LAdj_x,y)
     diff=dabs(scalar_product(x,Ly)-scalar_product(LAdj_x,y))
     testKdvTLMPropagatorAdj=(diff .le. tolerance)
 
@@ -441,7 +461,7 @@ end function testKdvTLMPropagatorAdj
 !-------------------------------------------------------------------!
 !-------------------------------------------------------------------!
 
-subroutine testGradient(N, Ntrc, L, dt, nDt, pAmp, maxPower)
+function testGradient(N, Ntrc, L, dt, nDt, pAmp, maxPower)
     !
     !   J(x-eps\grad J)-J(x)
     !   --------------------  -1 < O(eps) ?
@@ -463,6 +483,7 @@ subroutine testGradient(N, Ntrc, L, dt, nDt, pAmp, maxPower)
     double precision, dimension(nDt+1, N)  ::  u
 
     double precision, parameter     :: tolerance=1D-14
+    logical                         ::  test, testGradient
 
     ! Generating random fields
     do j=1, nDt+1
@@ -488,6 +509,8 @@ subroutine testGradient(N, Ntrc, L, dt, nDt, pAmp, maxPower)
     print*,"------------------------------------------------------"
     
     print"(A 5X A 18X A 13X A 20X)", "eps","J(x-eps.gradJ)","res", "1D0-res"
+    
+    testGradient=.true.
     do pow=-1,maxPower, -1
         eps=1D1**pow
         Jeps=fctCout(N, Ntrc, L, dt, nDt, tRealFct, u, x-eps*grad, &
@@ -495,11 +518,16 @@ subroutine testGradient(N, Ntrc, L, dt, nDt, pAmp, maxPower)
 
         res=((J0-Jeps)/(eps*scalar_product(grad,grad)))
 
+        test=dabs(1D0-res).lt.eps
+        if ((pow>=-7) .and. (.not. test)) then
+            testGradient=.false.
+        end if
+        
         if (pow.eq.-8) then
             print*,"--------------| half type precision |-----------------"
         end if
         print"(A I3  E23.15  F20.15 F20.15 A L1)",&
-             "10^",pow, Jeps, res, 1D0-res, " ",(abs(1D0-res).lt.eps)
+             "10^",pow, Jeps, res, 1D0-res, " ",test
     end do
     contains
     !------------------------------------------------------
@@ -537,6 +565,6 @@ subroutine testGradient(N, Ntrc, L, dt, nDt, pAmp, maxPower)
                                 alph, beta, gamm, rho) 
     end function gradFC
 
-end subroutine testGradient
+end function testGradient
 
 end module kdvTLMTest

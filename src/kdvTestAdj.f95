@@ -23,7 +23,7 @@ test=.true.
 
 print *, 
 print *, 'Testing adjoint property with filtered noise initialisation'
-print *, '  |<x, Ly>-<Lx, y>| <= 1D-14 ?|'
+print *, '  |<x, Ly>-<L*x, y>| <= 1D-14 ?|'
 
 print *, 
 print *, '============================================================='
@@ -182,5 +182,11 @@ print *,
 print *, '============================================================='
 print *, '============================================================='
 print *, 'Gradient test'
-call testGradient(N, Ntrc, L, dt, nDt, pAmp, maxPower)
+    print *, N, Ntrc, L, dt, nDt, pAmp, maxPower
+if (testGradient(N, Ntrc, L, dt, nDt, pAmp, maxPower))  then
+    print *, ' >>Test succeeded!'
+else
+    print *, ' >>Test FAILED'
+    test=.false.
+end if
 end program kdvTestAdj

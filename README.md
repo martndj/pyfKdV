@@ -41,6 +41,11 @@ Compiling informations
  * Cython
 
 ### Instructions
+ * ./ refer to the root of pyfKdV installation;
+ * [soimething] means optional arguments;
+ * <something> means you must replace 'something' with what is appropriate to your environment.
+
+
  1. On Linux OS Debian/Ubuntu, you can install it running
 
         [sudo] apt-get install libfftw3* libarpack2*
@@ -49,7 +54,12 @@ Compiling informations
     The version of cython shipping with Debian at the moment (0.15.1) is not cutting edge enough (missing memoryviews component.)
     You should [download the latest](http://cython.org/#download).
     (I used [0.19.1](http://cython.org/release/Cython-0.19.1.tar.gz) personnaly).
-    Installing is straightforward, instruction are included (there was a ascII error and I had to include a --no-compile-something to the setup.py call but it work perfectly afterward.)
+    Installing is straightforward, instruction are included.
+    You'll need python header files:
+    
+        [sudo] apt-get install python-dev
+        
+    (there was a ascII error and I had to include a --no-compile-something to the setup.py call but it work perfectly afterward.)
 
 
  2. To compile, you'll have to modify ./src/Makefile, to specify your libraries directories, and fortran compiler:
@@ -71,9 +81,9 @@ Compiling informations
         make pyKdV [clean]
 
 
- 4. Add the path to the python module pyKdV to your PYTHONPATH environment variable, in Linux bash environment you can do it running. (the module is in ./pyKdV not ./).
+ 4. Add the path to the python module pyKdV to your PYTHONPATH environment variable, in Linux bash environment you can do it running.
  
-        export PYTHONPATH=".:<path to ./pyKdV>"
+        export PYTHONPATH=".:<path to ./>"
 
     Adding these export lines to your startup script (.bashrc or .profile) is a way to do it.
 
@@ -90,7 +100,7 @@ Configuring and launching an integration
 
         import numpy as np
         import random as rnd 
-        from pyfKdV import *
+        from pyKdV import *
         import matplotlib.pyplot as plt 
         
         #----| Grid configuration |-------------------

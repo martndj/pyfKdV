@@ -12,7 +12,7 @@
 #----| variables |---------------------------------------------------#
 libDir=/usr/lib
 pyKdVDir=../pyKdV/
-userLibDir=/home/martn/lib/
+userLibDir=/home/<user>/lib/
 compiler=gfortran
 
 optflag=-fbounds-check -fPIC

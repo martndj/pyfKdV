@@ -33,11 +33,13 @@ maxPower=-10
 test=.true.
 
 ! Generating random fields
-ic=initRandVec(N, Ntrc)
+!   unfiltered state vectors
+ic=initRandVec(N)
 do i=1,3
-    xBuff(i,:)=pAmp*initRandVec(N, Ntrc)
-    yBuff(i,:)=pAmp*initRandVec(N, Ntrc)
+    xBuff(i,:)=pAmp*initRandVec(N)
+    yBuff(i,:)=pAmp*initRandVec(N)
 end do
+!   filtered parameters vectors
 alph=initRandVec(N, Ntrc)
 beta=initRandVec(N, Ntrc)
 gamm=initRandVec(N, Ntrc)

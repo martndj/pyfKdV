@@ -32,7 +32,8 @@ end function centeredRand
 !-------------------------------------------------------------------!
 
 function initRandVec(N, Ntrc)
-    intent(in)                      ::  N, Ntrc
+    intent(in)                      ::  N
+    optional                        ::  Ntrc
     double precision, dimension(N)  ::  initRandVec
     integer                         ::  j, N, Ntrc
 
@@ -41,7 +42,9 @@ function initRandVec(N, Ntrc)
         initRandVec(j)=centeredRand()
     end do
     ! explicit filtering
-    call specFilt(initRandVec, N, Ntrc)
+    if (present(Ntrc)) then 
+        call specFilt(initRandVec, N, Ntrc)
+    end if
 end function
 
 !-------------------------------------------------------------------!

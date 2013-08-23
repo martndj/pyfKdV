@@ -18,16 +18,16 @@ class Launcher(object):
     def __init__(self, param, ic):
 
         if not (isinstance(param, Param)):
-            raise LauncherError(
+            raise self.LauncherError(
                   "param must be an instance of Param")
 
         self.grid=param.grid
         self.param=param
         
         if not isinstance(ic, np.ndarray):
-            raise LauncherError("ic <numpy.ndarray>")
+            raise self.LauncherError("ic <numpy.ndarray>")
         if ic.ndim <> 1 or ic.size <> self.grid.N:
-            raise LauncherError("ic.shape = (grid.N,)")
+            raise self.LauncherError("ic.shape = (grid.N,)")
         self.ic=ic
         
 
@@ -102,12 +102,12 @@ if __name__=='__main__':
     def gaussNeg(x):
         x0=0.
         sig=5.
-        return -0.1*np.exp(-(x-x0)**2/(2*sig**2))
+        return -0.1*gauss(x, x0, sig) 
     def sinus(x):
-        return 0.1*np.sin(2.*2*np.pi*x/150.)
+        return 0.1*sin(2.*2*np.pi*x/150.)
 
     param=Param(grid, beta=1., gamma=-1., rho=gaussNeg, forcing=sinus)
-    ic=soliton(param, 0., 1.)
+    ic=soliton(grid.x, 1., beta=1., gamma=-1. )
 
     # NL model integration
     launcher=Launcher(param, ic)

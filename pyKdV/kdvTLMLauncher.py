@@ -2,18 +2,17 @@ import numpy as np
 
 from pseudoSpec1D import *
 from kdvParam import *
-#from kdvLauncher import *
 
 import fKdV
 
-class TLMLauncherError(Exception):
-    pass
 
 class TLMLauncher(object):
     """
     TLMLauncher class
     """
     doublePrecisionTolerance=1e-13
+    class TLMLauncherError(Exception):
+        pass
 
     #------------------------------------------------------
     #----| Init |------------------------------------------
@@ -21,21 +20,21 @@ class TLMLauncher(object):
 
     def __init__(self, param, traj, pert):
         if not(isinstance(param, Param)):
-            raise TLMLauncherError("param <Param>")
+            raise self.TLMLauncherError("param <Param>")
 
         self.param=param
         self.grid=param.grid
         
         if not(isinstance(traj, Trajectory)):
-            raise TLMLauncherError("traj <Trajectory>")
+            raise self.TLMLauncherError("traj <Trajectory>")
         if not (traj.grid==self.grid):
             raise SpectralGridError("traj.grid <> grid")
         self.refTraj=traj
 
         if not isinstance(pert, np.ndarray):
-            raise TLMLauncherError("pert <numpy.ndarray>")
+            raise self.TLMLauncherError("pert <numpy.ndarray>")
         if pert.ndim <> 1 or pert.size <> self.grid.N:
-            raise TLMLauncherError("pert.shape = (launcher.grid.N,)")
+            raise self.TLMLauncherError("pert.shape = (launcher.grid.N,)")
 
         # implicit filtering
         #self.pert=specFilt(pert, self.grid)
@@ -222,7 +221,7 @@ if __name__=='__main__':
 
     param=Param(grid, beta=1., gamma=-1.)
 
-    ic=soliton(param, 0., 1.)
+    ic=soliton(grid.x, 0., 1., beta=1., gamma=-1.)
 
     # NL model integration
     launcher=Launcher(param, ic)
@@ -230,7 +229,7 @@ if __name__=='__main__':
     traj=launcher.integrate(tInt, maxA)
 
 
-    pert=0.1*gauss(param, -10., grid.L/25. )
+    pert=0.1*gauss(grid.x, -10., grid.L/25. )
 
     tLauncher=TLMLauncher(param, traj, pert)
     tLauncher.gradTest()

@@ -15,7 +15,7 @@ class SVLauncher(Launcher):
     #----| Init |------------------------------------------
     #------------------------------------------------------
 
-    def __init__(self, param, traj, Nev):
+    def __init__(self, param, traj, Nev, tInt=None):
 
         if not (isinstance(traj, Trajectory)):
             raise self.LauncherError("traj <Trajecotory>")
@@ -24,6 +24,16 @@ class SVLauncher(Launcher):
 
         self.traj=traj
         self.Nev=Nev
+        
+        if tInt==None:
+            self.tInt=self.traj.tInt
+        elif isinstance(tInt, (int, float)):
+            if tInt<=self.traj.tInt:
+                self.tInt=tInt
+            else:
+                raise self.LauncherError("tInt > traj.tInt")
+        else:
+            raise self.LauncherError("tInt <None|int|float>")
 
         super(SVLauncher, self).__init__(param, self.traj.ic)
         #Launcher.__init__(self, param, self.traj.ic)
@@ -37,8 +47,10 @@ class SVLauncher(Launcher):
         param=self.param
         traj=self.traj
 
+        self.nDt=int(self.tInt/traj.dt)
+
         sVal, sVec=fKdV.fKdVLanczos(grid.N, grid.Ntrc, grid.L,
-                                    traj.dt, traj.nDt, traj.getData(), 
+                                    traj.dt, self.nDt, traj.getData(), 
                                     self.Nev,
                                     param[1], param[2], param[3], param[4])
 
@@ -58,46 +70,28 @@ class SVLauncher(Launcher):
 if __name__=='__main__':
     
     import matplotlib.pyplot as plt
+    from kdvMisc import gauss, soliton
     
     grid=SpectralGrid(150,300.)
     tInt=2.
     maxA=2.
     
-    def funcNulle(x):
-        return 0.
-    def funcNeg(x):
-        return -1.
-    def funcPos(x):
-        return 1.
-    def gauss(x):
-        return -0.1*np.exp(-(x**2)/100.)
+    def gaussNeg(x):
+        x0=0.
+        sig=5.
+        return -0.1*gauss(x, x0, sig) 
     def sinus(x):
-        return 0.1*np.sin(2.*2*np.pi*x/150.)
-    
-    param=Param(grid, sinus, funcNulle, funcPos, funcNeg, gauss)
-    
-    def soliton(grid, x0, amp, alpha, beta, gamma):
-        """ 
-        Eigen solution of the  system
-    
-        """
-        N=grid.N
-        fct=np.zeros(N, dtype=np.float64)
-    
-        sgn=beta*gamma/np.abs(beta*gamma)
-        amp=np.abs(amp)*sgn
-        discr=np.sqrt(amp*beta/(12.*gamma))*(grid.x-x0)
-        fct=amp*np.cosh(discr)**(-2)
-    
-        return fct 
-    ic=soliton(grid, 0., 1., 0., 1., -1.)
+        return 0.1*sin(2.*2*np.pi*x/150.)
+
+    param=Param(grid, beta=1., gamma=-1., rho=gaussNeg, forcing=sinus)
+    ic=soliton(grid.x, 1., beta=1., gamma=-1. )
     
     # NL model integration
     launcher=Launcher(param, ic)
     
     traj=launcher.integrate(tInt, maxA)
     
-    svLauncher=SVLauncher(param, traj,4)
+    svLauncher=SVLauncher(param, traj,2, tInt=2.3)
     sVal=svLauncher.lanczos()
     
     print(sVal)

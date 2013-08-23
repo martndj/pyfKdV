@@ -43,7 +43,7 @@ Compiling informations
 ### Instructions
  * ./ refer to the root of pyfKdV installation;
  * [soimething] means optional arguments;
- * <something> means you must replace 'something' with what is appropriate to your environment.
+ * \<something\> means you must replace 'something' with what is appropriate to your environment.
 
 
  1. On Linux OS Debian/Ubuntu, you can install it running

@@ -5,7 +5,7 @@ class SpectralGrid:
     Spectral Grid class
     for 1+1D partial differential system
 
-        Light version for pyKdV5
+        Light version for pyfKdV
             * no I\O methods
 
 
@@ -14,13 +14,13 @@ class SpectralGrid:
                 __setGridPoints()
     """
 
-    __version__='Light version for pyKdV5'
+    __version__='Light version for pyfKdV'
     __author__='Martin Deshaies-Jacques <deshaies.martin@sca.uqam.ca>'
     
     class SpectralGridError(Exception):
         pass
     
-    def __init__(self, Ntrc, L):
+    def __init__(self, Ntrc, L, aliasing=3):
         """
         Grid default constructor
         """
@@ -30,6 +30,11 @@ class SpectralGrid:
     
         self.Ntrc=Ntrc
         self.L=L
+
+        if not(type(aliasing) is int):
+            raise self.SpectralGridError("SpectralGrid(aliasing= <int>)")
+        else:
+            self.aliasing=aliasing
 
         self.__setGridPoints()
         self.dx=self.L/(self.N)
@@ -41,7 +46,7 @@ class SpectralGrid:
     #-------------------------------------------------------
 
     def __setGridPoints(self):
-        self.N=3*self.Ntrc+1
+        self.N=self.aliasing*self.Ntrc+1
         if not self.N%2:
             raise self.SpectralGridError(
                 "N must be odd (add/substract 1 to Ntrc)")

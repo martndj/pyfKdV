@@ -10,9 +10,10 @@
 
 
 #----| variables |---------------------------------------------------#
+user=martn
 libDir=/usr/lib
 pyKdVDir=../pyKdV/
-userLibDir=/home/<user>/lib/
+userLibDir=/home/${user}/lib/
 compiler=gfortran
 
 optflag=-fbounds-check -fPIC

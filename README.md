@@ -43,7 +43,7 @@ Compiling informations
 ### Instructions
  * ./ refer to the root of pyfKdV installation;
  * [something] means optional arguments;
- * \<something\> means you must replace 'something' with what is appropriate to your environment.
+ * \<something\> means you must replace it with what is appropriate to your environment.
 
 
  1. On Linux OS Debian/Ubuntu, you can install it running
@@ -128,6 +128,7 @@ Configuring and launching an integration
     
         #----| Plotting the result |------------------
         traj.waterfall()
+        plt.show()
 
 
  2. Singular vector calculation work similarly, but are way longer to obtain:

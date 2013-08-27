@@ -441,7 +441,7 @@ end function testKdvTLMPropagatorAdj
 !-------------------------------------------------------------------!
 !-------------------------------------------------------------------!
 
-function testGradient(N, Ntrc, L, dt, nDt, maxPower, &
+subroutine testGradient(N, Ntrc, L, dt, nDt, maxPower, &
                         u, x, alph, beta, gamm, rho)
     !
     !   J(x-eps\grad J)-J(x)
@@ -466,7 +466,7 @@ function testGradient(N, Ntrc, L, dt, nDt, maxPower, &
     double precision, dimension(nDt+1, N)  ::  u
 
     double precision, parameter     :: tolerance=1D-14
-    logical                         ::  test, testGradient
+    !logical                         ::  test, testGradient
 
 
     J0=fctCout(N, Ntrc, L, dt, nDt, tRealFct, u, x, &
@@ -483,7 +483,6 @@ function testGradient(N, Ntrc, L, dt, nDt, maxPower, &
     
     print"(A 5X A 18X A 13X A 20X)", "eps","J(x-eps.gradJ)","res", "1D0-res"
     
-    testGradient=.true.
     do pow=-1,maxPower, -1
         eps=1D1**pow
         Jeps=fctCout(N, Ntrc, L, dt, nDt, tRealFct, u, x-eps*grad, &
@@ -491,16 +490,18 @@ function testGradient(N, Ntrc, L, dt, nDt, maxPower, &
 
         res=((J0-Jeps)/(eps*scalar_product(grad,grad)))
 
-        test=dabs(1D0-res).lt.eps
-        if ((pow>=-7) .and. (.not. test)) then
-            testGradient=.false.
-        end if
+        !test=dabs(1D0-res).lt.eps
+        !if ((pow>=-7) .and. (.not. test)) then
+        !    testGradient=.false.
+        !end if
         
         if (pow.eq.-8) then
             print*,"--------------| half type precision |-----------------"
         end if
-        print"(A I3  E23.15  F20.15 F20.15 A L1)",&
-             "10^",pow, Jeps, res, 1D0-res, " ",test
+        !print"(A I3  E23.15  F20.15 F20.15 A L1)",&
+        !     "10^",pow, Jeps, res, 1D0-res, " ",test
+        print"(A I3  E23.15  F20.15)",&
+             "10^",pow, Jeps, res
     end do
     contains
     !------------------------------------------------------
@@ -538,6 +539,6 @@ function testGradient(N, Ntrc, L, dt, nDt, maxPower, &
                                 alph, beta, gamm, rho) 
     end function gradFC
 
-end function testGradient
+end subroutine testGradient
 
 end module kdvTLMTest

@@ -20,13 +20,14 @@ optflag=-fbounds-check -fPIC
 libflag=-L$(libDir) -larpack -lfftw3 -lm
 baseLib=matrixLib.o spectralLib.o
 kdvLib=kdvPropLib.o kdvTLMPropLib.o kdvTLMTestLib.o kdvLanczosLib.o 
-kdvTests=kdvTestAdj.x
-wrapLib=kdvWrapC.o
+kdvTests=kdvTestAdj.x kdvTestGrad.x
+wrapLib=kdvWrapC.o 
 
 kdv: $(baseLib) $(kdvLib)
 
 tests:  $(baseLib) $(kdvLib) $(kdvTests)
 	./kdvTestAdj.x
+	./kdvTestGrad.x
 
 pyKdV: libKdV.so
 	python setup.py build_ext --inplace

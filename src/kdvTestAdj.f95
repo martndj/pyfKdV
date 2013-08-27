@@ -5,7 +5,7 @@ use kdvTLMProp
 use kdvTLMTest
 implicit none
 
-integer                 ::  N, Ntrc, nDt, maxPower, i
+integer                 ::  N, Ntrc, nDt, i
 double precision        ::  L, pAmp, diff, dt, tReal
 logical                 ::  test
 
@@ -28,7 +28,6 @@ nDt=10
 
 allocate(u(nDt+1, N))
 
-maxPower=-10
 
 test=.true.
 
@@ -212,30 +211,11 @@ if (test) then
     print *, 'Testing adjoint validity of kdvTLMPropagator'
     print *, N, Ntrc, L, dt, nDt, pAmp
     if (testKdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, pAmp, diff, &
-                        ic, xBuff(1,:), yBuff(1,:), &
+                        u, xBuff(1,:), yBuff(1,:), &
                         alph, beta, gamm, rho)) then 
         print *, ' >>Test succeeded:', diff
     else
         print *, ' >>Test FAILED', diff
-        test=.false.
-    end if
-end if
-
-
-
-if (test) then
-    print *, 
-    print *, 
-    print *, '============================================================='
-    print *, '============================================================='
-    print *, 'Gradient test'
-        print *, N, Ntrc, L, dt, nDt, maxPower
-    if (testGradient(N, Ntrc, L, dt, nDt, maxPower,&
-                                        u, xBuff(1,:), &
-                                        alph, beta, gamm, rho))  then
-        print *, ' >>Test succeeded!'
-    else
-        print *, ' >>Test FAILED'
         test=.false.
     end if
 end if

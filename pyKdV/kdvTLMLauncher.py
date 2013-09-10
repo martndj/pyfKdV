@@ -63,8 +63,10 @@ class TLMLauncher(object):
 
     #-------------------------------------------------------
 
-    def integrate(self, tInt, t0=0., fullPertTraj=False):
+    def integrate(self, tInt=None, t0=0., fullPertTraj=False):
         
+        if tInt==None : tInt=self.refTraj.tInt
+
         dt=self.refTraj.dt
         if t0<0:
             raise self.TLMLauncherError("t0>=0.")
@@ -83,8 +85,9 @@ class TLMLauncher(object):
     
     #-------------------------------------------------------
 
-    def adjoint(self, tInt, t0=0., resetTReal=True): #, fullPertTraj=False
-        
+    def adjoint(self, tInt=None, t0=0., resetTReal=True):         
+
+        if tInt==None : tInt=self.refTraj.tInt
 
         dt=self.refTraj.dt
         if t0<0:
@@ -99,8 +102,9 @@ class TLMLauncher(object):
     
     #-------------------------------------------------------
 
-    def singularOp(self, tInt, t0=0.):
+    def singularOp(self, tInt=None, t0=0.):
         
+        if tInt==None : tInt=self.refTraj.tInt
 
         dt=self.refTraj.dt
         if t0<0:
@@ -112,10 +116,13 @@ class TLMLauncher(object):
 
         return self.__kdvTLMSingularOp_Fortran(dt, nDt, nDt0)
 
+    #----| Diagnostics |------------------------------------
     #-------------------------------------------------------
 
-    def gradTest(self, tInt, t0=0.):
+    def gradTest(self, tInt=None, t0=0.):
         
+        if tInt==None : tInt=self.refTraj.tInt
+
         dt=self.refTraj.dt
         if t0<0:
             raise self.TLMLauncherError("t0>=0.")
@@ -130,7 +137,7 @@ class TLMLauncher(object):
                                 dt, nDt, -10, self.pert,
                                 self.refTraj.getData()[nDt0:nDt0+nDt+1],
                                 param[1], param[2], param[3], param[4])
-                                
+
     #------------------------------------------------------
     #----| Private methods |-------------------------------
     #------------------------------------------------------
@@ -178,25 +185,13 @@ class TLMLauncher(object):
         grid=self.grid
         param=self.param
 
-        if fullPertTraj:
-            self.pertTraj.putData(fKdV.fKdVTLMPropagatorAdj(
-                                grid.N, grid.Ntrc, grid.L, dt, nDt,
-                                self.pert,
-                                self.refTraj.getData()[nDt0:nDt0+nDt+1],
-                                param[1], param[2], param[3], param[4], 
-                                fullTraj=True))
-
-            tReal=nDt*dt
-            self.pertTraj.incrmTReal(finished=True, tReal=tReal)
-            aPert=self.pertTraj[0]
-        else:
-            aPert=fKdV.fKdVTLMPropagator(
-                                grid.N, grid.Ntrc, grid.L, dt, nDt,
-                                self.pert,
-                                self.refTraj.getData()[nDt0:nDt0+nDt+1],
-                                param[1], param[2], param[3], param[4], 
-                                fullTraj=False)
-            tReal=nDt*dt
+        aPert=fKdV.fKdVTLMPropagator(
+                            grid.N, grid.Ntrc, grid.L, dt, nDt,
+                            self.pert,
+                            self.refTraj.getData()[nDt0:nDt0+nDt+1],
+                            param[1], param[2], param[3], param[4], 
+                            fullTraj=False)
+        tReal=nDt*dt
 
         self.incrmTReal(finished=True, tReal=tReal)
 
@@ -231,7 +226,8 @@ class TLMLauncher(object):
 if __name__=='__main__':
     import matplotlib.pyplot as plt
     from kdvLauncher import *
-    from kdvMisc import soliton, gauss
+    from kdvMisc import *
+    import random as rnd
 
     grid=SpectralGrid(150,300.)
     tInt=3.
@@ -240,38 +236,21 @@ if __name__=='__main__':
 
     param=Param(grid, beta=1., gamma=-1.)
 
-    ic=soliton(grid.x, 0., 1., beta=1., gamma=-1.)
 
-    # NL model integration
-    launcher=Launcher(param, ic)
     
-    traj=launcher.integrate(tInt, maxA)
+    # Adjoint testing
+    print("Testting adjoitn validity <dx, Ldy>==<L*dx, dy>")
+    dx=rndFiltVec(grid, amp=0.2)
+    dy=rndFiltVec(grid, amp=0.2)
+    u0=rndFiltVec(grid, Ntrc=grid.Ntrc/2,  amp=1.)
+    launcher=Launcher(param, u0)
+    u=launcher.integrate(tInt, 3.)
+    dyLauncher=TLMLauncher(param, u, dy)
+    dxLauncher=TLMLauncher(param, u, dx)
+    Ldy=dyLauncher.integrate()
+    LAdj_x=dxLauncher.adjoint()
+    print(np.dot(dx, Ldy)-np.dot(LAdj_x, dy))
 
-
-    pert=0.1*gauss(grid.x, -10., grid.L/25. )
-
-    tLauncher=TLMLauncher(param, traj, pert)
-    tLauncher.gradTest(tInt)
-    fPert=tLauncher.integrate(tInt, fullPertTraj=True)
-
-    aPert=tLauncher.adjoint(tInt)
-
-    sLauncher=TLMLauncher(param, traj, pert)
-    sPert=sLauncher.singularOp(tInt)
-
-
-    halfPert=tLauncher.integrate(tInt/2.)
-    halfLauncher=TLMLauncher(param, traj, halfPert)
-    halfLauncher.gradTest(tInt/2., tInt/2.)
-    fPert2=halfLauncher.integrate(tInt/2., tInt/2.)
-
-    plt.figure(1)
-    plt.plot(grid.x, fPert)
-    plt.plot(grid.x, aPert)
-    plt.plot(grid.x, sPert)
-    plt.figure(2)
-    plt.plot(grid.x, halfPert, 'b--')
-    plt.plot(grid.x, fPert, 'b')
-    plt.plot(grid.x, fPert2, 'r')
-        
-    plt.show()
+    Ldy=dyLauncher.integrate(tInt/3., tInt/2.)
+    LAdj_x=dxLauncher.adjoint(tInt/3., tInt/2.)
+    print(np.dot(dx, Ldy)-np.dot(LAdj_x, dy))

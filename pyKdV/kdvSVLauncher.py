@@ -7,7 +7,7 @@ from kdvTLMLauncher import *
 
 import fKdV
 
-class SVLauncher(Launcher):
+class SVLauncher(object):
     """
     """
     
@@ -15,7 +15,7 @@ class SVLauncher(Launcher):
     #----| Init |------------------------------------------
     #------------------------------------------------------
 
-    def __init__(self, param, traj, Nev, tInt=None):
+    def __init__(self, param, traj, tInt=None):
 
         if not (isinstance(traj, Trajectory)):
             raise self.LauncherError("traj <Trajecotory>")
@@ -23,7 +23,6 @@ class SVLauncher(Launcher):
             raise self.LauncherError("traj not integrated")
 
         self.traj=traj
-        self.Nev=Nev
         
         if tInt==None:
             self.tInt=self.traj.tInt
@@ -35,19 +34,20 @@ class SVLauncher(Launcher):
         else:
             raise self.LauncherError("tInt <None|int|float>")
 
-        super(SVLauncher, self).__init__(param, self.traj.ic)
-        #Launcher.__init__(self, param, self.traj.ic)
+        self.nDt=int(self.tInt/traj.dt)
+        self.grid=param.grid
+        self.param=param
 
 
     #------------------------------------------------------
 
-    def lanczos(self):
+    def lanczos(self, Nev):
 
+        self.Nev=Nev
         grid=self.grid
         param=self.param
         traj=self.traj
 
-        self.nDt=int(self.tInt/traj.dt)
 
         sVal, sVec=fKdV.fKdVLanczos(grid.N, grid.Ntrc, grid.L,
                                     traj.dt, self.nDt, traj.getData(), 
@@ -81,17 +81,16 @@ if __name__=='__main__':
         sig=5.
         return -0.1*gauss(x, x0, sig) 
     def sinus(x):
-        return 0.1*sin(2.*2*np.pi*x/150.)
+        return 0.1*np.sin(2.*2*np.pi*x/150.)
 
     param=Param(grid, beta=1., gamma=-1., rho=gaussNeg, forcing=sinus)
     ic=soliton(grid.x, 1., beta=1., gamma=-1. )
     
     # NL model integration
-    launcher=Launcher(param, ic)
+    launcher=Launcher(param, tInt, maxA )
+    traj=launcher.integrate(ic)
     
-    traj=launcher.integrate(tInt, maxA)
-    
-    svLauncher=SVLauncher(param, traj,2, tInt=2.3)
-    sVal=svLauncher.lanczos()
+    svLauncher=SVLauncher(param, traj, tInt=2.)
+    sVal=svLauncher.lanczos(2)
     
     print(sVal)

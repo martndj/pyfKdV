@@ -38,11 +38,15 @@ class TLMLauncher(object):
             raise self.TLMLauncherError("t0>=0.")
         if t0+tInt>self.refTraj.tInt:
             raise self.TLMLauncherError("t0+tInt<=self.refTraj.tInt")
+        self.tIntIn=tInt
         self.nDt=int((tInt)/self.dt)
         self.nDt0=int(t0/self.dt)
-        self.nDtFinal=self.nDt0+self.nDt
         # real times from step integers
         self.tInt=self.nDt*self.dt
+        if self.tInt<self.tIntIn:
+            self.nDt+=1
+            self.tInt=self.nDt*self.dt
+        self.nDtFinal=self.nDt0+self.nDt
         self.t0=self.nDt0*self.dt
         self.tFinal=self.nDtFinal*self.dt
 
@@ -77,7 +81,7 @@ class TLMLauncher(object):
         if fullPertTraj:
             self.fullPertTraj=True
             self.pertTraj=Trajectory(self.grid)
-            self.pertTraj.initialize(pert, tInt, dt)
+            self.pertTraj.initialize(pert, self.tInt, self.dt)
         else:
             self.fullPertTraj=False
 
@@ -145,7 +149,7 @@ class TLMLauncher(object):
 
             tReal=self.nDt*self.dt
             self.pertTraj.incrmTReal(finished=True, tReal=tReal)
-            fPert=self.pertTraj[nDt]
+            fPert=self.pertTraj[self.nDt]
         else:
             fPert=fKdV.fKdVTLMPropagator(
                 grid.N, grid.Ntrc, grid.L, self.dt, self.nDt, pert, 
@@ -220,50 +224,63 @@ if __name__=='__main__':
     
     # Adjoint testing
     print("Testting adjoint validity")
-    dx=rndFiltVec(grid, amp=0.2)
-    dy=rndFiltVec(grid, amp=0.2)
-    u0=rndFiltVec(grid, Ntrc=grid.Ntrc/2,  amp=1.)
-
-    M=Launcher(param, u0)
-    u=M.integrate(tInt, 3.)
+    u0=rndFiltVec(grid, Ntrc=grid.Ntrc/2,  amp=1., seed=0.1)
+    u=Launcher(param, tInt, maxA).integrate(u0)
     L=TLMLauncher(param, u)
 
+    dx=rndFiltVec(grid,  amp=0.2, seed=0.2)
+    dy=rndFiltVec(grid,  amp=0.2, seed=0.3)
+
     Ldy=L.integrate(dy)
-    LAdj_x=L.adjoint(dx)
-    print("<dx, Ldy>-<L*dx, dt> = %+.15g"%(
-                np.dot(dx, Ldy)-np.dot(LAdj_x, dy)))
+    print("dy     >>|%3d(%.3f) - L - %3d(%.3f)|>> Ldy"%(
+                    L.nDt0,  L.t0, L.nDtFinal, L.tFinal ))
+    Adx=L.adjoint(dx)
+    print("Adx    <<|%3d(%.3f) - L*- %3d(%.3f)|>>  dx"%(
+                    L.nDt0,  L.t0, L.nDtFinal, L.tFinal ))
+    print("<dx, Ldy> = %+.15g"%np.dot(dx, Ldy))
+    print("<Adx, dt> = %+.15g"%np.dot(Adx, dy))
+    print("<dx, Ldy>-<Adx, dt> = %+.15g"%(
+                np.dot(dx, Ldy)-np.dot(Adx, dy)))
 
-    #----| partial trajectory time |----
-    print("\nTestting adjoint validity for partial integration")
-    L=TLMLauncher(param, u, tInt=tInt/3., t0=tInt/2.)
-    Ldy=L.integrate(dy)
-    print("%d(%.3f) --| L |---> %d(%.3f)"%(L.nDt0,  L.t0,
-                                           L.nDtFinal, L.tFinal ))
-    LAdj_x=L.adjoint(dx)
-    print("<dx, Ldy>-<L*dx, dt> = %+.15g"%(
-                np.dot(dx, Ldy)-np.dot(LAdj_x, dy)))
-
-
-    #----| step integrations |----------
-    print("\nTestting adjoint validity for successive step integrations")
-    L1=TLMLauncher(param, u, tInt=tInt/3., t0=0.)
-    L2=TLMLauncher(param, u, tInt=tInt/2., t0=L1.tFinal)
-
-    L1dy=L1.integrate(dy)
-    print("%d(%.3f) --| L1 |---> %d(%.3f)"%(L1.nDt0,  L1.t0,
-                                            L1.nDtFinal, L1.tFinal ))
-    L2L1dy=L2.integrate(L1dy)
-    print("%d(%.3f) --| L2 |---> %d(%.3f)"%(L2.nDt0,  L2.t0,
-                                            L2.nDtFinal, L2.tFinal ))
-
-    A1dx=L1.adjoint(dx)
-    A2dx=L2.adjoint(dx)
-    A1A2dx=L1.adjoint(A2dx)
-
-
-    print("<dx,L1dy>-<A1dx, dy>     = %+.15g"%(np.dot(dx, L1dy)\
-                                            -np.dot(A1dx, dy)))
-    print("<dx,L2L1dy>-<A2dx, L1dy> = %+.15g"%(np.dot(dx, L2L1dy)\
-                                            -np.dot(A2dx, L1dy)))
-    print("<dx,L2L1dy>-<A1A2dx, dy> = %+.15g"%(np.dot(dx, L2L1dy)\
-                                            -np.dot(A1A2dx, dy)))
+#    #----| partial trajectory time |----
+#    print("\nTestting adjoint validity for partial integration")
+#    L=TLMLauncher(param, u, tInt=tInt/3., t0=tInt/2.)
+#    Ldy=L.integrate(dy)
+#    print("dy     >>|%3d(%.3f) - L - %3d(%.3f)|>> Ldy"%(
+#                    L.nDt0,  L.t0, L.nDtFinal, L.tFinal ))
+#    LAdj_x=L.adjoint(dx)
+#    print("L*dx   <<|%3d(%.3f) - L*- %3d(%.3f)|>>  dx"%(
+#                    L.nDt0,  L.t0, L.nDtFinal, L.tFinal ))
+#    print("<dx, Ldy>-<L*dx, dt> = %+.15g"%(
+#                np.dot(dx, Ldy)-np.dot(LAdj_x, dy)))
+#
+#
+#    #----| step integrations |----------
+#    print("\nTestting adjoint validity for successive step integrations")
+#    L1=TLMLauncher(param, u, tInt=tInt/3., t0=0.)
+#    L2=TLMLauncher(param, u, tInt=tInt/2., t0=L1.tFinal)
+#
+#    L1dy=L1.integrate(dy)
+#    print("dy     >>|%3d(%.3f) - L1 - %3d(%.3f)|>> L1dy"%(
+#                    L1.nDt0,  L1.t0, L1.nDtFinal, L1.tFinal ))
+#    L2L1dy=L2.integrate(L1dy)
+#    print("L1dy   >>|%3d(%.3f) - L2 - %3d(%.3f)|>> L2L1dy"%(
+#                    L2.nDt0,  L2.t0, L2.nDtFinal, L2.tFinal ))
+#
+#    A1dx=L1.adjoint(dx)
+#    print("A1dx   <<|%3d(%.3f) - L1*- %3d(%.3f)|<< dx"%(
+#                    L1.nDt0,  L1.t0, L1.nDtFinal, L1.tFinal ))
+#    A2dx=L2.adjoint(dx)
+#    print("A2dx   <<|%3d(%.3f) - L2*- %3d(%.3f)|<< dx"%(
+#                    L2.nDt0,  L2.t0, L2.nDtFinal, L2.tFinal ))
+#    A1A2dx=L1.adjoint(A2dx)
+#    print("A1A2dx <<|%3d(%.3f) - L1*- %3d(%.3f)|<< A2dx"%(
+#                    L1.nDt0,  L1.t0, L1.nDtFinal, L1.tFinal ))
+#
+#
+#    print("<dx,L1dy>-<A1dx, dy>     = %+.15g"%(np.dot(dx, L1dy)\
+#                                            -np.dot(A1dx, dy)))
+#    print("<dx,L2L1dy>-<A2dx, L1dy> = %+.15g"%(np.dot(dx, L2L1dy)\
+#                                            -np.dot(A2dx, L1dy)))
+#    print("<dx,L2L1dy>-<A1A2dx, dy> = %+.15g"%(np.dot(dx, L2L1dy)\
+#                                            -np.dot(A1A2dx, dy)))

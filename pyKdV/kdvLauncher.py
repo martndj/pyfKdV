@@ -15,7 +15,7 @@ class Launcher(object):
     #----| Init |------------------------------------------
     #------------------------------------------------------
 
-    def __init__(self, param, ic):
+    def __init__(self, param, tInt, maxA, dtMod=0.7):
 
         if not (isinstance(param, Param)):
             raise self.LauncherError(
@@ -24,12 +24,15 @@ class Launcher(object):
         self.grid=param.grid
         self.param=param
         
-        if not isinstance(ic, np.ndarray):
-            raise self.LauncherError("ic <numpy.ndarray>")
-        if ic.ndim <> 1 or ic.size <> self.grid.N:
-            raise self.LauncherError("ic.shape = (grid.N,)")
-        self.ic=ic
-        
+        self.dtMod=dtMod
+        self.dt=self.dtMod*self.dtStable(maxA)
+        self.tIntIn=tInt
+        self.nDt=int(self.tIntIn/self.dt)
+        self.tInt=self.nDt*self.dt
+        if self.tInt<self.tIntIn:
+            self.nDt+=1
+            self.tInt=self.nDt*self.dt
+        self.maxA=maxA
 
         self.propagator=self.__kdvProp_Fortran
 
@@ -51,15 +54,19 @@ class Launcher(object):
 
     #------------------------------------------------------
 
-    def integrate(self, tInt, maxA, dtMod=0.7):
-        dt=dtMod*self.dtStable(maxA)
+    def integrate(self, ic):
 
+        if not isinstance(ic, np.ndarray):
+            raise self.LauncherError("ic <numpy.ndarray>")
+        if ic.ndim <> 1 or ic.size <> self.grid.N:
+            raise self.LauncherError("ic.shape = (grid.N,)")
+        
         # Initialisation
         traj=Trajectory(self.grid)
-        traj.initialize(self.ic, tInt, dt)
+        traj.initialize(ic, self.nDt, self.dt)
 
         # calling the propagator
-        traj=self.propagator(traj)
+        traj=self.propagator(ic, traj)
 
         return traj
     
@@ -68,7 +75,7 @@ class Launcher(object):
     #----| Private methods |-------------------------------
     #------------------------------------------------------
 
-    def __kdvProp_Fortran(self, traj):
+    def __kdvProp_Fortran(self, ic, traj):
         
         # Local variables names
         grid=self.grid
@@ -76,8 +83,8 @@ class Launcher(object):
         tReal=0.
 
         trajData=fKdV.fKdVPropagator(
-                    grid.N, grid.Ntrc, grid.L, traj.dt, traj.nDt,
-                    self.ic, param[1], param[2], param[3], param[4],
+                    grid.N, grid.Ntrc, grid.L, self.dt, self.nDt,
+                    ic, param[1], param[2], param[3], param[4],
                     param[0]
                     )
 
@@ -104,14 +111,14 @@ if __name__=='__main__':
         sig=5.
         return -0.1*gauss(x, x0, sig) 
     def sinus(x):
-        return 0.1*sin(2.*2*np.pi*x/150.)
+        return 0.1*np.sin(2.*2*np.pi*x/150.)
 
     param=Param(grid, beta=1., gamma=-1., rho=gaussNeg, forcing=sinus)
     ic=soliton(grid.x, 1., beta=1., gamma=-1. )
 
     # NL model integration
-    launcher=Launcher(param, ic)
+    launcher=Launcher(param, tInt, maxA)
     
-    traj=launcher.integrate(tInt, maxA)
+    traj=launcher.integrate(ic)
     axe=traj.waterfall()
     plt.show()

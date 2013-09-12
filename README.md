@@ -19,8 +19,7 @@ __Still under development!__
 
 TODO:
 
- * Minizing algorithm
- * Data Assimilation OSSE
+ * Data Assimilation OSSE [dVar](https://github.com/martndj/dVar)
 
 About Korteweg-de-Vrie _augmented_ system and it's use in atmospheric dynamics
 ---------------------------------------------------------------------------
@@ -99,14 +98,13 @@ Configuring and launching an integration
  1. Write a launcher python script:
 
         import numpy as np
-        import random as rnd 
         from pyKdV import *
         import matplotlib.pyplot as plt 
         
         #----| Grid configuration |-------------------
         grid=SpectralGrid(150,300.)
-        tInt=60.
-        maxA=3.
+        tInt=30.
+        maxA=4.
         
         #----| KdV parameters arguments |-------------
         def gauss(x):
@@ -117,15 +115,13 @@ Configuring and launching an integration
         param=Param(grid, beta=1., gamma=-1, rho=gauss)
         
         #----| Initial condition |--------------------
-        icAmp=0.1
-        ic=np.zeros(grid.N)
-        for i in xrange(grid.N):
-            ic[i]=icAmp*rnd.random()
+        ic=rndFiltVec(grid, Ntrc=grid.Ntrc/4)\
+                    +soliton(grid.x, 0., amp=3.)
         
         #----| Launching the integration |------------
-        launcher=Launcher(param, ic)
-        traj=launcher.integrate(tInt, maxA)
-    
+        launcher=Launcher(param, tInt, maxA)
+        traj=launcher.integrate(ic)
+            
         #----| Plotting the result |------------------
         traj.waterfall()
         plt.show()

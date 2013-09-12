@@ -64,10 +64,10 @@ class Trajectory(object):
         
     #-------------------------------------------------------
     
-    def initialize(self, ic, tInt, dt):
+    def initialize(self, ic, nDt, dt):
         if ic.ndim <> 1 or ic.size <> self.grid.N:
             raise self.TrajectoryError("ic.shape<>(grid.N,)")
-        self.__allocate(tInt, dt)
+        self.__allocate(nDt, dt)
         self.ic=ic
         self.isInitialised=True
 
@@ -172,10 +172,10 @@ class Trajectory(object):
 
     #-------------------------------------------------------
 
-    def __allocate(self, tInt, dt):
-        self.nDt=int(tInt/dt)
-        self.tInt=tInt
+    def __allocate(self, nDt, dt):
+        self.nDt=nDt
         self.dt=dt
+        self.tInt=self.nDt*self.dt
         
         self.__data=np.zeros(shape=(self.nDt+1,self.grid.N))
         self.ic=np.zeros(self.grid.N)

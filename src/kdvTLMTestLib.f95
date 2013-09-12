@@ -481,7 +481,7 @@ subroutine testGradient(N, Ntrc, L, dt, nDt, maxPower, &
 
     print*,"------------------------------------------------------"
     
-    print"(A 5X A 18X A 13X A 20X)", "eps","J(x-eps.gradJ)","res", "1D0-res"
+    print"(A 5X A 18X A 13X A 20X)", "eps","J(x-eps.gradJ)","res"
     
     do pow=-1,maxPower, -1
         eps=1D1**pow

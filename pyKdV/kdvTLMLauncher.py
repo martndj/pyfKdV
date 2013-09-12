@@ -18,7 +18,7 @@ class TLMLauncher(object):
     #----| Init |------------------------------------------
     #------------------------------------------------------
 
-    def __init__(self, param, traj, pert):
+    def __init__(self, param, traj, tInt=None, t0=0.):
         if not(isinstance(param, Param)):
             raise self.TLMLauncherError("param <Param>")
 
@@ -31,22 +31,26 @@ class TLMLauncher(object):
             raise SpectralGridError("traj.grid <> grid")
         self.refTraj=traj
 
-        if not isinstance(pert, np.ndarray):
-            raise self.TLMLauncherError("pert <numpy.ndarray>")
-        if pert.ndim <> 1 or pert.size <> self.grid.N:
-            raise self.TLMLauncherError("pert.shape = (launcher.grid.N,)")
-
-        # implicit filtering
-        #self.pert=specFilt(pert, self.grid)
-        self.pert=pert
+        # Time attributes
+        self.dt=self.refTraj.dt
+        if tInt==None : tInt=self.refTraj.tInt
+        if t0<0:
+            raise self.TLMLauncherError("t0>=0.")
+        if t0+tInt>self.refTraj.tInt:
+            raise self.TLMLauncherError("t0+tInt<=self.refTraj.tInt")
+        self.nDt=int((tInt)/self.dt)
+        self.nDt0=int(t0/self.dt)
+        self.nDtFinal=self.nDt0+self.nDt
+        # real times from step integers
+        self.tInt=self.nDt*self.dt
+        self.t0=self.nDt0*self.dt
+        self.tFinal=self.nDtFinal*self.dt
 
         # Status Attributes
         self.isIntegrated=False
         self.fullPertTraj=False
-
-        # Time attribute
-        self.tInt=0.
         self.tReal=0.
+
     
     #------------------------------------------------------
     #----| Public methods |--------------------------------
@@ -63,95 +67,61 @@ class TLMLauncher(object):
 
     #-------------------------------------------------------
 
-    def integrate(self, tInt=None, t0=0., fullPertTraj=False):
+    def integrate(self, pert, fullPertTraj=False):
         
-        if tInt==None : tInt=self.refTraj.tInt
-
-        dt=self.refTraj.dt
-        if t0<0:
-            raise self.TLMLauncherError("t0>=0.")
-        if t0+tInt>self.refTraj.tInt:
-            raise self.TLMLauncherError("t0+tInt<=self.refTraj.tInt")
-        nDt=int((tInt)/dt)
-        nDt0=int(t0/dt)
-
-        return  self.integrateNDt(nDt, nDt0, fullPertTraj=fullPertTraj)
-   
-    #-----------------------------------
-
-    def integrateNDt(self, nDt, nDt0, fullPertTraj=False):
-        self.nDt=nDt
-        self.nDt0=nDt0
+        if not isinstance(pert, np.ndarray):
+            raise self.TLMLauncherError("pert <numpy.ndarray>")
+        if pert.ndim <> 1 or pert.size <> self.grid.N:
+            raise self.TLMLauncherError("pert.shape = (launcher.grid.N,)")
 
         if fullPertTraj:
             self.fullPertTraj=True
             self.pertTraj=Trajectory(self.grid)
-            self.pertTraj.initialize(self.pert, tInt, dt)
+            self.pertTraj.initialize(pert, tInt, dt)
         else:
             self.fullPertTraj=False
 
-        return self.__kdvTLMProp_Fortran(self.refTraj.dt, nDt, nDt0, 
-                                            fullOutput=self.fullPertTraj)
+        return self.__kdvTLMProp_Fortran(pert)
+                                            
 
     #-------------------------------------------------------
 
-    def adjoint(self, tInt=None, t0=0.):         
-
-        if tInt==None : tInt=self.refTraj.tInt
-
-        dt=self.refTraj.dt
-        if t0<0:
-            raise self.TLMLauncherError("t0>=0.")
-        if t0+tInt>self.refTraj.tInt:
-            raise self.TLMLauncherError("t0+tInt<=self.refTraj.tInt")
-        nDt=int((tInt)/dt)
-        nDt0=int(t0/dt)
+    def adjoint(self, pert):         
         
-        return self.adjointNDt(nDt, nDt0)
+        if not isinstance(pert, np.ndarray):
+            raise self.TLMLauncherError("pert <numpy.ndarray>")
+        if pert.ndim <> 1 or pert.size <> self.grid.N:
+            raise self.TLMLauncherError("pert.shape = (launcher.grid.N,)")
 
-    #-----------------------------------
-    def adjointNDt(self, nDt, nDt0):
-        self.nDt=nDt
-        self.nDt0=nDt0
-        return self.__kdvTLMProp_Fortran_Adj(self.refTraj.dt, nDt, nDt0) 
+        return self.__kdvTLMProp_Fortran_Adj(pert) 
     
     #-------------------------------------------------------
 
-    def singularOp(self, tInt=None, t0=0.):
+    def singularOp(self, pert):
         
+        if not isinstance(pert, np.ndarray):
+            raise self.TLMLauncherError("pert <numpy.ndarray>")
+        if pert.ndim <> 1 or pert.size <> self.grid.N:
+            raise self.TLMLauncherError("pert.shape = (launcher.grid.N,)")
         if tInt==None : tInt=self.refTraj.tInt
 
-        dt=self.refTraj.dt
-        if t0<0:
-            raise self.TLMLauncherError("t0>=0.")
-        if t0+tInt>self.refTraj.tInt:
-            raise self.TLMLauncherError("t0+tInt<=self.refTraj.tInt")
-        nDt=int((tInt)/dt)
-        nDt0=int(t0/dt)
-
-        return self.__kdvTLMSingularOp_Fortran(dt, nDt, nDt0)
+        return self.__kdvTLMSingularOp_Fortran(pert)
 
     #----| Diagnostics |------------------------------------
     #-------------------------------------------------------
 
-    def gradTest(self, tInt=None, t0=0.):
+    def gradTest(self, pert, maxPow=-10):
+        if not isinstance(pert, np.ndarray):
+            raise self.TLMLauncherError("pert <numpy.ndarray>")
+        if pert.ndim <> 1 or pert.size <> self.grid.N:
+            raise self.TLMLauncherError("pert.shape = (launcher.grid.N,)")
         
-        if tInt==None : tInt=self.refTraj.tInt
-
-        dt=self.refTraj.dt
-        if t0<0:
-            raise self.TLMLauncherError("t0>=0.")
-        if t0+tInt>self.refTraj.tInt:
-            raise self.TLMLauncherError("t0+tInt<=self.refTraj.tInt")
-        nDt=int((tInt)/dt)
-        nDt0=int(t0/dt)
-
         grid=self.grid
         param=self.param
         fKdV.fKdVTestGradient(grid.N, grid.Ntrc, grid.L, 
-                                dt, nDt, -10, self.pert,
-                                self.refTraj.getData()[nDt0:nDt0+nDt+1],
-                                param[1], param[2], param[3], param[4])
+                self.dt, self.nDt, maxPow, pert,
+                self.refTraj.getData()[self.nDt0:self.nDt0+self.nDt+1],
+                param[1], param[2], param[3], param[4])
 
     #------------------------------------------------------
     #----| Private methods |-------------------------------
@@ -160,32 +130,30 @@ class TLMLauncher(object):
     #----| Propagator (and adjoint) |-----------------------
     #------------------------------------------------------
 
-    def __kdvTLMProp_Fortran(
-            self, dt, nDt, nDt0=0, fullOutput=True):
+    def __kdvTLMProp_Fortran(self, pert, fullOutput=False):
 
         # Local variables names
         grid=self.grid
         param=self.param
 
-        if fullOutput:
+        if self.fullPertTraj:
             self.pertTraj.putData(fKdV.fKdVTLMPropagator(
-                                grid.N, grid.Ntrc, grid.L, dt, nDt,
-                                self.pert, 
-                                self.refTraj.getData()[nDt0:nDt0+nDt+1],
-                                param[1], param[2], param[3], param[4], 
-                                fullTraj=True))
+                grid.N, grid.Ntrc, grid.L, self.dt, self.nDt,pert, 
+                self.refTraj.getData()[self.nDt0:self.nDt0+self.nDt+1],
+                param[1], param[2], param[3], param[4],
+                fullTraj=True))
 
-            tReal=nDt*dt
+            tReal=self.nDt*self.dt
             self.pertTraj.incrmTReal(finished=True, tReal=tReal)
             fPert=self.pertTraj[nDt]
         else:
             fPert=fKdV.fKdVTLMPropagator(
-                                grid.N, grid.Ntrc, grid.L, dt, nDt,
-                                self.pert, 
-                                self.refTraj.getData()[nDt0:nDt0+nDt+1],
-                                param[1], param[2], param[3], param[4], 
-                                fullTraj=False)
-            tReal=nDt*dt
+                grid.N, grid.Ntrc, grid.L, self.dt, self.nDt, pert, 
+                self.refTraj.getData()[self.nDt0:self.nDt0+self.nDt+1],
+                param[1], param[2], param[3], param[4], 
+                fullTraj=False)
+
+            tReal=self.nDt*self.dt
 
         self.incrmTReal(finished=True, tReal=tReal)
         return fPert
@@ -193,38 +161,37 @@ class TLMLauncher(object):
 
     #------------------------------------------------------
 
-    def __kdvTLMProp_Fortran_Adj(self, dt, nDt, nDt0=0):
+    def __kdvTLMProp_Fortran_Adj(self, pert):
 
         # Local variables names
         grid=self.grid
         param=self.param
 
         aPert=fKdV.fKdVTLMPropagator(
-                            grid.N, grid.Ntrc, grid.L, dt, nDt,
-                            self.pert,
-                            self.refTraj.getData()[nDt0:nDt0+nDt+1],
-                            param[1], param[2], param[3], param[4], 
-                            fullTraj=False)
-        tReal=nDt*dt
+                grid.N, grid.Ntrc, grid.L, self.dt, self.nDt, pert,
+                self.refTraj.getData()[self.nDt0:self.nDt0+self.nDt+1],
+                param[1], param[2], param[3], param[4], 
+                fullTraj=False)
+
+        tReal=self.nDt*self.dt
 
         self.incrmTReal(finished=True, tReal=tReal)
-
         return aPert
 
     #------------------------------------------------------
 
-    def __kdvTLMSingularOp_Fortran(self, dt, nDt, nDt0=0):
+    def __kdvTLMSingularOp_Fortran(self, pert):
 
         # Local variables names
         grid=self.grid
         param=self.param
 
         LAdjLx=fKdV.fKdVTLMSingularOp(
-                                grid.N, grid.Ntrc, grid.L, dt, nDt,
-                                self.pert,
-                                self.refTraj.getData()[nDt0:nDt0+nDt+1],
-                                param[1], param[2], param[3], param[4])
-        tReal=2.*nDt*dt
+                grid.N, grid.Ntrc, grid.L, self.dt, self.nDt, pert,
+                self.refTraj.getData()[self.nDt0:self.nDt0+selfnDt+1],
+                param[1], param[2], param[3], param[4])
+
+        tReal=2.*self.nDt*self.dt
 
         self.incrmTReal(finished=True, tReal=tReal)
         return LAdjLx
@@ -252,64 +219,51 @@ if __name__=='__main__':
 
     
     # Adjoint testing
-    print("Testting adjoitn validity <dx, Ldy>==<L*dx, dy>")
+    print("Testting adjoint validity")
     dx=rndFiltVec(grid, amp=0.2)
     dy=rndFiltVec(grid, amp=0.2)
     u0=rndFiltVec(grid, Ntrc=grid.Ntrc/2,  amp=1.)
-    launcher=Launcher(param, u0)
-    u=launcher.integrate(tInt, 3.)
-    dyLauncher=TLMLauncher(param, u, dy)
-    dxLauncher=TLMLauncher(param, u, dx)
-    Ldy=dyLauncher.integrate()
-    LAdj_x=dxLauncher.adjoint()
-    print(np.dot(dx, Ldy)-np.dot(LAdj_x, dy))
+
+    M=Launcher(param, u0)
+    u=M.integrate(tInt, 3.)
+    L=TLMLauncher(param, u)
+
+    Ldy=L.integrate(dy)
+    LAdj_x=L.adjoint(dx)
+    print("<dx, Ldy>-<L*dx, dt> = %+.15g"%(
+                np.dot(dx, Ldy)-np.dot(LAdj_x, dy)))
 
     #----| partial trajectory time |----
-    Ldy=dyLauncher.integrate(tInt/3., tInt/2.)
-    LAdj_x=dxLauncher.adjoint(tInt/3., tInt/2.)
-    print(np.dot(dx, Ldy)-np.dot(LAdj_x, dy))
+    print("\nTestting adjoint validity for partial integration")
+    L=TLMLauncher(param, u, tInt=tInt/3., t0=tInt/2.)
+    Ldy=L.integrate(dy)
+    print("%d(%.3f) --| L |---> %d(%.3f)"%(L.nDt0,  L.t0,
+                                           L.nDtFinal, L.tFinal ))
+    LAdj_x=L.adjoint(dx)
+    print("<dx, Ldy>-<L*dx, dt> = %+.15g"%(
+                np.dot(dx, Ldy)-np.dot(LAdj_x, dy)))
 
 
     #----| step integrations |----------
-    step=tInt/3.
-    L1=TLMLauncher(param, u, dy)
-    L1dy=L1.integrate(step, t0=0.)
+    print("\nTestting adjoint validity for successive step integrations")
+    L1=TLMLauncher(param, u, tInt=tInt/3., t0=0.)
+    L2=TLMLauncher(param, u, tInt=tInt/2., t0=L1.tFinal)
 
-    L2=TLMLauncher(param, u, L1dy)
-    L2L1dy=L2.integrate(step, t0=L1.tReal)
-    
-    A2=TLMLauncher(param, u, L2L1dy)
-    A2dx=A2.adjoint(step, t0=L1.tReal)
+    L1dy=L1.integrate(dy)
+    print("%d(%.3f) --| L1 |---> %d(%.3f)"%(L1.nDt0,  L1.t0,
+                                            L1.nDtFinal, L1.tFinal ))
+    L2L1dy=L2.integrate(L1dy)
+    print("%d(%.3f) --| L2 |---> %d(%.3f)"%(L2.nDt0,  L2.t0,
+                                            L2.nDtFinal, L2.tFinal ))
 
-    A1=TLMLauncher(param, u, A2dx)
-    A1A2dx=A1.adjoint(step, t0=0.)
-    print(np.dot(dx, L2L1dy)-np.dot(A1A2dx, dy))
+    A1dx=L1.adjoint(dx)
+    A2dx=L2.adjoint(dx)
+    A1A2dx=L1.adjoint(A2dx)
 
-    #----| step integrations |----------
-    step=tInt/3.
-    L1=TLMLauncher(param, u, dy)
-    L1dy=L1.integrate(step, t0=0.)
-    nDt_1=L1.nDt
-    nDt0_1=L1.nDt0
-    print(nDt0_1, nDt_1)
-    
-    L2=TLMLauncher(param, u, L1dy)
-    L2L1dy=L2.integrate(step, t0=L1.tReal)
-    nDt_2=L2.nDt
-    nDt0_2=L2.nDt0
-    print(nDt0_2, nDt_2)
 
-    A2=TLMLauncher(param, u, L2L1dy)
-    A2dx=A2.adjointNDt(nDt_2, nDt0_2)
-    A1=TLMLauncher(param, u, A2dx)
-    A1A2dx=A2.adjointNDt(nDt_1, nDt0_1)
-
-    A1=TLMLauncher(param, u, dx)
-    A1dx=dxLauncher.adjointNDt(nDt_1, nDt0_1)
     print("<dx,L1dy>-<A1dx, dy>     = %+.15g"%(np.dot(dx, L1dy)\
                                             -np.dot(A1dx, dy)))
     print("<dx,L2L1dy>-<A2dx, L1dy> = %+.15g"%(np.dot(dx, L2L1dy)\
                                             -np.dot(A2dx, L1dy)))
     print("<dx,L2L1dy>-<A1A2dx, dy> = %+.15g"%(np.dot(dx, L2L1dy)\
                                             -np.dot(A1A2dx, dy)))
-

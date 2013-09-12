@@ -10,7 +10,6 @@ class TLMLauncher(object):
     """
     TLMLauncher class
     """
-    doublePrecisionTolerance=1e-13
     class TLMLauncherError(Exception):
         pass
 
@@ -32,15 +31,15 @@ class TLMLauncher(object):
         self.refTraj=traj
 
         # Time attributes
-        self.dt=self.refTraj.dt
         if tInt==None : tInt=self.refTraj.tInt
-        if t0<0:
+        if t0<0.:
             raise self.TLMLauncherError("t0>=0.")
         if t0+tInt>self.refTraj.tInt:
             raise self.TLMLauncherError("t0+tInt<=self.refTraj.tInt")
+        self.dt=self.refTraj.dt
         self.tIntIn=tInt
-        self.nDt=int((tInt)/self.dt)
         self.nDt0=int(t0/self.dt)
+        self.nDt=int((tInt)/self.dt)
         # real times from step integers
         self.tInt=self.nDt*self.dt
         if self.tInt<self.tIntIn:
@@ -81,7 +80,7 @@ class TLMLauncher(object):
         if fullPertTraj:
             self.fullPertTraj=True
             self.pertTraj=Trajectory(self.grid)
-            self.pertTraj.initialize(pert, self.tInt, self.dt)
+            self.pertTraj.initialize(pert, self.nDt, self.dt)
         else:
             self.fullPertTraj=False
 
@@ -142,7 +141,7 @@ class TLMLauncher(object):
 
         if self.fullPertTraj:
             self.pertTraj.putData(fKdV.fKdVTLMPropagator(
-                grid.N, grid.Ntrc, grid.L, self.dt, self.nDt,pert, 
+                grid.N, grid.Ntrc, grid.L, self.dt, self.nDt, pert, 
                 self.refTraj.getData()[self.nDt0:self.nDt0+self.nDt+1],
                 param[1], param[2], param[3], param[4],
                 fullTraj=True))
@@ -213,35 +212,51 @@ if __name__=='__main__':
     from kdvLauncher import *
     from kdvMisc import *
 
+    testAdjoint=True
+    tlmVsModel=False
+
     grid=SpectralGrid(150,300.)
     tInt=3.
     maxA=2.
 
-
     param=Param(grid, beta=1., gamma=-1.)
-
+    
+    #----| Reference trajectory |-----------------
+    u0=rndFiltVec(grid, Ntrc=grid.Ntrc/2,  amp=0.3, seed=0.1)
+    M=Launcher(param, tInt, maxA)
+    u=M.integrate(u0)
 
     
-    # Adjoint testing
-    print("Testting adjoint validity")
-    u0=rndFiltVec(grid, Ntrc=grid.Ntrc/2,  amp=1., seed=0.1)
-    u=Launcher(param, tInt, maxA).integrate(u0)
-    L=TLMLauncher(param, u)
 
-    dx=rndFiltVec(grid,  amp=0.2, seed=0.2)
-    dy=rndFiltVec(grid,  amp=0.2, seed=0.3)
+    #----| TLM vs NL model |----------------------
+    if tlmVsModel:
+        du=soliton(grid.x, 0. , amp=2., beta=1., gamma=-1. )
+        L=TLMLauncher(param, u)
+    
+        u_pert=M.integrate(u0+du)
+        pert=L.integrate(du, fullPertTraj=True)
+        plt.plot(grid.x, u_pert.final())
+        plt.plot(grid.x, u.final()+pert)
 
-    Ldy=L.integrate(dy)
-    print("dy     >>|%3d(%.3f) - L - %3d(%.3f)|>> Ldy"%(
-                    L.nDt0,  L.t0, L.nDtFinal, L.tFinal ))
-    Adx=L.adjoint(dx)
-    print("Adx    <<|%3d(%.3f) - L*- %3d(%.3f)|>>  dx"%(
-                    L.nDt0,  L.t0, L.nDtFinal, L.tFinal ))
-    print("<dx, Ldy> = %+.15g"%np.dot(dx, Ldy))
-    print("<Adx, dt> = %+.15g"%np.dot(Adx, dy))
-    print("<dx, Ldy>-<Adx, dt> = %+.15g"%(
-                np.dot(dx, Ldy)-np.dot(Adx, dy)))
 
+    #----| Adjoint testing |----------------------
+    if testAdjoint:
+        print("Testting adjoint validity")
+        L=TLMLauncher(param, u)
+    
+        dx=rndFiltVec(grid,  amp=0.2, seed=0.2)
+        dy=rndFiltVec(grid,  amp=0.2, seed=0.3)
+    
+        Ldy=L.integrate(dy)
+        print("dy     >>|%3d(%.3f) - L - %3d(%.3f)|>> Ldy"%(
+                        L.nDt0,  L.t0, L.nDtFinal, L.tFinal ))
+        Adx=L.adjoint(dx)
+        print("Adx    <<|%3d(%.3f) - L*- %3d(%.3f)|>>  dx"%(
+                        L.nDt0,  L.t0, L.nDtFinal, L.tFinal ))
+        print("<dx, Ldy> = %+.15g"%np.dot(dx, Ldy))
+        print("<Adx, dt> = %+.15g"%np.dot(Adx, dy))
+        print("<dx, Ldy>-<Adx, dt> = %+.15g"%(
+                    np.dot(dx, Ldy)-np.dot(Adx, dy)))
 #    #----| partial trajectory time |----
 #    print("\nTestting adjoint validity for partial integration")
 #    L=TLMLauncher(param, u, tInt=tInt/3., t0=tInt/2.)

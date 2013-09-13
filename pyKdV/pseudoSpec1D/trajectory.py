@@ -133,6 +133,11 @@ class Trajectory(object):
         self.__data=data
         self.shape=data.shape
 
+    #-------------------------------------------------------
+
+    def whereTime(self, time):
+        return np.where(self.time>=time)[0].min()
+
 
     #-------------------------------------------------------
     #----| Fortran compatible I/O Methods |-----------------

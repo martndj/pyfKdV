@@ -80,7 +80,7 @@ Compiling informations
         make pyKdV [clean]
 
 
- 4. Add the path to the python module pyKdV to your PYTHONPATH environment variable, in Linux bash environment you can do it running.
+ 4. Add the path to the python modules pyKdV and pseudoSpec1D  to your PYTHONPATH environment variable, in Linux bash environment you can do it running.
  
         export PYTHONPATH=".:<path to ./>"
 

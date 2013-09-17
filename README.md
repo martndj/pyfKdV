@@ -102,7 +102,7 @@ Configuring and launching an integration
         import matplotlib.pyplot as plt 
         
         #----| Grid configuration |-------------------
-        grid=SpectralGrid(150,300.)
+        grid=pseudoSpec1D.SpectralGrid(150,300.)
         tInt=30.
         maxA=4.
         
@@ -119,8 +119,8 @@ Configuring and launching an integration
                     +soliton(grid.x, 0., amp=3.)
         
         #----| Launching the integration |------------
-        launcher=Launcher(tInt, param, maxA)
-        traj=launcher.integrate(ic)
+        launcher=Launcher(param, maxA)
+        traj=launcher.integrate(ic, tInt)
             
         #----| Plotting the result |------------------
         traj.waterfall()
@@ -129,8 +129,8 @@ Configuring and launching an integration
 
  2. Singular vector calculation work similarly, but are way longer to obtain:
     
-        svLauncher=SVLauncher(param, traj, 3)
-        sVal=svLauncher.lanczos()
+        svLauncher=SVLauncher(traj, param)
+        sVal=svLauncher.lanczos(3)
         print(sVal)
         plt.plot(grid.x, svLauncher.sVec[0])
 

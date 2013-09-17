@@ -17,7 +17,7 @@ class TLMLauncher(object):
     #----| Init |------------------------------------------
     #------------------------------------------------------
 
-    def __init__(self, param, traj):
+    def __init__(self, traj, param):
         if not(isinstance(param, Param)):
             raise self.TLMLauncherError("param <Param>")
 
@@ -236,7 +236,7 @@ if __name__=='__main__':
     #----| TLM vs NL model |----------------------
     if tlmVsModel:
         du=soliton(grid.x, 0. , amp=2., beta=1., gamma=-1. )
-        L=TLMLauncher(param, u)
+        L=TLMLauncher(u, param)
     
         u_pert=M.integrate(u0+du)
         pert=L.integrate(du, fullPertTraj=True)
@@ -248,7 +248,7 @@ if __name__=='__main__':
     if testAdjoint:
         Ntrc=grid.Ntrc
         print("Testting adjoint validity")
-        L=TLMLauncher(param, u)
+        L=TLMLauncher(u, param)
     
         dx=rndFiltVec(grid, Ntrc=Ntrc, amp=0.2, seed=0.2)
         dy=rndFiltVec(grid, Ntrc=Ntrc, amp=0.2, seed=0.3)
@@ -267,7 +267,7 @@ if __name__=='__main__':
 
     #----| partial trajectory time |----
     print("\nTestting adjoint validity for partial integration")
-    L=TLMLauncher(param, u)
+    L=TLMLauncher(u, param)
     Ldy=L.integrate(dy, tInt=tInt/3., t0=tInt/2.)
     print("dy     >>|%3d(%.3f) - L - %3d(%.3f)|>> Ldy"%(
                     L.nDt0,  L.t0, L.nDtFinal, L.tFinal ))
@@ -280,8 +280,8 @@ if __name__=='__main__':
 
     #----| step integrations |----------
     print("\nTestting adjoint validity for successive step integrations")
-    L1=TLMLauncher(param, u)
-    L2=TLMLauncher(param, u)
+    L1=TLMLauncher(u, param)
+    L2=TLMLauncher(u, param)
 
     L1dy=L1.integrate(dy, tInt=tInt/3., t0=0.)
     print("dy     >>|%3d(%.3f) - L1 - %3d(%.3f)|>> L1dy"%(

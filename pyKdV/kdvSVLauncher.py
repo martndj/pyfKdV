@@ -17,7 +17,7 @@ class SVLauncher(object):
     #----| Init |------------------------------------------
     #------------------------------------------------------
 
-    def __init__(self, param, traj):
+    def __init__(self, traj, param):
 
         if not (isinstance(traj, Trajectory)):
             raise self.SVLauncherError("traj <Trajecotory>")
@@ -77,6 +77,7 @@ if __name__=='__main__':
     grid=SpectralGrid(150,300.)
     tInt=2.
     maxA=2.
+    Nev=2
     
     def gaussNeg(x):
         x0=0.
@@ -92,7 +93,10 @@ if __name__=='__main__':
     launcher=Launcher(param, maxA )
     traj=launcher.integrate(ic, tInt)
     
-    svLauncher=SVLauncher(param, traj)
-    sVal=svLauncher.lanczos(2, tInt=2.)
+    svLauncher=SVLauncher(traj, param)
+    sVal=svLauncher.lanczos(Nev, tInt=2.)
     
     print(sVal)
+    for i in xrange(Nev):
+        plt.plot(grid.x,svLauncher.sVec[i])
+    plt.show()

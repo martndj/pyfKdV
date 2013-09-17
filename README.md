@@ -119,7 +119,7 @@ Configuring and launching an integration
                     +soliton(grid.x, 0., amp=3.)
         
         #----| Launching the integration |------------
-        launcher=Launcher(param, tInt, maxA)
+        launcher=Launcher(tInt, param, maxA)
         traj=launcher.integrate(ic)
             
         #----| Plotting the result |------------------

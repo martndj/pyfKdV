@@ -223,7 +223,7 @@ if __name__=='__main__':
     
     #----| Reference trajectory |-----------------
     u0=rndFiltVec(grid, Ntrc=grid.Ntrc/5,  amp=0.3, seed=0.1)
-    M=Launcher(param, tInt, maxA)
+    M=Launcher(tInt, param, maxA)
     u=M.integrate(u0)
 
     
@@ -241,7 +241,7 @@ if __name__=='__main__':
 
     #----| Adjoint testing |----------------------
     if testAdjoint:
-        Ntrc=grid.Ntrc/3
+        Ntrc=grid.Ntrc
         print("Testting adjoint validity")
         L=TLMLauncher(param, u)
     

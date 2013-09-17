@@ -15,7 +15,7 @@ class Launcher(object):
     #----| Init |------------------------------------------
     #------------------------------------------------------
 
-    def __init__(self, param, tInt, maxA, dtMod=0.7):
+    def __init__(self, tInt, param, maxA, dtMod=0.7):
 
         if not (isinstance(param, Param)):
             raise self.LauncherError(
@@ -117,7 +117,7 @@ if __name__=='__main__':
     ic=soliton(grid.x, 1., beta=1., gamma=-1. )
 
     # NL model integration
-    launcher=Launcher(param, tInt, maxA)
+    launcher=Launcher(tInt, param, maxA)
     
     traj=launcher.integrate(ic)
     axe=traj.waterfall()

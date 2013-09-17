@@ -10,6 +10,8 @@ import fKdV
 class SVLauncher(object):
     """
     """
+    class SVLauncherError(Exception):
+        pass
     
     #------------------------------------------------------
     #----| Init |------------------------------------------
@@ -18,9 +20,9 @@ class SVLauncher(object):
     def __init__(self, param, traj, tInt=None):
 
         if not (isinstance(traj, Trajectory)):
-            raise self.LauncherError("traj <Trajecotory>")
+            raise self.SVLauncherError("traj <Trajecotory>")
         if not traj.isIntegrated:
-            raise self.LauncherError("traj not integrated")
+            raise self.SVLauncherError("traj not integrated")
 
         self.traj=traj
         
@@ -30,9 +32,9 @@ class SVLauncher(object):
             if tInt<=self.traj.tInt:
                 self.tInt=tInt
             else:
-                raise self.LauncherError("tInt > traj.tInt")
+                raise self.SVLauncherError("tInt > traj.tInt")
         else:
-            raise self.LauncherError("tInt <None|int|float>")
+            raise self.SVLauncherError("tInt <None|int|float>")
 
         self.nDt=int(self.tInt/traj.dt)
         self.grid=param.grid
@@ -87,7 +89,7 @@ if __name__=='__main__':
     ic=soliton(grid.x, 1., beta=1., gamma=-1. )
     
     # NL model integration
-    launcher=Launcher(param, tInt, maxA )
+    launcher=Launcher(tInt, param, maxA )
     traj=launcher.integrate(ic)
     
     svLauncher=SVLauncher(param, traj, tInt=2.)

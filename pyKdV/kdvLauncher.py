@@ -15,7 +15,7 @@ class Launcher(object):
     #----| Init |------------------------------------------
     #------------------------------------------------------
 
-    def __init__(self, tInt, param, maxA, dtMod=0.7):
+    def __init__(self, param, maxA, dtMod=0.7):
 
         if not (isinstance(param, Param)):
             raise self.LauncherError(
@@ -26,12 +26,6 @@ class Launcher(object):
         
         self.dtMod=dtMod
         self.dt=self.dtMod*self.dtStable(maxA)
-        self.tIntIn=tInt
-        self.nDt=int(self.tIntIn/self.dt)
-        self.tInt=self.nDt*self.dt
-        if self.tInt<self.tIntIn:
-            self.nDt+=1
-            self.tInt=self.nDt*self.dt
         self.maxA=maxA
 
         self.propagator=self.__kdvProp_Fortran
@@ -54,12 +48,18 @@ class Launcher(object):
 
     #------------------------------------------------------
 
-    def integrate(self, ic):
+    def integrate(self, ic, tInt):
 
         if not isinstance(ic, np.ndarray):
             raise self.LauncherError("ic <numpy.ndarray>")
         if ic.ndim <> 1 or ic.size <> self.grid.N:
             raise self.LauncherError("ic.shape = (grid.N,)")
+        self.tIntIn=tInt
+        self.nDt=int(self.tIntIn/self.dt)
+        self.tInt=self.nDt*self.dt
+        if self.tInt<self.tIntIn:
+            self.nDt+=1
+            self.tInt=self.nDt*self.dt
         
         # Initialisation
         traj=Trajectory(self.grid)
@@ -117,8 +117,8 @@ if __name__=='__main__':
     ic=soliton(grid.x, 1., beta=1., gamma=-1. )
 
     # NL model integration
-    launcher=Launcher(tInt, param, maxA)
+    launcher=Launcher(param, maxA)
     
-    traj=launcher.integrate(ic)
+    traj=launcher.integrate(ic, tInt)
     axe=traj.waterfall()
     plt.show()

@@ -89,8 +89,8 @@ if __name__=='__main__':
     ic=soliton(grid.x, 1., beta=1., gamma=-1. )
     
     # NL model integration
-    launcher=Launcher(tInt, param, maxA )
-    traj=launcher.integrate(ic)
+    launcher=Launcher(param, maxA )
+    traj=launcher.integrate(ic, tInt)
     
     svLauncher=SVLauncher(param, traj, tInt=2.)
     sVal=svLauncher.lanczos(2)

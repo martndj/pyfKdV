@@ -6,4 +6,3 @@ from kdvLauncher import *
 from kdvTLMLauncher import *
 from kdvSVLauncher import *
 from kdvMisc import *
-import pseudoSpec1D

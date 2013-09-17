@@ -17,7 +17,7 @@ class SVLauncher(object):
     #----| Init |------------------------------------------
     #------------------------------------------------------
 
-    def __init__(self, param, traj, tInt=None):
+    def __init__(self, param, traj):
 
         if not (isinstance(traj, Trajectory)):
             raise self.SVLauncherError("traj <Trajecotory>")
@@ -26,6 +26,13 @@ class SVLauncher(object):
 
         self.traj=traj
         
+        self.grid=param.grid
+        self.param=param
+
+
+    #------------------------------------------------------
+
+    def lanczos(self, Nev, tInt=None):
         if tInt==None:
             self.tInt=self.traj.tInt
         elif isinstance(tInt, (int, float)):
@@ -36,14 +43,7 @@ class SVLauncher(object):
         else:
             raise self.SVLauncherError("tInt <None|int|float>")
 
-        self.nDt=int(self.tInt/traj.dt)
-        self.grid=param.grid
-        self.param=param
-
-
-    #------------------------------------------------------
-
-    def lanczos(self, Nev):
+        self.nDt=int(self.tInt/self.traj.dt)
 
         self.Nev=Nev
         grid=self.grid
@@ -92,7 +92,7 @@ if __name__=='__main__':
     launcher=Launcher(param, maxA )
     traj=launcher.integrate(ic, tInt)
     
-    svLauncher=SVLauncher(param, traj, tInt=2.)
-    sVal=svLauncher.lanczos(2)
+    svLauncher=SVLauncher(param, traj)
+    sVal=svLauncher.lanczos(2, tInt=2.)
     
     print(sVal)

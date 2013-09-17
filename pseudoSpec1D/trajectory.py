@@ -135,8 +135,11 @@ class Trajectory(object):
 
     #-------------------------------------------------------
 
-    def whereTime(self, time):
+    def whereTimeIdx(self, time):
         return np.where(self.time>=time)[0].min()
+
+    def whereTime(self, time):
+        return self.__data[self.whereTimeIdx(time)]
 
 
     #-------------------------------------------------------

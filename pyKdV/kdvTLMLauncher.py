@@ -17,18 +17,15 @@ class TLMLauncher(object):
     #----| Init |------------------------------------------
     #------------------------------------------------------
 
-    def __init__(self, traj, param):
+    def __init__(self, param, traj=None):
         if not(isinstance(param, Param)):
             raise self.TLMLauncherError("param <Param>")
 
         self.param=param
         self.grid=param.grid
-        
-        if not(isinstance(traj, Trajectory)):
-            raise self.TLMLauncherError("traj <Trajectory>")
-        if not (traj.grid==self.grid):
-            raise SpectralGridError("traj.grid <> grid")
-        self.refTraj=traj
+
+        self.isInitialized=False 
+        if not traj==None: self.initialize(traj)
 
 
         # Status Attributes
@@ -40,7 +37,16 @@ class TLMLauncher(object):
     #------------------------------------------------------
     #----| Public methods |--------------------------------
     #------------------------------------------------------
-
+    
+    def initialize(self, traj):
+        if not(isinstance(traj, Trajectory)):
+            raise self.TLMLauncherError("traj <Trajectory>")
+        if not (traj.grid==self.grid):
+            raise SpectralGridError("traj.grid <> grid")
+        self.refTraj=traj
+        self.isInitialized=True 
+    
+    #------------------------------------------------------
     
     def incrmTReal(self, finished=False, tReal=None):
         if tReal<>None:
@@ -54,6 +60,8 @@ class TLMLauncher(object):
 
     def integrate(self, pert, tInt=None, t0=0., fullPertTraj=False):
         
+        if not self.isInitialized:
+            raise self.TLMLauncherError("Not initialized with a reference trajectory")
         if not isinstance(pert, np.ndarray):
             raise self.TLMLauncherError("pert <numpy.ndarray>")
         if pert.ndim <> 1 or pert.size <> self.grid.N:
@@ -236,7 +244,7 @@ if __name__=='__main__':
     #----| TLM vs NL model |----------------------
     if tlmVsModel:
         du=soliton(grid.x, 0. , amp=2., beta=1., gamma=-1. )
-        L=TLMLauncher(u, param)
+        L=TLMLauncher(param, traj=u)
     
         u_pert=M.integrate(u0+du)
         pert=L.integrate(du, fullPertTraj=True)
@@ -248,7 +256,7 @@ if __name__=='__main__':
     if testAdjoint:
         Ntrc=grid.Ntrc
         print("Testting adjoint validity")
-        L=TLMLauncher(u, param)
+        L=TLMLauncher(param, traj=u)
     
         dx=rndFiltVec(grid, Ntrc=Ntrc, amp=0.2, seed=0.2)
         dy=rndFiltVec(grid, Ntrc=Ntrc, amp=0.2, seed=0.3)
@@ -267,7 +275,7 @@ if __name__=='__main__':
 
     #----| partial trajectory time |----
     print("\nTestting adjoint validity for partial integration")
-    L=TLMLauncher(u, param)
+    L=TLMLauncher(param, traj=u)
     Ldy=L.integrate(dy, tInt=tInt/3., t0=tInt/2.)
     print("dy     >>|%3d(%.3f) - L - %3d(%.3f)|>> Ldy"%(
                     L.nDt0,  L.t0, L.nDtFinal, L.tFinal ))
@@ -280,8 +288,8 @@ if __name__=='__main__':
 
     #----| step integrations |----------
     print("\nTestting adjoint validity for successive step integrations")
-    L1=TLMLauncher(u, param)
-    L2=TLMLauncher(u, param)
+    L1=TLMLauncher(param, traj=u)
+    L2=TLMLauncher(param, traj=u)
 
     L1dy=L1.integrate(dy, tInt=tInt/3., t0=0.)
     print("dy     >>|%3d(%.3f) - L1 - %3d(%.3f)|>> L1dy"%(

@@ -2,15 +2,16 @@ import numpy as np
 
 from pseudoSpec1D import *
 from kdvParam import *
+from Launcher1D import TLMLauncher
 
 import fKdV
 
 
-class TLMLauncher(object):
+class kdvTLMLauncher(TLMLauncher):
     """
-    TLMLauncher class
+    kdvTLMLauncher class
     """
-    class TLMLauncherError(Exception):
+    class kdvTLMLauncherError(Exception):
         pass
 
     #------------------------------------------------------
@@ -19,7 +20,7 @@ class TLMLauncher(object):
 
     def __init__(self, param, traj=None):
         if not(isinstance(param, Param)):
-            raise self.TLMLauncherError("param <Param>")
+            raise self.kdvTLMLauncherError("param <Param>")
 
         self.param=param
         self.grid=param.grid
@@ -33,71 +34,19 @@ class TLMLauncher(object):
         self.fullPertTraj=False
         self.tReal=0.
 
+        self.propagator=self.__kdvTLMProp_Fortran
+        self.propagatorAdj=self.__kdvTLMProp_Fortran_Adj
     
     #------------------------------------------------------
     #----| Public methods |--------------------------------
     #------------------------------------------------------
     
-    def initialize(self, traj):
-        if not(isinstance(traj, Trajectory)):
-            raise self.TLMLauncherError("traj <Trajectory>")
-        if not (traj.grid==self.grid):
-            raise SpectralGridError("traj.grid <> grid")
-        self.refTraj=traj
-        self.isInitialized=True 
-    
-    #------------------------------------------------------
-    
-    def incrmTReal(self, finished=False, tReal=None):
-        if tReal<>None:
-            self.tReal=tReal
-        if finished:
-            self.isIntegrated=True
-        else:
-            self.tReal+=self.refTraj.dt
-
-    #-------------------------------------------------------
-
-    def integrate(self, pert, tInt=None, t0=0., fullPertTraj=False):
-        
-        if not self.isInitialized:
-            raise self.TLMLauncherError("Not initialized with a reference trajectory")
-        if not isinstance(pert, np.ndarray):
-            raise self.TLMLauncherError("pert <numpy.ndarray>")
-        if pert.ndim <> 1 or pert.size <> self.grid.N:
-            raise self.TLMLauncherError("pert.shape = (launcher.grid.N,)")
-        self.__timeValidation(tInt, t0)
-
-        if fullPertTraj:
-            self.fullPertTraj=True
-            self.pertTraj=Trajectory(self.grid)
-            self.pertTraj.initialize(pert, self.nDt, self.dt)
-        else:
-            self.fullPertTraj=False
-
-        return self.__kdvTLMProp_Fortran(pert)
-                                            
-
-    #-------------------------------------------------------
-
-    def adjoint(self, pert, tInt=None, t0=0.):         
-        
-        if not isinstance(pert, np.ndarray):
-            raise self.TLMLauncherError("pert <numpy.ndarray>")
-        if pert.ndim <> 1 or pert.size <> self.grid.N:
-            raise self.TLMLauncherError("pert.shape = (launcher.grid.N,)")
-        self.__timeValidation(tInt, t0)
-
-        return self.__kdvTLMProp_Fortran_Adj(pert) 
-    
-    #-------------------------------------------------------
-
     def singularOp(self, pert, tInt=None, t0=0.):
         
         if not isinstance(pert, np.ndarray):
-            raise self.TLMLauncherError("pert <numpy.ndarray>")
+            raise self.kdvTLMLauncherError("pert <numpy.ndarray>")
         if pert.ndim <> 1 or pert.size <> self.grid.N:
-            raise self.TLMLauncherError("pert.shape = (launcher.grid.N,)")
+            raise self.kdvTLMLauncherError("pert.shape = (launcher.grid.N,)")
         self.__timeValidation(tInt, t0)
 
         return self.__kdvTLMSingularOp_Fortran(pert)
@@ -107,9 +56,9 @@ class TLMLauncher(object):
 
     def gradTest(self, pert, tInt=None, t0=0., maxPow=-10):
         if not isinstance(pert, np.ndarray):
-            raise self.TLMLauncherError("pert <numpy.ndarray>")
+            raise self.kdvTLMLauncherError("pert <numpy.ndarray>")
         if pert.ndim <> 1 or pert.size <> self.grid.N:
-            raise self.TLMLauncherError("pert.shape = (launcher.grid.N,)")
+            raise self.kdvTLMLauncherError("pert.shape = (launcher.grid.N,)")
         self.__timeValidation(tInt, t0)
 
         grid=self.grid
@@ -120,29 +69,7 @@ class TLMLauncher(object):
                 param[1], param[2], param[3], param[4])
 
     #------------------------------------------------------
-    #----| Private methods |-------------------------------
-    #------------------------------------------------------
-    
-    def __timeValidation(self, tInt, t0):
-
-        # Time attributes
-        if tInt==None : tInt=self.refTraj.tInt
-        if t0<0.:
-            raise self.TLMLauncherError("t0>=0.")
-        if t0+tInt>self.refTraj.tInt:
-            raise self.TLMLauncherError("t0+tInt<=self.refTraj.tInt")
-        self.dt=self.refTraj.dt
-        self.tIntIn=tInt
-        self.nDt0=int(t0/self.dt)
-        self.nDt=int((tInt)/self.dt)
-        # real times from step integers
-        self.tInt=self.nDt*self.dt
-        if self.tInt<self.tIntIn:
-            self.nDt+=1
-            self.tInt=self.nDt*self.dt
-        self.nDtFinal=self.nDt0+self.nDt
-        self.t0=self.nDt0*self.dt
-        self.tFinal=self.nDtFinal*self.dt
+    #----| Private methods          |----------------------
     #----| Propagator (and adjoint) |-----------------------
     #------------------------------------------------------
 
@@ -236,7 +163,7 @@ if __name__=='__main__':
     
     #----| Reference trajectory |-----------------
     u0=rndFiltVec(grid, Ntrc=grid.Ntrc/5,  amp=0.3, seed=0.1)
-    M=Launcher(param, maxA)
+    M=kdvLauncher(param, maxA)
     u=M.integrate(u0, tInt)
 
     
@@ -244,7 +171,7 @@ if __name__=='__main__':
     #----| TLM vs NL model |----------------------
     if tlmVsModel:
         du=soliton(grid.x, 0. , amp=2., beta=1., gamma=-1. )
-        L=TLMLauncher(param, traj=u)
+        L=kdvTLMLauncher(param, traj=u)
     
         u_pert=M.integrate(u0+du)
         pert=L.integrate(du, fullPertTraj=True)
@@ -256,7 +183,7 @@ if __name__=='__main__':
     if testAdjoint:
         Ntrc=grid.Ntrc
         print("Testting adjoint validity")
-        L=TLMLauncher(param, traj=u)
+        L=kdvTLMLauncher(param, traj=u)
     
         dx=rndFiltVec(grid, Ntrc=Ntrc, amp=0.2, seed=0.2)
         dy=rndFiltVec(grid, Ntrc=Ntrc, amp=0.2, seed=0.3)
@@ -275,7 +202,7 @@ if __name__=='__main__':
 
     #----| partial trajectory time |----
     print("\nTestting adjoint validity for partial integration")
-    L=TLMLauncher(param, traj=u)
+    L=kdvTLMLauncher(param, traj=u)
     Ldy=L.integrate(dy, tInt=tInt/3., t0=tInt/2.)
     print("dy     >>|%3d(%.3f) - L - %3d(%.3f)|>> Ldy"%(
                     L.nDt0,  L.t0, L.nDtFinal, L.tFinal ))
@@ -288,8 +215,8 @@ if __name__=='__main__':
 
     #----| step integrations |----------
     print("\nTestting adjoint validity for successive step integrations")
-    L1=TLMLauncher(param, traj=u)
-    L2=TLMLauncher(param, traj=u)
+    L1=kdvTLMLauncher(param, traj=u)
+    L2=kdvTLMLauncher(param, traj=u)
 
     L1dy=L1.integrate(dy, tInt=tInt/3., t0=0.)
     print("dy     >>|%3d(%.3f) - L1 - %3d(%.3f)|>> L1dy"%(

@@ -7,10 +7,10 @@ from kdvTLMLauncher import *
 
 import fKdV
 
-class SVLauncher(object):
+class kdvSVLauncher(object):
     """
     """
-    class SVLauncherError(Exception):
+    class kdvSVLauncherError(Exception):
         pass
     
     #------------------------------------------------------
@@ -20,9 +20,9 @@ class SVLauncher(object):
     def __init__(self, traj, param):
 
         if not (isinstance(traj, Trajectory)):
-            raise self.SVLauncherError("traj <Trajecotory>")
+            raise self.kdvSVLauncherError("traj <Trajecotory>")
         if not traj.isIntegrated:
-            raise self.SVLauncherError("traj not integrated")
+            raise self.kdvSVLauncherError("traj not integrated")
 
         self.traj=traj
         
@@ -39,9 +39,9 @@ class SVLauncher(object):
             if tInt<=self.traj.tInt:
                 self.tInt=tInt
             else:
-                raise self.SVLauncherError("tInt > traj.tInt")
+                raise self.kdvSVLauncherError("tInt > traj.tInt")
         else:
-            raise self.SVLauncherError("tInt <None|int|float>")
+            raise self.kdvSVLauncherError("tInt <None|int|float>")
 
         self.nDt=int(self.tInt/self.traj.dt)
 
@@ -90,10 +90,10 @@ if __name__=='__main__':
     ic=soliton(grid.x, 1., beta=1., gamma=-1. )
     
     # NL model integration
-    launcher=Launcher(param, maxA )
+    launcher=kdvLauncher(param, maxA )
     traj=launcher.integrate(ic, tInt)
     
-    svLauncher=SVLauncher(traj, param)
+    svLauncher=kdvSVLauncher(traj, param)
     sVal=svLauncher.lanczos(Nev, tInt=2.)
     
     print(sVal)

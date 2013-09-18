@@ -2,7 +2,6 @@ import numpy as np
 
 from pseudoSpec1D import *
 from kdvParam import *
-from Launcher1D import TLMLauncher
 
 import fKdV
 

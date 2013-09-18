@@ -16,7 +16,7 @@ class Launcher(object):
     def __init__(self, grid, dt):
         
         if not isinstance(grid, SpectralGrid):
-            raise self.TLMLauncherError("grid <SpectralGrid>")
+            raise self.LauncherError("grid <SpectralGrid>")
         self.grid=grid
 
         self.dt=dt

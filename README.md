@@ -95,7 +95,7 @@ Configuring and launching an integration
 ----------------------------------------
 
  1. Write a launcher python script:
-    
+  
         import numpy as np
         import pyKdV as kdv
         import matplotlib.pyplot as plt 
@@ -132,17 +132,21 @@ Configuring and launching an integration
         fNLPert=launcher.integrate(ic+pert, tInt).final()-traj.final()
         
         #----| Plotting the result |------------------
-        subplt1=plt.subplot(211)
-        subplt2=plt.subplot(212)
+        subplt1=plt.subplot(311)
+        subplt2=plt.subplot(312)
+        subplt3=plt.subplot(313)
         traj.waterfall(axe=subplt1)
+        subplt1.legend([r"$x(t)$"], loc="lower right")
         subplt2.plot(grid.x, fLinearPert)
         subplt2.plot(grid.x, fNLPert)
         subplt2.legend(["$\mathbf{L}\delta x$", 
                         "$\mathcal{M}(x+\delta x)-\mathcal{M}(x)$"],
                         loc='lower right')
+        traj.fftTraj().waterfall(axe=subplt3, color='r')
+        subplt3.legend([ "$N_{trc}$", r"$\mathcal{F}[x(t)]$"], loc="lower right")
         
         plt.show()
-
+  
 
  2. Singular vector calculation work similarly, but are way longer to obtain:
 

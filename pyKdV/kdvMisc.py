@@ -13,7 +13,7 @@ def rndFiltVec(g, Ntrc=None, amp=1., seed=0.848241945):
 
 def soliton(x, x0, amp=1., alpha=0., beta=1., gamma=-1.):
     """ 
-    Eigen solution of the  system
+    Eigen solution of the non augmented KdV system (rho==0)
 
     """
     sgn=beta*gamma/abs(beta*gamma)

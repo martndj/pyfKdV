@@ -2,22 +2,19 @@ import numpy as np
 import copy
 
 import matplotlib.pyplot as plt
-from matplotlib import collections
+from matplotlib import collections, axes, gridspec
+from matplotlib.axes import Axes
+from matplotlib.gridspec import GridSpec
 
 from spectralGrid import SpectralGrid
 
 class Trajectory(object):
     """
-    Trajectory for 1+1D partial differential system
+    Trajectory class
+    for periodic 1+1D partial differential system
 
-        Light version for pyKdV5
-            * no I\O methods
-            * fully encapsulated
     """
-
-    __version__='Light version for pyKdV5'
-    __author__='Martin Deshaies-Jacques <deshaies.martin@sca.uqam.ca>'
-
+    
     class TrajectoryError(Exception):
         pass
 
@@ -360,10 +357,9 @@ class Trajectory(object):
 
         if axe==None:
             axe=plt.subplot(111)
-        elif not (isinstance(axe,[matplotlib.axes.AxesSubplot,
-                                  matplotlib.gridspec.GridSpec])):
+        elif not (isinstance(axe,(Axes, GridSpec))):
             raise self.TrajectoryPlotError(
-                "axe < matplotlib.axes.AxesSubplot | matplotlib.gridspec.GridSpec >")
+                "axe < matplotlib.axes.Axes | matplotlib.gridspec.GridSpec >")
         return axe
 #--------------------------------------------------------------------
 #####################################################################

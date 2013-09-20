@@ -1,5 +1,9 @@
-__version__='0.7.0 : Light version for pure python core'
-__author__='Martin Deshaies-Jacques <deshaies.martin@sca.uqam.ca>'
+__version__='1.0' 
+__author__='Martin Deshaies-Jacques'
+
+__copyright__='Copyright 2013, Martin Deshaies-Jacques'
+__license__='GPL version 3'
+__email__='deshaies.martin@sca.uqam.ca'
 
 from kdvParam import *
 from kdvLauncher import *

@@ -6,7 +6,24 @@ from pseudoSpec1D import SpectralGrid, Trajectory
 
 class TLMLauncher(object):
     """
-    TLMLauncher class
+    TLMLauncher master class
+
+    TLMLauncher class has three main methods:
+        * initialize(traj <Trajectory>)
+        * integrate(ic <numpy.ndarray>, tInt <float>)
+        * adjoint(fi <numpy.ndarray>, tInt <float>)
+    and  fundamental data which define the integral propagator
+        * propagator <function>
+        * propagatorAdj <function>
+
+    Its constructor can vary from one subclass another and should
+    be explicitly overloaded.
+
+    <!> Before integration (direct or adjoint), the TLMLauncher
+        must be initialized with a reference trajectory.
+    
+    <!> This is a dummy master class (no propagator defined), only 
+        defined subclasses should be instantiated. 
     """
     class TLMLauncherError(Exception):
         pass

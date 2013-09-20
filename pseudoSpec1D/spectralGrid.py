@@ -3,19 +3,19 @@ import numpy as np
 class SpectralGrid:
     """
     Spectral Grid class
-    for 1+1D partial differential system
+    for periodic 1+1D partial differential system
 
-        Light version for pyfKdV
-            * no I\O methods
+    SpectralGrid(Ntrc, L, aliasing=3)
 
-
-        <TODO>  include possibility to change N(Ntrc) relation
-                which is problem dependant
-                __setGridPoints()
+        Ntrc    :   truncature <int>
+        L       :   periodic domain lenght <float>
+        aliasing:   parameter to prevent aliasing <int>
+                        (system dependent) 
+                        N=aliasing*Ntrc+1 
+                        reference: Durran, D. R. Numerical Methods
+                            for Wave Equations in Geophysical Fluid
+                            Dynamics, Springer-Verlag, 1999
     """
-
-    __version__='Light version for pyfKdV'
-    __author__='Martin Deshaies-Jacques <deshaies.martin@sca.uqam.ca>'
     
     class SpectralGridError(Exception):
         pass
@@ -33,6 +33,8 @@ class SpectralGrid:
 
         if not(type(aliasing) is int):
             raise self.SpectralGridError("SpectralGrid(aliasing= <int>)")
+        if aliasing<1:
+            raise self.SpectralGridError("aliasing > 1")
         else:
             self.aliasing=aliasing
 

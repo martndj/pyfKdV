@@ -3,7 +3,7 @@ from pseudoSpec1D import *
 
 class Param(object):
     """
-     augmented dufferential system parameters
+     Augmented KdV differential system parameters
 
         \partial_t A(x,t)= forcing(x,t) - \alpha(x,t) A 
                            - \beta(x,t)A \partial_x A 
@@ -25,7 +25,6 @@ class Param(object):
                 the later being the more general, we'll use this one
                 for start
 
-        <TODO>  if param=None return null function
     """
     class ParamError(Exception):
         pass

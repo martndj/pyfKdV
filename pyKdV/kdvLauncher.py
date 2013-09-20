@@ -7,6 +7,15 @@ import fKdV
 
 class kdvLauncher(Launcher):
     """
+    Launcher subclass for Augmented Korteweg-de Vries system
+
+    kdvLauncher(param, maxA, dtMod=0.7)
+        
+        param   :   system local parametrisation <kdvParam>
+        maxA    :   maximum signal amplitude <float>
+                        for calculating stable time increment
+        dtMod   :   explicit modificator to neutraly stable time
+                        increment
     """
     class kdvLauncherError(Exception):
         pass

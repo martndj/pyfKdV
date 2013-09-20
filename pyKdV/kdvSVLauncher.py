@@ -9,6 +9,18 @@ import fKdV
 
 class kdvSVLauncher(object):
     """
+    Singular vector calculator launcher class
+    for Augmented Korteweg-de Vries system
+
+    kdvSVLauncher(traj, param)
+
+    To launch Lanczos calculation (lenghty process):
+
+        kdvSVLauncher(traj, param).lanczos(Nev)
+
+        traj    :   reference trajectory <Trajectory>
+        param   :   parametrisation <kdvParam>
+        Nev     :   number of singular vector calculated <int>
     """
     class kdvSVLauncherError(Exception):
         pass

@@ -8,7 +8,15 @@ import fKdV
 
 class kdvTLMLauncher(TLMLauncher):
     """
-    kdvTLMLauncher class
+    TLMLauncher subclass for Augmented Korteweg-de Vries system
+
+    kdvTLMLauncher(param)
+        
+        param   :   system local parametrisation <kdvParam>
+    
+    <!> Before integration (direct or adjoint), the TLMLauncher
+        must be initialized with a reference trajectory.
+
     """
     class kdvTLMLauncherError(Exception):
         pass

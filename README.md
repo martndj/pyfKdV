@@ -77,12 +77,12 @@ Compiling informations
 
  3. Build the ./src/ directory
 
-        make pyKdV [clean]
+        make [tests] pyKdV [clean]
 
 
  4. Add the path to the python modules pyKdV and pseudoSpec1D  to your PYTHONPATH environment variable, in Linux bash environment you can do it running.
  
-        export PYTHONPATH=".:<path to ./>"
+        export PYTHONPATH=${PYTHONPATH}:<path to ./>
 
     Adding these export lines to your startup script (.bashrc or .profile) is a way to do it.
 
@@ -96,43 +96,63 @@ Configuring and launching an integration
 ----------------------------------------
 
  1. Write a launcher python script:
-
+    
         import numpy as np
-        from pyKdV import *
+        import pyKdV as kdv
         import matplotlib.pyplot as plt 
-        
+            
         #----| Grid configuration |-------------------
-        grid=pseudoSpec1D.SpectralGrid(150,300.)
+        grid=kdv.SpectralGrid(150,300.)
         tInt=30.
         maxA=4.
-        
+            
         #----| KdV parameters arguments |-------------
         def gauss(x):
             x0=0.
             sig=5.
             return -0.1*np.exp(-((x-x0)**2)/(2*sig**2))
-        
-        param=Param(grid, beta=1., gamma=-1, rho=gauss)
-        
+                
+        param=kdv.Param(grid, beta=1., gamma=-1, rho=gauss)
+            
         #----| Initial condition |--------------------
-        ic=rndFiltVec(grid, Ntrc=grid.Ntrc/4)\
-                    +soliton(grid.x, 0., amp=3.)
-        
+        ic=kdv.rndFiltVec(grid, Ntrc=grid.Ntrc/4)\
+                    +kdv.soliton(grid.x, 0., amp=3.)
+            
         #----| Launching the integration |------------
-        launcher=Launcher(param, maxA)
+        launcher=kdv.kdvLauncher(param, maxA)
         traj=launcher.integrate(ic, tInt)
             
+        
+        #----| Perturbating the trajectory |----------
+        pert=0.5*kdv.gauss(grid.x, 0., 20.)
+        #-- linear perturbation
+        tlmLauncher=kdv.kdvTLMLauncher(param)
+        tlmLauncher.initialize(traj)
+        fLinearPert=tlmLauncher.integrate(pert, tInt)
+        #-- nonlinear perturbation
+        fNLPert=launcher.integrate(ic+pert, tInt).final()-traj.final()
+        
         #----| Plotting the result |------------------
-        traj.waterfall()
+        subplt1=plt.subplot(211)
+        subplt2=plt.subplot(212)
+        traj.waterfall(axe=subplt1)
+        subplt2.plot(grid.x, fLinearPert)
+        subplt2.plot(grid.x, fNLPert)
+        subplt2.legend(["$\mathbf{L}\delta x$", 
+                        "$\mathcal{M}(x+\delta x)-\mathcal{M}(x)$"],
+                        loc='lower right')
+        
         plt.show()
 
 
  2. Singular vector calculation work similarly, but are way longer to obtain:
-    
-        svLauncher=SVLauncher(traj, param)
-        sVal=svLauncher.lanczos(3)
+
+        svLauncher=kdv.kdvSVLauncher(traj, param)
+        sVal=svLauncher.lanczos(3, tInt=1.)
         print(sVal)
-        plt.plot(grid.x, svLauncher.sVec[0])
+        plt.figure()
+        for sv in svLauncher.sVec:
+            plt.plot(grid.x, sv) 
 
 
 Acknoledgement

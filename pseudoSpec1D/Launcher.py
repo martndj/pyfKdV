@@ -1,10 +1,21 @@
 import numpy as np
-
 from pseudoSpec1D import SpectralGrid, Trajectory  
 
 
 class Launcher(object):
     """
+    Launcher master class
+
+    Launcher class has one main method:
+        * integrate(ic <numpy.ndarray>, tInt <float>)
+    and one fundamental data which define the integral propagator
+        * propagator <function>
+
+    Its constructor can vary from one subclass another and should
+    be explicitly overloaded.
+
+    <!> This is a dummy master class (no propagator defined), only 
+        defined subclasses should be instantiated. 
     """
     class LauncherError(Exception):
         pass

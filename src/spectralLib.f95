@@ -20,7 +20,7 @@
 !
 !   Copyright 2011, Martin Deshaies-Jacques
 !
-!   This file is part of fKdV.
+!   This file is part of pyfKdV.
 !
 !   fKdV is free software: you can redistribute it and/or modify
 !   it under the terms of the GNU General Public License as published by

@@ -1,5 +1,5 @@
 import numpy as np
-from pseudoSpec1D import SpectralGrid, Trajectory  
+from pseudoSpec1D import PeriodicGrid, Trajectory  
 
 
 class Launcher(object):
@@ -26,8 +26,8 @@ class Launcher(object):
 
     def __init__(self, grid, dt):
         
-        if not isinstance(grid, SpectralGrid):
-            raise self.LauncherError("grid <SpectralGrid>")
+        if not isinstance(grid, PeriodicGrid):
+            raise self.LauncherError("grid <PeriodicGrid>")
         self.grid=grid
 
         self.dt=dt

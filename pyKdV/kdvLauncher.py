@@ -85,7 +85,7 @@ class kdvLauncher(Launcher):
 if __name__=='__main__':
     
     from kdvMisc import gauss, soliton
-    grid=SpectralGrid(150,300.)
+    grid=PeriodicGrid(150,300.)
     tInt=50.
     maxA=2.
     

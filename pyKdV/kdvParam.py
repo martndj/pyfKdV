@@ -33,8 +33,8 @@ class Param(object):
     def __init__(self, grid, alpha=None, beta=None, gamma=None, rho=None,
                     forcing=None):
 
-        if not (isinstance(grid, SpectralGrid)):
-            raise self.ParamError("grid must be an instance of SpectralGrid")
+        if not (isinstance(grid, PeriodicGrid)):
+            raise self.ParamError("grid must be an instance of PeriodicGrid")
 
         self.grid=grid
         self.forcing=self.__setFunc(forcing)
@@ -88,7 +88,7 @@ class Param(object):
 if __name__=='__main__':
     import matplotlib.pyplot as plt
     
-    grid=SpectralGrid(142, 5.)
+    grid=PeriodicGrid(142, 5.)
     
     def func1(x):
         return  -1.

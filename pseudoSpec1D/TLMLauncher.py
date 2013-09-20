@@ -1,6 +1,6 @@
 import numpy as np
 
-from pseudoSpec1D import SpectralGrid, Trajectory
+from pseudoSpec1D import PeriodicGrid, Trajectory
 
 
 
@@ -34,8 +34,8 @@ class TLMLauncher(object):
 
     def __init__(self, grid, traj=None):
 
-        if not isinstance(grid, SpectralGrid):
-            raise self.TLMLauncherError("grid <SpectralGrid>")
+        if not isinstance(grid, PeriodicGrid):
+            raise self.TLMLauncherError("grid <PeriodicGrid>")
         self.grid=grid
 
         self.isInitialized=False 
@@ -57,7 +57,7 @@ class TLMLauncher(object):
         if not(isinstance(traj, Trajectory)):
             raise self.TLMLauncherError("traj <Trajectory>")
         if not (traj.grid==self.grid):
-            raise SpectralGridError("traj.grid <> grid")
+            raise PeriodicGridError("traj.grid <> grid")
         self.refTraj=traj
         self.isInitialized=True 
     

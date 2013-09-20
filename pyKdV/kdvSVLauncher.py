@@ -86,7 +86,7 @@ if __name__=='__main__':
     import matplotlib.pyplot as plt
     from kdvMisc import gauss, soliton
     
-    grid=SpectralGrid(150,300.)
+    grid=PeriodicGrid(150,300.)
     tInt=2.
     maxA=2.
     Nev=2

@@ -101,7 +101,7 @@ Configuring and launching an integration
         import matplotlib.pyplot as plt 
             
         #----| Grid configuration |-------------------
-        grid=kdv.SpectralGrid(150,300.)
+        grid=kdv.PeriodicGrid(150,300.)
         tInt=30.
         maxA=4.
             

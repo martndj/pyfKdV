@@ -1,12 +1,12 @@
 import numpy as np
 from grid import Grid
 
-class SpectralGrid(Grid):
+class PeriodicGrid(Grid):
     """
     Spectral Grid class
     for periodic 1+1D partial differential system
 
-    SpectralGrid(Ntrc, L, aliasing=3)
+    PeriodicGrid(Ntrc, L, aliasing=3)
 
         Ntrc    :   truncature <int>
         L       :   periodic domain lenght <float>
@@ -18,7 +18,7 @@ class SpectralGrid(Grid):
                             Dynamics, Springer-Verlag, 1999
     """
     
-    class SpectralGridError(Exception):
+    class PeriodicGridError(Exception):
         pass
     
     def __init__(self, Ntrc, L, aliasing=3):
@@ -26,16 +26,16 @@ class SpectralGrid(Grid):
         Grid default constructor
         """
         if  not(type(Ntrc) is int) or not(isinstance(L, (float,int))):
-            raise self.SpectralGridError("SpectralGrid(Ntrc <int>| L <float>)")
+            raise self.PeriodicGridError("PeriodicGrid(Ntrc <int>| L <float>)")
         
     
         self.Ntrc=Ntrc
         self.L=L
 
         if not(type(aliasing) is int):
-            raise self.SpectralGridError("SpectralGrid(aliasing= <int>)")
+            raise self.PeriodicGridError("PeriodicGrid(aliasing= <int>)")
         if aliasing<1:
-            raise self.SpectralGridError("aliasing > 1")
+            raise self.PeriodicGridError("aliasing > 1")
         else:
             self.aliasing=aliasing
 
@@ -51,7 +51,7 @@ class SpectralGrid(Grid):
     def __setGridPoints(self):
         self.N=self.aliasing*self.Ntrc+1
         if not self.N%2:
-            raise self.SpectralGridError(
+            raise self.PeriodicGridError(
                 "N must be odd (add/substract 1 to Ntrc)")
 
 
@@ -78,6 +78,6 @@ class SpectralGrid(Grid):
 #--------------------------------------------------------------------
 
 if __name__=="__main__":
-    g=SpectralGrid(200,100.)
+    g=PeriodicGrid(200,100.)
     print(g) 
 

@@ -162,7 +162,7 @@ if __name__=='__main__':
     testAdjoint=True
     tlmVsModel=False
 
-    grid=SpectralGrid(150,300.)
+    grid=PeriodicGrid(150,300.)
     tInt=3.
     maxA=2.
 

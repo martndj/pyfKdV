@@ -8,7 +8,7 @@ __email__='deshaies.martin@sca.uqam.ca'
 
 from spectralLib import *
 from grid import *
-from spectralGrid import *
+from periodicGrid import *
 from trajectory import *
 from Launcher import *
 from TLMLauncher import *

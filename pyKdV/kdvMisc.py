@@ -1,6 +1,6 @@
 import numpy as np
 import random as rnd
-from pseudoSpec1D import SpectralGrid, specFilt
+from pseudoSpec1D import PeriodicGrid, specFilt
 
 
 def rndFiltVec(g, Ntrc=None, amp=1., seed=0.848241945):

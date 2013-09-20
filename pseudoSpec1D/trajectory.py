@@ -6,7 +6,7 @@ from matplotlib import collections, axes, gridspec
 from matplotlib.axes import Axes
 from matplotlib.gridspec import GridSpec
 
-from spectralGrid import SpectralGrid, Grid
+from periodicGrid import PeriodicGrid, Grid
 
 class Trajectory(object):
     """
@@ -385,9 +385,9 @@ class SpectralTrajectory(Trajectory):
 
 if __name__=="__main__":
 
-    grid1=SpectralGrid(100,100.)
+    grid1=PeriodicGrid(100,100.)
     noTrj1=Trajectory(grid1)
-    grid2=SpectralGrid(102,100.)
+    grid2=PeriodicGrid(102,100.)
     noTrj2=Trajectory(grid2)
     print(noTrj1)
     print(noTrj1==noTrj2)

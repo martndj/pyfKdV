@@ -79,11 +79,11 @@ Compiling informations
         make [tests] pyKdV [clean]
 
 
- 4. Add the path to the python modules pyKdV and pseudoSpec1D  to your PYTHONPATH environment variable, in Linux bash environment you can do it running.
+ 4. Add the path to the python modules pyKdV and pseudoSpec1D to your PYTHONPATH environment variable, in Linux bash environment you can do it running.
  
         export PYTHONPATH=${PYTHONPATH}:<path to ./>
 
-    Adding these export lines to your startup script (.bashrc or .profile) is a way to do it.
+    Adding this export lines to your startup script (.bashrc or .profile) is a way to do it.
 
  4. Have fun!
 

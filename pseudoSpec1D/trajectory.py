@@ -273,7 +273,19 @@ class Trajectory(object):
         pass
 
     #-------------------------------------------------------
-
+    
+    def fftTime(self, axe=None):
+        axe=self.__checkAxe(axe)
+        nDemi=(self.grid.N-1)/2
+        self.fftTraj=np.zeros(shape=(len(self.time),nDemi))
+        for i in xrange(len(self.time)):
+            self.fftTraj[i]=np.fft.fft(self[i])[0:nDemi]
+        axe.contourf(np.abs(self.fftTraj))
+        axe.axvline(x=self.grid.Ntrc, color='k', linewidth=3)
+        axe.axvline(x=self.grid.Ntrc, color='w', linestyle=':')
+    
+    #-------------------------------------------------------
+    
     def waterfall(self, xlim=None, nbLines=50, title=None, 
                   offset=None, ampl=None, color='b', axe=None):
         """

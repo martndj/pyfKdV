@@ -6,7 +6,7 @@ from matplotlib import collections, axes, gridspec
 from matplotlib.axes import Axes
 from matplotlib.gridspec import GridSpec
 
-from spectralGrid import SpectralGrid
+from spectralGrid import SpectralGrid, Grid
 
 class Trajectory(object):
     """
@@ -28,9 +28,9 @@ class Trajectory(object):
         Empty Trajectory instance constructor
         """
         # Grid
-        if not (isinstance(grid, SpectralGrid)):
+        if not (isinstance(grid, Grid)):
             raise self.TrajectoryError(
-                  "grid <SpectralGrid>")
+                  "grid <Grid>")
         self.grid=grid
 
         # Time attributes
@@ -139,34 +139,6 @@ class Trajectory(object):
         return self.__data[self.whereTimeIdx(time)]
 
 
-    #-------------------------------------------------------
-    #----| Fortran compatible I/O Methods |-----------------
-    #-------------------------------------------------------
-
-    def write(self, trajFile):
-
-        fich=open(trajFile, 'w')
-        
-        # Header
-        fich.write('%5i%5i\n'%(self.grid.Ntrc, self.grid.N))
-        fich.write(' %-23.15E%-23.15E\n'%(self.grid.dx, self.grid.L))
-        fich.write(' %-23.15E%-23.15E%-23.15E\n'%(self.dt, self.tInt,
-                                                 self.tReal))
-        fich.write('%10i\n'%(self.nDt))
-    
-        # Data
-        if self.nDt==0:
-            for j in xrange(self.grid.N):
-                fich.write('%23.15E\n'%self.data[j])
-        elif self.nDt>0:
-            for i in xrange(self.nDt+1):
-                for j in xrange(self.grid.N):
-                    fich.write('%23.15E\n'%self.data[i,j])
-    
-        fich.close()
-        print("  >> ")+trajFile
-
-
 
     #------------------------------------------------------
     #----| Private methods |-------------------------------
@@ -227,10 +199,10 @@ class Trajectory(object):
         if (self.dt != traj2.dt):
             raise self.TrajectoryError("Incompatible time increment")
         elif (not self.grid == traj2.grid):
-            print("%d %d"%(self.grid.Ntrc,traj2.grid.Ntrc))
+            print("%d %d"%(self.grid.N,traj2.grid.N))
             print("%g %g"%(self.grid.dx,traj2.grid.dx))
             print("%g %g"%(self.grid.L,traj2.grid.L))
-            print(self.grid.Ntrc==traj2.grid.Ntrc and 
+            print(self.grid.N==traj2.grid.N and 
                   self.grid.dx==traj2.grid.dx and 
                   self.grid.L==traj2.grid.L)
             raise self.TrajectoryError("Incompatible grids")
@@ -247,10 +219,10 @@ class Trajectory(object):
         if (self.dt != traj2.dt):
             raise self.TrajectoryError("Incompatible time increment")
         elif (not self.grid == traj2.grid):
-            print("%d %d"%(self.grid.Ntrc,traj2.grid.Ntrc))
+            print("%d %d"%(self.grid.N,traj2.grid.N))
             print("%g %g"%(self.grid.dx,traj2.grid.dx))
             print("%g %g"%(self.grid.L,traj2.grid.L))
-            print(self.grid.Ntrc==traj2.grid.Ntrc and 
+            print(self.grid.N==traj2.grid.N and 
                   self.grid.dx==traj2.grid.dx and 
                   self.grid.L==traj2.grid.L)
             raise self.TrajectoryError("Incompatible grids")
@@ -274,15 +246,18 @@ class Trajectory(object):
 
     #-------------------------------------------------------
     
-    def fftTime(self, axe=None):
-        axe=self.__checkAxe(axe)
-        nDemi=(self.grid.N-1)/2
-        self.fftTraj=np.zeros(shape=(len(self.time),nDemi))
+    def fftTraj(self):
+        nDemi=int(self.grid.N-1)/2
+        data=np.zeros(shape=(self.nDt+1, nDemi))
         for i in xrange(len(self.time)):
-            self.fftTraj[i]=np.fft.fft(self[i])[0:nDemi]
-        axe.contourf(np.abs(self.fftTraj))
-        axe.axvline(x=self.grid.Ntrc, color='k', linewidth=3)
-        axe.axvline(x=self.grid.Ntrc, color='w', linestyle=':')
+            data[i]=np.abs(np.fft.fft(self[i])[0:nDemi])
+
+        k=Grid(nDemi,nDemi, centered=False)
+        fftTraj=SpectralTrajectory(k, Ntrc=self.grid.Ntrc)
+        fftTraj.initialize(data[0],self.nDt, self.dt)
+        fftTraj.putData(data)
+        fftTraj.incrmTReal(finished=True, tReal=self.tReal)
+        return fftTraj
     
     #-------------------------------------------------------
     
@@ -292,7 +267,7 @@ class Trajectory(object):
             @TODO: ajout d'une echelle de grandeur
         """
 
-        axe=self.__checkAxe(axe)
+        axe=self._checkAxe(axe)
     
         if self.nDt<nbLines:
             nbLines=self.nDt
@@ -334,7 +309,7 @@ class Trajectory(object):
 
     def plotA(self, title=None, axe=None, **kwargs):
 
-        axe=self.__checkAxe(axe)
+        axe=self._checkAxe(axe)
 
         self.normA(ret=False)
         axe.plot(self.time, self.A, kwargs)
@@ -348,7 +323,7 @@ class Trajectory(object):
 
     def plotA2(self, title=None, **kwargs):
 
-        axe=self.__checkAxe(axe)
+        axe=self._checkAxe(axe)
 
         self.normA2(ret=False)
         axe.plot(self.time, self.A2, **kwargs)
@@ -362,7 +337,7 @@ class Trajectory(object):
     #----| Private plotting methods |-----------------------
     #-------------------------------------------------------
 
-    def __checkAxe(self, axe):
+    def _checkAxe(self, axe):
         if not self.isIntegrated:
             raise self.TrajectoryPlotError(
                 "Trajectory not integrated: nothing to plot")
@@ -373,6 +348,37 @@ class Trajectory(object):
             raise self.TrajectoryPlotError(
                 "axe < matplotlib.axes.Axes | matplotlib.gridspec.GridSpec >")
         return axe
+
+#--------------------------------------------------------------------
+#====================================================================  
+#--------------------------------------------------------------------
+class SpectralTrajectory(Trajectory):
+
+    class SpectralTrajectoryError(Exception):
+        pass
+
+    #------------------------------------------------------
+    #----| Init |------------------------------------------
+    #------------------------------------------------------
+
+
+    def __init__(self, grid, Ntrc=None):
+        super(SpectralTrajectory, self).__init__(grid)
+        if Ntrc==None:
+            self.Ntrc=grid.N
+        else:
+            self.Ntrc=Ntrc
+
+    def waterfall(self, xlim=None, nbLines=50, title=None, 
+                  offset=None, ampl=None, color='b', axe=None):
+        axe=self._checkAxe(axe)
+        super(SpectralTrajectory, self).waterfall(xlim, nbLines, title,
+                                                    offset, ampl, color,
+                                                    axe)
+        axe.axvline(x=self.Ntrc, color='k', linewidth=2)
+    
+
+
 #--------------------------------------------------------------------
 #####################################################################
 #--------------------------------------------------------------------

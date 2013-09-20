@@ -1,6 +1,7 @@
 import numpy as np
+from grid import Grid
 
-class SpectralGrid:
+class SpectralGrid(Grid):
     """
     Spectral Grid class
     for periodic 1+1D partial differential system
@@ -24,7 +25,7 @@ class SpectralGrid:
         """
         Grid default constructor
         """
-        if  not(type(Ntrc) is int) or not(type(L)is float):
+        if  not(type(Ntrc) is int) or not(isinstance(L, (float,int))):
             raise self.SpectralGridError("SpectralGrid(Ntrc <int>| L <float>)")
         
     

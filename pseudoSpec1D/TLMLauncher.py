@@ -1,6 +1,6 @@
 import numpy as np
 
-from pseudoSpec1D import PeriodicGrid, Trajectory
+from pseudoSpec1D import PeriodicGrid, Trajectory, specFilt
 
 
 

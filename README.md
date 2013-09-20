@@ -15,11 +15,10 @@ Detailed can be found in ./doc/gpl.txt.
 Use, share, remix!
 ...and criticize
 
-__Still under development!__
 
-TODO:
+See also:
 
- * Data Assimilation OSSE [dVar](https://github.com/martndj/dVar)
+ * Data Assimilation Lab: [dVar](https://github.com/martndj/dVar)
 
 About Korteweg-de-Vrie _augmented_ system and it's use in atmospheric dynamics
 ---------------------------------------------------------------------------

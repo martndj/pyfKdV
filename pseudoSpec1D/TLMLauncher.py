@@ -73,7 +73,8 @@ class TLMLauncher(object):
 
     #-------------------------------------------------------
 
-    def integrate(self, pert, tInt=None, t0=0., fullPertTraj=False):
+    def integrate(self, pert, tInt=None, t0=0., fullPertTraj=False,
+                    filtNtrc=True):
         
         if not self.isInitialized:
             raise self.TLMLauncherError("Not initialized with a reference trajectory")
@@ -81,6 +82,8 @@ class TLMLauncher(object):
             raise self.TLMLauncherError("pert <numpy.ndarray>")
         if pert.ndim <> 1 or pert.size <> self.grid.N:
             raise self.TLMLauncherError("pert.shape = (launcher.grid.N,)")
+        if filtNtrc:
+            specFilt(pert, self.grid)
         self.__timeValidation(tInt, t0)
 
         if fullPertTraj:
@@ -95,12 +98,14 @@ class TLMLauncher(object):
 
     #-------------------------------------------------------
 
-    def adjoint(self, pert, tInt=None, t0=0.):         
+    def adjoint(self, pert, tInt=None, t0=0., filtNtrc=True):         
         
         if not isinstance(pert, np.ndarray):
             raise self.TLMLauncherError("pert <numpy.ndarray>")
         if pert.ndim <> 1 or pert.size <> self.grid.N:
             raise self.TLMLauncherError("pert.shape = (launcher.grid.N,)")
+        if filtNtrc:
+            specFilt(pert, self.grid)
         self.__timeValidation(tInt, t0)
 
         return self.propagatorAdj(pert) 

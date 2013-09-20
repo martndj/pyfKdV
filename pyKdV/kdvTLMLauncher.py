@@ -48,12 +48,15 @@ class kdvTLMLauncher(TLMLauncher):
     #----| Public methods |--------------------------------
     #------------------------------------------------------
     
-    def singularOp(self, pert, tInt=None, t0=0.):
+    def singularOp(self, pert, tInt=None, t0=0., filtNtrc=True):
         
         if not isinstance(pert, np.ndarray):
             raise self.kdvTLMLauncherError("pert <numpy.ndarray>")
         if pert.ndim <> 1 or pert.size <> self.grid.N:
-            raise self.kdvTLMLauncherError("pert.shape = (launcher.grid.N,)")
+            raise self.kdvTLMLauncherError(
+                                "pert.shape = (launcher.grid.N,)")
+        if filtNtrc:
+            specFilt(pert, self.grid)
         self.__timeValidation(tInt, t0)
 
         return self.__kdvTLMSingularOp_Fortran(pert)

@@ -1,5 +1,5 @@
 import numpy as np
-from pseudoSpec1D import PeriodicGrid, Trajectory  
+from pseudoSpec1D import PeriodicGrid, Trajectory, specFilt 
 
 
 class Launcher(object):
@@ -38,12 +38,15 @@ class Launcher(object):
     #----| Public methods |--------------------------------
     #------------------------------------------------------
 
-    def integrate(self, ic, tInt):
+    def integrate(self, ic, tInt, filtNtrc=True):
 
         if not isinstance(ic, np.ndarray):
             raise self.LauncherError("ic <numpy.ndarray>")
         if ic.ndim <> 1 or ic.size <> self.grid.N:
             raise self.LauncherError("ic.shape = (grid.N,)")
+        if filtNtrc:
+            specFilt(ic, self.grid)
+
         self.tIntIn=tInt
         self.nDt=int(self.tIntIn/self.dt)
         self.tInt=self.nDt*self.dt

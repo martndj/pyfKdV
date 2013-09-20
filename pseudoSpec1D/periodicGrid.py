@@ -42,7 +42,7 @@ class PeriodicGrid(Grid):
         self.__setGridPoints()
         self.dx=self.L/(self.N)
 
-        self.x=np.linspace(-self.L/2.,self.L/2,self.N)
+        self.x=np.linspace(-self.L/2.,self.L/2-self.dx,self.N)
     
     #-------------------------------------------------------
     #----| Private methods |--------------------------------

@@ -3,7 +3,7 @@ from grid import Grid
 
 class PeriodicGrid(Grid):
     """
-    Spectral Grid class
+    Periodic Grid class
     for periodic 1+1D partial differential system
 
     PeriodicGrid(Ntrc, L, aliasing=3)

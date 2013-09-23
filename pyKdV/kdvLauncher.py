@@ -44,6 +44,14 @@ class kdvLauncher(Launcher):
     #----| Public methods |--------------------------------
     #------------------------------------------------------
 
+    def integrate(self, ic, tInt, filtNtrc=False):
+    
+        # the Fortran propagator filter implicitly
+        return super(kdvLauncher, self).integrate(ic, tInt,
+                                                filtNtrc)
+
+    #------------------------------------------------------
+
     def dtStable(self, maxA):
     
         maxK=2.0*np.pi*self.grid.Ntrc/self.grid.L

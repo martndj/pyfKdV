@@ -47,7 +47,23 @@ class kdvTLMLauncher(TLMLauncher):
     #------------------------------------------------------
     #----| Public methods |--------------------------------
     #------------------------------------------------------
+    def integrate(self, pert, tInt=None, t0=0., fullPertTraj=False,
+                    filtNtrc=False):
     
+        # the Fortran propagator filter implicitly
+        return super(kdvTLMLauncher, self).integrate(pert, tInt, t0,
+                                                        fullPertTraj,
+                                                        filtNtrc)
+
+    #-------------------------------------------------------
+
+    def adjoint(self, pert, tInt=None, t0=0., filtNtrc=False):         
+
+        return super(kdvTLMLauncher, self).integrate(pert, tInt, t0,
+                                                        filtNtrc)
+        
+    #-------------------------------------------------------
+
     def singularOp(self, pert, tInt=None, t0=0., filtNtrc=True):
         
         if not isinstance(pert, np.ndarray):

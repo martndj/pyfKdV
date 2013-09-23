@@ -1,6 +1,6 @@
 import numpy as np
 
-from pseudoSpec1D import PeriodicGrid, Trajectory, specFilt
+from pseudoSpec1D import PeriodicGrid, Trajectory, specFilt, Launcher
 
 
 
@@ -77,11 +77,15 @@ class TLMLauncher(object):
                     filtNtrc=True):
         
         if not self.isInitialized:
-            raise self.TLMLauncherError("Not initialized with a reference trajectory")
+            raise self.TLMLauncherError(
+                        "Not initialized with a reference trajectory")
         if not isinstance(pert, np.ndarray):
             raise self.TLMLauncherError("pert <numpy.ndarray>")
         if pert.ndim <> 1 or pert.size <> self.grid.N:
             raise self.TLMLauncherError("pert.shape = (launcher.grid.N,)")
+        if pert.dtype<>'float64':
+            raise LauncherError('Potential loss of precision')
+
         if filtNtrc:
             specFilt(pert, self.grid)
         self.__timeValidation(tInt, t0)
@@ -93,7 +97,11 @@ class TLMLauncher(object):
         else:
             self.fullPertTraj=False
 
-        return self.propagator(pert)
+        fPert=self.propagator(pert)
+
+        if fPert.dtype<>'float64':
+            raise LauncherError('Potential loss of precision')
+        return fPert
                                             
 
     #-------------------------------------------------------
@@ -104,11 +112,17 @@ class TLMLauncher(object):
             raise self.TLMLauncherError("pert <numpy.ndarray>")
         if pert.ndim <> 1 or pert.size <> self.grid.N:
             raise self.TLMLauncherError("pert.shape = (launcher.grid.N,)")
+        if pert.dtype<>'float64':
+            raise LauncherError('Potential loss of precision')
+
         if filtNtrc:
             specFilt(pert, self.grid)
         self.__timeValidation(tInt, t0)
 
-        return self.propagatorAdj(pert) 
+        adj= self.propagatorAdj(pert)
+        if adj.dtype<>'float64':
+            raise LauncherError('Potential loss of precision')
+        return adj
     
 
     #------------------------------------------------------

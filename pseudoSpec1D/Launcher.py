@@ -44,6 +44,8 @@ class Launcher(object):
             raise self.LauncherError("ic <numpy.ndarray>")
         if ic.ndim <> 1 or ic.size <> self.grid.N:
             raise self.LauncherError("ic.shape = (grid.N,)")
+        if ic.dtype<>'float64':
+            raise LauncherError('Potential loss of precision')
         if filtNtrc:
             specFilt(ic, self.grid)
 
@@ -60,5 +62,7 @@ class Launcher(object):
 
         # calling the propagator
         traj=self.propagator(ic, traj)
+        if traj.getData().dtype<>'float64':
+            raise LauncherError('Potential loss of precision')
 
         return traj

@@ -207,7 +207,7 @@ class Trajectory(object):
                   self.grid.L==traj2.grid.L)
             raise self.TrajectoryError("Incompatible grids")
 
-        trajSub=__data2Traj(self.grid, self.__data-traj2.__data,self.dt)
+        trajSub=putData(self.__data-traj2.__data,self.dt)
         return trajSub
 
     #-------------------------------------------------------
@@ -227,7 +227,7 @@ class Trajectory(object):
                   self.grid.L==traj2.grid.L)
             raise self.TrajectoryError("Incompatible grids")
 
-        trajSub=__data2Traj(self.grid, self.__data+traj2.__data,self.dt)
+        trajSub=putData(self.__data+traj2.__data,self.dt)
         return trajSub
 
     #-------------------------------------------------------

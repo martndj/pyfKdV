@@ -47,6 +47,7 @@ class kdvTLMLauncher(TLMLauncher):
     #------------------------------------------------------
     #----| Public methods |--------------------------------
     #------------------------------------------------------
+
     def integrate(self, pert, tInt=None, t0=0., fullPertTraj=False,
                     filtNtrc=False):
     
@@ -80,7 +81,7 @@ class kdvTLMLauncher(TLMLauncher):
     #----| Diagnostics |------------------------------------
     #-------------------------------------------------------
 
-    def gradTest(self, pert, tInt=None, t0=0., maxPow=-10):
+    def gradTest_adjoint(self, pert, tInt=None, t0=0., maxPow=-10):
         if not isinstance(pert, np.ndarray):
             raise self.kdvTLMLauncherError("pert <numpy.ndarray>")
         if pert.ndim <> 1 or pert.size <> self.grid.N:

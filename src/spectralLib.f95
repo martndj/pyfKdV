@@ -167,7 +167,7 @@ contains
                 nn=j-N-1
             end if
             ! diagonal
-            D(j)=(ii*nn*2.0D0*PI/L)**order
+            D(j)=(ii*dble(nn)*2.0D0*PI/L)**order
         end do
     end subroutine specDDiag
 
@@ -291,7 +291,7 @@ contains
         cf=cfft(cf,N,-1)
         do j=1,(N-1)/2+1
             cf(j)=cf(j)*dconjg(cf(j))
-            tf(j)=sqrt(dble(cf(j)))
+            tf(j)=dsqrt(dble(cf(j)))
         end do
 
     end function rfft 

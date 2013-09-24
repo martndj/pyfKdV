@@ -281,7 +281,7 @@ contains
     double precision, dimension(:), intent(in)      :: v
     double precision                                :: r
 
-    r=sqrt(v.dot.v)
+    r=dsqrt(v.dot.v)
   end function norm_vector_euclidienne
 
   !********************************!

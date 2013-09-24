@@ -20,12 +20,13 @@ optflag=-fbounds-check -fPIC
 libflag=-L$(libDir) -larpack -lfftw3 -lm
 baseLib=matrixLib.o spectralLib.o
 kdvLib=kdvPropLib.o kdvTLMPropLib.o kdvTLMTestLib.o kdvLanczosLib.o 
-kdvTests=kdvTestAdj.x kdvTestGrad.x
+kdvTests=kdvTestAdj.x kdvTestGrad.x testDbleProp.x
 wrapLib=kdvWrapC.o 
 
 kdv: $(baseLib) $(kdvLib)
 
 tests:  $(baseLib) $(kdvLib) $(kdvTests)
+	./testDbleProp.x
 	./kdvTestAdj.x
 	./kdvTestGrad.x
 

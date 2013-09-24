@@ -90,7 +90,7 @@ function lanczos(N, Ntrc, L, dt, nDt, tReal, u, &
     
     do j=1,Nev
         V(:,j)=Vwork(:,j)
-        sv(j)=sqrt(sv(j))
+        sv(j)=dsqrt(sv(j))
         ! singular values are square roots of eigenvalues of L*L
     enddo
     

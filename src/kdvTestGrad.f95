@@ -69,9 +69,9 @@ do i=1,5
     print *, 
     print *, '============================================================='
     print *, 'Gradient test'
-    call testGradient(N, Ntrc, L, dt, nDt, maxPower,&
-                                        u, xBuff, &
-                                        alph, beta, gamm, rho)
+    call NLTestGradient(N, Ntrc, L, dt, nDt, maxPower,&
+                                        xBuff, &
+                                        alph, beta, gamm, rho, forc)
     deallocate(u)
 end do
 end program kdvTestGrad

@@ -77,16 +77,10 @@ class Trajectory(object):
         if finished:
             self.isIntegrated=True
             self.time=np.linspace(0.,self.tReal, self.nDt+1)
+            self.final=self.__data[self.nDt]
+
         else:
             self.tReal+=self.dt
-
-    #-------------------------------------------------------
-
-    def final(self):
-        if self.isIntegrated:
-            return self.__data[self.nDt]
-        else:
-            raise self.TrajectoryError("Trajectory not integrated")
 
     #-------------------------------------------------------
 

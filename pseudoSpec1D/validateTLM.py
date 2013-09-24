@@ -19,14 +19,14 @@ def gradTest(tlm, nlModel, ic, tInt,
                     "Not initialized with a reference trajectory")
 
     def evolvedNorm2(x):
-        xf=nlModel.integrate(x, tInt).final()
+        xf=nlModel.integrate(x, tInt).final
         return 0.5*np.dot(xf,xf)
     #  grad:
     #       tlm.adjoint(nl.integrate(x, tInt), tInt)
 
 
     traj=nlModel.integrate(ic, tInt)
-    final=traj.final()
+    final=traj.final
     J0=evolvedNorm2(final)
 
     tlm.initialize(traj)
@@ -36,7 +36,7 @@ def gradTest(tlm, nlModel, ic, tInt,
     test={}
     for power in xrange(powRange[0],powRange[1], -1):
         eps=10.**(power)
-        Jeps=evolvedNorm2(nlModel.integrate(ic-eps*gradJ0, tInt).final())
+        Jeps=evolvedNorm2(nlModel.integrate(ic-eps*gradJ0, tInt).final)
         
         res=((J0-Jeps)/(eps*n2GradJ0))
         test[power]=[Jeps, res]

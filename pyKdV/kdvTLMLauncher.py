@@ -202,8 +202,8 @@ if __name__=='__main__':
     
         u_pert=M.integrate(u0+du)
         pert=L.integrate(du, fullPertTraj=True)
-        plt.plot(grid.x, u_pert.final())
-        plt.plot(grid.x, u.final()+pert)
+        plt.plot(grid.x, u_pert.final)
+        plt.plot(grid.x, u.final+pert)
 
 
     #----| Adjoint testing |----------------------

@@ -95,28 +95,30 @@ Configuring and launching an integration
 ----------------------------------------
 
  1. Write a launcher python script:
-  
+ 
         import numpy as np
         import pyKdV as kdv
         import matplotlib.pyplot as plt 
-            
+          
         #----| Grid configuration |-------------------
         grid=kdv.PeriodicGrid(150,300.)
         tInt=30.
-        maxA=4.
+        maxA=5.
             
         #----| KdV parameters arguments |-------------
-        def gauss(x):
-            x0=0.
-            sig=5.
-            return -0.1*np.exp(-((x-x0)**2)/(2*sig**2))
+        def rhoProfile(x):
+            x0=-10.
+            sig=10.
+            amp=0.1
+            return -amp*kdv.gauss(x,x0,sig)
                 
-        param=kdv.Param(grid, beta=1., gamma=-1, rho=gauss)
+        param=kdv.Param(grid, beta=1., gamma=-1, rho=rhoProfile)
             
         #----| Initial condition |--------------------
-        ic=kdv.rndFiltVec(grid, Ntrc=grid.Ntrc/4)\
-                    +kdv.soliton(grid.x, 0., amp=3.)
-            
+        base=kdv.rndFiltVec(grid, Ntrc=grid.Ntrc/4, amp=1.)
+        soliton=kdv.soliton(grid.x, 0., amp=3. , beta=1., gamma=-1)
+        ic=base+soliton
+    
         #----| Launching the integration |------------
         launcher=kdv.kdvLauncher(param, maxA)
         traj=launcher.integrate(ic, tInt)
@@ -129,7 +131,7 @@ Configuring and launching an integration
         tlmLauncher.initialize(traj)
         fLinearPert=tlmLauncher.integrate(pert, tInt)
         #-- nonlinear perturbation
-        fNLPert=launcher.integrate(ic+pert, tInt).final()-traj.final()
+        fNLPert=launcher.integrate(ic+pert, tInt).final-traj.final
         
         #----| Plotting the result |------------------
         subplt1=plt.subplot(311)
@@ -146,7 +148,7 @@ Configuring and launching an integration
         subplt3.legend([ "$N_{trc}$", r"$\mathcal{F}[x(t)]$"], loc="lower right")
         
         plt.show()
-  
+
 
  2. Singular vector calculation work similarly, but are way longer to obtain:
 

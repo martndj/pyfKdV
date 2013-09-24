@@ -124,7 +124,7 @@ contains
             stop
         end if
 
-        cf=cmplx(f,0D0,kind=16)
+        cf=dcmplx(f)
         cf=cfft(cf,N,-1)
         call specCoupe(cf,N,Ntr)
         cf=cfft(cf,N,1)
@@ -167,7 +167,7 @@ contains
                 nn=j-N-1
             end if
             ! diagonal
-            D(j)=(ii*nn*2*PI/L)**order
+            D(j)=(ii*nn*2.0D0*PI/L)**order
         end do
     end subroutine specDDiag
 
@@ -206,7 +206,7 @@ contains
         ! spectral differentiation matrix 
         call specDDiag(Ds, ordre, N, L)
 
-        cf=cmplx(f, 0D0, kind=16)
+        cf=dcmplx(f)
         cf=cfft(cf,N, -1)
         do j=1, N
             cf(j)=Ds(j)*cf(j)
@@ -252,11 +252,11 @@ contains
         call specDDiag(Ds, order, N, L)
 
         ! start of the adjoint code
-        cf=cmplx(f, 0D0, kind=16)
+        cf=dcmplx(f)
         cf=cfft(cf,N, -1)
         call specCoupe(cf, N, Ntr)
         do j=1, N
-            cf(j)=conjg(Ds(j))*cf(j)
+            cf(j)=dconjg(Ds(j))*cf(j)
         end do
         cf=cfft(cf,N,1)
         ! normalization
@@ -287,10 +287,10 @@ contains
             stop
         end if
 
-        cf=cmplx(f,0D0,kind=16)
+        cf=dcmplx(f)
         cf=cfft(cf,N,-1)
         do j=1,(N-1)/2+1
-            cf(j)=cf(j)*conjg(cf(j))
+            cf(j)=cf(j)*dconjg(cf(j))
             tf(j)=sqrt(dble(cf(j)))
         end do
 

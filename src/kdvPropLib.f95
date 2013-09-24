@@ -42,7 +42,7 @@ function kdvPropagator(N, Ntrc, L, dt, nDt, tReal, ic, &
     !   centered : r.A
     do j=2,nDt
         traj(j+1,:)=rhoCenteredImplicit(N, Ntrc, dt, traj(j-1,:),rho)&
-                    +2D0*dt*kdvPseudoSpec(N, Ntrc, L, traj(j,:),&
+                    +2.0D0*dt*kdvPseudoSpec(N, Ntrc, L, traj(j,:),&
                                           alph, beta, gamm, forc=forc)
        
         tReal=tReal+dt
@@ -57,7 +57,7 @@ function rhoCenteredImplicit(N, Ntrc, dt, u, rho)
     double precision                ::  dt
     double precision, dimension(N)  ::  u, rho, rhoCenteredImplicit
 
-    rhoCenteredImplicit=(1D0-dt*rho)/(1D0+dt*rho)*u
+    rhoCenteredImplicit=(1.0D0-dt*rho)/(1.0D0+dt*rho)*u
     ! prevent aliasing from multiplication (localised parameters)
     call specFilt(rhoCenteredImplicit, N, Ntrc)
 end function rhoCenteredImplicit

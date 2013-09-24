@@ -587,7 +587,7 @@ subroutine NLTestGradient(N, Ntrc, L, dt, nDt, maxPower, &
     print"(A 5X A 18X A 13X A 20X)", "eps","J(x-eps.gradJ)","res"
     
     do pow=-1,maxPower, -1
-        eps=1D1**pow
+        eps=1.0D1**pow
         Jeps=fctCout(N, Ntrc, L, dt, nDt, tRealFct, u, x-eps*grad, &
                         alph, beta, gamm, rho, forc)
 
@@ -603,7 +603,7 @@ subroutine NLTestGradient(N, Ntrc, L, dt, nDt, maxPower, &
         end if
         !print"(A I3  E23.15  F20.15 F20.15 A L1)",&
         !     "10^",pow, Jeps, res, 1D0-res, " ",test
-        print"(A I3  E23.15  F20.15)",&
+        print"(A I3  D23.15  D23.15)",&
              "10^",pow, Jeps, res
     end do
     contains
@@ -624,7 +624,7 @@ subroutine NLTestGradient(N, Ntrc, L, dt, nDt, maxPower, &
         u=kdvPropagator(N, Ntrc, L, dt, nDt, tReal,&
                             x, alph, beta, gamm, rho, forc)
         Mx=u(nDt+1, :)
-        fctCout=scalar_product(Mx,Mx)/2D0
+        fctCout=scalar_product(Mx,Mx)/2.0D0
     end function fctCout
 
     function gradFC(N, Ntrc, L, dt, nDt, tReal, u, &

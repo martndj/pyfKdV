@@ -5,7 +5,7 @@ use kdvTLMProp
 use kdvTLMTest
 implicit none
 
-integer                 ::  N, Ntrc, nDt, maxPower, i
+integer                 ::  N, Ntrc, nDt, maxPower, i, NNDt
 double precision        ::  L, pAmp, diff, dt, tReal
 logical                 ::  test
 
@@ -14,14 +14,15 @@ double precision, dimension(:), allocatable ::  alph, beta, gamm, rho, &
 double precision, dimension(:), allocatable  :: xBuff, yBuff
 
 
-integer, dimension(5)    ::  nDtVec
+integer, dimension(:), allocatable    ::  nDtVec
 double precision, dimension(:, :), allocatable  ::  u
 
+NNDt=5
 Ntrc=50
 N=3*Ntrc+1
 L=3.D2
 
-
+allocate(nDtVec(NNDt))
 allocate(xBuff(N), yBuff(N))
 allocate(ic(N), alph(N), beta(N), gamm(N), rho(N), forc(N))
 
@@ -46,7 +47,7 @@ forc=pAmp*initRandVec(N, Ntrc)
 
 
 
-do i=1,5
+do i=1,NNDt
     nDt=nDtVec(i)
     print *, '============================================================='
     print *, '============================================================='

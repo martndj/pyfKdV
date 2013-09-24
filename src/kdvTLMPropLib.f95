@@ -85,7 +85,7 @@ function kdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, tReal, u, pf, &
     aBuff(2,:)=0.0D0
     aBuff(1,:)=0.0D0
 
-    tReal=0D0
+    tReal=0.0D0
 
     ! Leapfrog
     ! Qj*, j=nDt,2
@@ -149,7 +149,7 @@ function opE1(N, Ntrc, L, dt, u, pBuff, alph, beta, gamm, rho)
     opE1(1,:)=pBuff(1,:)
     opE1(2,:)=pBuff(1,:)+dt*kdvTLMPseudoSpec(N, Ntrc, L, u, &
                                         pBuff(1,:), alph, beta, gamm, rho)
-    opE1(3,:)=0D0
+    opE1(3,:)=0.0D0
     
 end function opE1
 
@@ -187,7 +187,7 @@ function opPn(N, Ntrc, L, dt, u, pBuff, alph, beta, gamm, rho)
     opPn(1,:)=pBuff(1,:)
     opPn(2,:)=pBuff(2,:)
     opPn(3,:)=rhoCenteredImplicit(N, Ntrc, dt, pBuff(1,:), rho) &
-                   +2D0*dt*kdvTLMPseudoSpec(N, Ntrc, L, u, pBuff(2,:),&
+                   +2.0D0*dt*kdvTLMPseudoSpec(N, Ntrc, L, u, pBuff(2,:),&
                                             alph, beta, gamm)
     
 end function opPn
@@ -206,9 +206,9 @@ function opPnAdj(N, Ntrc, L, dt, u, aBuff, alph, beta, gamm, rho)
     opPnAdj(1,:)=aBuff(1,:) &
                  +rhoCenteredImplicitAdj(N, Ntrc, dt, aBuff(3,:), rho) 
     opPnAdj(2,:)=aBuff(2,:) &
-                 +2D0*dt*kdvTLMPseudoSpecAdj(N, Ntrc, L, u, aBuff(3,:),&
+                 +2.0D0*dt*kdvTLMPseudoSpecAdj(N, Ntrc, L, u, aBuff(3,:),&
                                             alph, beta, gamm)
-    opPnAdj(3,:)=0D0
+    opPnAdj(3,:)=0.0D0
     
 end function opPnAdj
 
@@ -233,7 +233,7 @@ function opSAdj(N, aBuff)
     integer                         ::  N
     double precision, dimension(3,N)::  aBuff, opSAdj
 
-    opSAdj(1,:)=0D0
+    opSAdj(1,:)=0.0D0
     opSAdj(2,:)=aBuff(1,:)
     opSAdj(3,:)=aBuff(2,:)+aBuff(3,:)
     
@@ -336,10 +336,9 @@ function rhoCenteredImplicitAdj(N, Ntrc, dt, u, rho)
 
     rhoCenteredImplicitAdj=u
     call specFilt(rhoCenteredImplicitAdj, N, Ntrc)
-    rhoCenteredImplicitAdj=(1D0-dt*rho)/(1D0+dt*rho)*rhoCenteredImplicitAdj
+    rhoCenteredImplicitAdj=(1.0D0-dt*rho)/&
+                                (1.0D0+dt*rho)*rhoCenteredImplicitAdj
 end function rhoCenteredImplicitAdj
-
-
 
 
 end module kdvTLMProp

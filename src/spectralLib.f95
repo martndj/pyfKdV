@@ -48,9 +48,11 @@ double complex, parameter             ::    ii=(0D0,1D0)
 contains
 !====================================================================
 
-    function cfft(f, N, Tinv)
+    function dcfft(f, N, Tinv)
     !    
     !   Fast-fourier transform of a complex vector
+    !
+    !     <!>  act in place on f
     !    
     !    INS
     !        f :        complex vector
@@ -60,18 +62,18 @@ contains
     !-----------------------------------------------------------
         integer, intent(in)                         ::    N
         double complex, intent(in), dimension(N)    ::    f
-        double complex, dimension(N)                ::    cfft
+        double complex, dimension(N)                ::    dcfft
         integer*8                                   ::    planFFTW
         integer, intent(in)                         ::    Tinv
 
         if (size(f) .ne. N) then
-            print *, 'cfft: dimension error', size(f), N
+            print *, 'dcfft: dimension error', size(f), N
             stop
         end if
-        call dfftw_plan_dft_1d(planFFTW, N, f, cfft,Tinv, FFTW_ESTIMATE)
-        call dfftw_execute_dft(planFFTW, f, cfft)
+        call dfftw_plan_dft_1d(planFFTW, N, f, dcfft,Tinv, FFTW_ESTIMATE)
+        call dfftw_execute_dft(planFFTW, f, dcfft)
         call dfftw_destroy_plan(planFFTW)
-    end function cfft
+    end function dcfft
 
 
 
@@ -125,9 +127,9 @@ contains
         end if
 
         cf=dcmplx(f)
-        cf=cfft(cf,N,-1)
+        cf=dcfft(cf,N,-1)
         call specCoupe(cf,N,Ntr)
-        cf=cfft(cf,N,1)
+        cf=dcfft(cf,N,1)
         f=dble(cf)/dble(N)  !normalization
     end subroutine specFilt
 
@@ -207,12 +209,12 @@ contains
         call specDDiag(Ds, ordre, N, L)
 
         cf=dcmplx(f)
-        cf=cfft(cf,N, -1)
+        cf=dcfft(cf,N, -1)
         do j=1, N
             cf(j)=Ds(j)*cf(j)
         end do
         call specCoupe(cf, N, Ntr)
-        cf=cfft(cf,N,1)
+        cf=dcfft(cf,N,1)
         ! normalization
         diff=dble(cf)/dble(N)
     end function specDiff
@@ -253,12 +255,12 @@ contains
 
         ! start of the adjoint code
         cf=dcmplx(f)
-        cf=cfft(cf,N, -1)
+        cf=dcfft(cf,N, -1)
         call specCoupe(cf, N, Ntr)
         do j=1, N
             cf(j)=dconjg(Ds(j))*cf(j)
         end do
-        cf=cfft(cf,N,1)
+        cf=dcfft(cf,N,1)
         ! normalization
         diff=dble(cf)/dble(N)
 
@@ -266,7 +268,7 @@ contains
 
 !--------------------------------------------------------------------!
 
-    function rfft(f, N) result(tf)
+    function drfft(f, N) result(tf)
     !    Power spectrum of a real function
     !
     !    INS
@@ -283,21 +285,30 @@ contains
         integer  :: j
 
         if (size(f) .ne. N .or. mod(N,2) .eq. 0) then
-            print *, 'rfft : dimensioni error', size(f), N 
+            print *, 'drfft : dimensioni error', size(f), N 
             stop
         end if
 
         cf=dcmplx(f)
-        cf=cfft(cf,N,-1)
+        cf=dcfft(cf,N,-1)
         do j=1,(N-1)/2+1
             cf(j)=cf(j)*dconjg(cf(j))
             tf(j)=dsqrt(dble(cf(j)))
         end do
 
-    end function rfft 
+    end function drfft 
 
 
-
+!--------------------------------------------------------------------!
+!
+!    function HFNoise(Ntr, N, seed)
+!    integer, intent(in)             ::  Ntr, N
+!    double precision                ::  r
+!    double precision, dimension(N)  ::  g
+!    integer                         ::  i
+!    call random_seed()
+!    call random_number(r)
+!
 
 !====================================================================
 end module

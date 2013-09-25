@@ -24,7 +24,8 @@ end function scalarNVec
 !-------------------------------------------------------------------!
 
 function centeredRand()
-    double precision        :: centeredRand, r
+    double precision        ::  centeredRand, r
+    call random_seed()
     call random_number(r)
     centeredRand=r-5D-1
 end function centeredRand
@@ -37,7 +38,6 @@ function initRandVec(N, Ntrc)
     double precision, dimension(N)  ::  initRandVec
     integer                         ::  j, N, Ntrc
 
-    call random_seed()
     do j=1,N
         initRandVec(j)=centeredRand()
     end do

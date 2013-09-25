@@ -51,7 +51,11 @@ function kdvTLMPropagator(N, Ntrc, L, dt, nDt, tReal, u, p0, &
         tReal=tReal+dt
     end do
     ! R
-    pf=pBuff(3,:)
+    if (nDt.eq.1) then
+        pf=pBuff(2,:)
+    else
+        pf=pBuff(3,:)
+    end if
     
     !Fr : Filtration
     !call specFilt(pf, N, Ntrc)
@@ -81,9 +85,15 @@ function kdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, tReal, u, pf, &
     !call specFilt(pf, N, Ntrc)
 
     ! R*
-    aBuff(3,:)=pf
-    aBuff(2,:)=0.0D0
-    aBuff(1,:)=0.0D0
+    if (nDt.eq.1) then
+        aBuff(3,:)=0.0D0
+        aBuff(2,:)=pf
+        aBuff(1,:)=0.0D0
+    else
+        aBuff(3,:)=pf
+        aBuff(2,:)=0.0D0
+        aBuff(1,:)=0.0D0
+    end if
 
     tReal=0.0D0
 
@@ -270,7 +280,7 @@ function kdvTLMPseudoSpec(N, Ntrc, L, u, p, alph, beta, gamm, rho)
     call specFilt(udp, N, Ntrc)
     call specFilt(pdu, N, Ntrc)
 
-    ! R
+    ! A
     kdvTLMPseudoSpec =-alph*dp-beta*(udp+pdu)-gamm*d3p
     if (present(rho)) then
         kdvTLMPseudoSpec= kdvTLMPseudoSpec - rho*dp 
@@ -299,7 +309,7 @@ function kdvTLMPseudoSpecAdj(N, Ntrc, L, u, p, alph, beta, gamm, rho)
     ! FR
     call specFilt(p, N, Ntrc)
 
-    ! R*
+    ! A*
     d3p=-gamm*p
     pdu=-beta*p
     udp=-beta*p

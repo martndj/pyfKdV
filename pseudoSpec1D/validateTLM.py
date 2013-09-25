@@ -9,7 +9,13 @@ class ValidateTLMError(Exception):
 
 def gradTest(tlm, nlModel, ic, tInt,
                 output=True, powRange=[-1,-14]):
+    """
 
+        J(x) := ||M(x)||^2
+
+        =>  gradJ(x) = L*(M(x))
+        L is the TLM of M(), L* the adjoint of L
+    """
     if not (isinstance(tlm,TLMLauncher)):
         raise ValidateTLMError("tlm <TLMLauncher>")
     if not (isinstance(nlModel,Launcher)):
@@ -18,25 +24,19 @@ def gradTest(tlm, nlModel, ic, tInt,
         raise ValidateTLMError(
                     "Not initialized with a reference trajectory")
 
-    def evolvedNorm2(x):
-        xf=nlModel.integrate(x, tInt).final
-        return 0.5*np.dot(xf,xf)
-    #  grad:
-    #       tlm.adjoint(nl.integrate(x, tInt), tInt)
-
-
     traj=nlModel.integrate(ic, tInt)
-    final=traj.final
-    J0=evolvedNorm2(final)
+    J0=0.5*np.dot(traj.final, traj.final)
 
     tlm.initialize(traj)
-    gradJ0=tlm.adjoint(final, tInt)
+    gradJ0=tlm.adjoint(traj.final, tInt)
     n2GradJ0=np.dot(gradJ0, gradJ0)
 
     test={}
     for power in xrange(powRange[0],powRange[1], -1):
         eps=10.**(power)
-        Jeps=evolvedNorm2(nlModel.integrate(ic-eps*gradJ0, tInt).final)
+
+        trajEps=nlModel.integrate(ic-eps*gradJ0, tInt)
+        Jeps=0.5*np.dot(trajEps.final, trajEps.final)
         
         res=((J0-Jeps)/(eps*n2GradJ0))
         test[power]=[Jeps, res]

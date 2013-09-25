@@ -88,7 +88,7 @@ class TLMLauncher(object):
 
         if filtNtrc:
             specFilt(pert, self.grid)
-        self.__timeValidation(tInt, t0)
+        self._timeValidation(tInt, t0)
 
         if fullPertTraj:
             self.fullPertTraj=True
@@ -117,7 +117,7 @@ class TLMLauncher(object):
 
         if filtNtrc:
             specFilt(pert, self.grid)
-        self.__timeValidation(tInt, t0)
+        self._timeValidation(tInt, t0)
 
         adj= self.propagatorAdj(pert)
         if adj.dtype<>'float64':
@@ -129,7 +129,7 @@ class TLMLauncher(object):
     #----| Private methods |-------------------------------
     #------------------------------------------------------
     
-    def __timeValidation(self, tInt, t0):
+    def _timeValidation(self, tInt, t0):
 
         # Time attributes
         if tInt==None : tInt=self.refTraj.tInt

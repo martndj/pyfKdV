@@ -180,19 +180,15 @@ end subroutine c_kdvLanczos
 !--------------------------------------------------------------------
 
 subroutine c_testGradient(N, Ntrc, L, dt, nDt, maxPower, &
-                        u, p, alph, beta, gamm, rho) bind(c)
+                            p, alph, beta, gamm, rho, forc) bind(c)
     integer(c_int), intent(in), value           ::  N, Ntrc, nDt, maxPower
     real(c_double), intent(in), value           ::  L, dt
 
     real(c_double), intent(in), dimension(N)    ::  alph, beta, gamm, rho,&
-                                                    p
-
-    ! note that in C the indices will be reversed!:
-    real(c_double), intent(in), dimension(N, nDt+1)     ::  u
+                                                    forc, p
     
-    ! ...hence the transpose:
-    call testGradient(N, Ntrc, L, dt, nDt, maxPower, &
-                        transpose(u), p, alph, beta, gamm, rho)
+    call NLTestGradient(N, Ntrc, L, dt, nDt, maxPower, &
+                            p, alph, beta, gamm, rho, forc)
 
 end subroutine c_testGradient
 !====================================================================

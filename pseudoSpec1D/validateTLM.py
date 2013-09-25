@@ -2,7 +2,9 @@ import numpy as np
 
 from pseudoSpec1D import PeriodicGrid, Trajectory,\
                             Launcher, TLMLauncher
-
+#
+#       THERE IS A BUG SOMEWHERE : THE TEST IS NOT VALID
+#
 class ValidateTLMError(Exception):
     pass
 

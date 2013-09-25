@@ -74,26 +74,25 @@ class kdvTLMLauncher(TLMLauncher):
                                 "pert.shape = (launcher.grid.N,)")
         if filtNtrc:
             specFilt(pert, self.grid)
-        self.__timeValidation(tInt, t0)
+        super(kdvTLMLauncher, self)._timeValidation(tInt, t0)
 
         return self.__kdvTLMSingularOp_Fortran(pert)
 
     #----| Diagnostics |------------------------------------
     #-------------------------------------------------------
 
-    def gradTest_adjoint(self, pert, tInt=None, t0=0., maxPow=-10):
-        if not isinstance(pert, np.ndarray):
-            raise self.kdvTLMLauncherError("pert <numpy.ndarray>")
-        if pert.ndim <> 1 or pert.size <> self.grid.N:
-            raise self.kdvTLMLauncherError("pert.shape = (launcher.grid.N,)")
-        self.__timeValidation(tInt, t0)
+    def gradTest(self, ic, tInt=None, t0=0., maxPow=-10):
+        if not isinstance(ic, np.ndarray):
+            raise self.kdvTLMLauncherError("ic <numpy.ndarray>")
+        if ic.ndim <> 1 or ic.size <> self.grid.N:
+            raise self.kdvTLMLauncherError("ic.shape = (launcher.grid.N,)")
+        super(kdvTLMLauncher, self)._timeValidation(tInt, t0)
 
         grid=self.grid
         param=self.param
         fKdV.fKdVTestGradient(grid.N, grid.Ntrc, grid.L, 
-                self.dt, self.nDt, maxPow, pert,
-                self.refTraj.getData()[self.nDt0:self.nDt0+self.nDt+1],
-                param[1], param[2], param[3], param[4])
+                self.dt, self.nDt, maxPow, ic,
+                param[1], param[2], param[3], param[4], param[0])
 
     #------------------------------------------------------
     #----| Private methods          |----------------------

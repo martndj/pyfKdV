@@ -171,19 +171,19 @@ def fKdVLanczos(int N, int Ntrc, double L,
 cdef extern:
     void c_testgradient(int N, int Ntrc, double L,
                             double dt, int nDt, int maxPower, 
-                            double* u, double* p, 
+                            double* p, 
                             double* alph, double* beta, double* gamm,
-                            double* rho)
+                            double* rho, double* forc)
 
 def fKdVTestGradient(int N, int Ntrc, double L,
                     double dt, int nDt, int maxPower,
                     double[::1] p not None,
-                    double[:,::1] u not None,
                     double[::1] alph not None,
                     double[::1] beta not None,
                     double[::1] gamm not None,
-                    double[::1] rho not None):
+                    double[::1] rho not None,
+                    double[::1] forc not None):
 
 
     c_testgradient(N, Ntrc, L, dt, nDt, maxPower, 
-                    &u[0,0], &p[0], &alph[0], &beta[0], &gamm[0], &rho[0])
+                    &p[0], &alph[0], &beta[0], &gamm[0], &rho[0], &forc[0])

@@ -7,7 +7,7 @@ implicit none
 
 integer                 ::  N, Ntrc, nDt, maxPower, i, NNDt
 double precision        ::  L, pAmp, diff, dt, tReal
-logical                 ::  test
+logical                 ::  test, rhoZero, forcZero
 
 double precision, dimension(:), allocatable ::  alph, beta, gamm, rho, &
                                                 ic, forc
@@ -21,6 +21,9 @@ NNDt=5
 Ntrc=50
 N=3*Ntrc+1
 L=3.D2
+rhoZero=.False.
+forcZero=.False.
+
 
 allocate(nDtVec(NNDt))
 allocate(xBuff(N), yBuff(N))
@@ -35,6 +38,7 @@ nDtVec=(/2,10,20,50,100/)
 
 ! Generating random fields
 !   unfiltered state vectors
+call init_random_seed()
 ic=initRandVec(N)
 xBuff=pAmp*initRandVec(N)
 yBuff=pAmp*initRandVec(N)
@@ -42,11 +46,35 @@ yBuff=pAmp*initRandVec(N)
 alph=initRandVec(N, Ntrc)
 beta=initRandVec(N, Ntrc)
 gamm=initRandVec(N, Ntrc)
-rho=initRandVec(N, Ntrc)
-forc=pAmp*initRandVec(N, Ntrc)
+if (rhoZero) then
+    do i=1,N
+        rho(i)=0D0
+    end do
+else
+    rho=initRandVec(N, Ntrc)
+end if 
+if (forcZero) then
+    do i=1,N
+        forc(i)=0D0
+    end do
+else
+    forc=pAmp*initRandVec(N, Ntrc)
+end if
 
 
 
+print *, 
+print *, '============================================================='
+print *, '====| Gradient test : validity of TLM adjoint |=============='
+print *, '====|                 compared with NL model  |=============='
+print *, '============================================================='
+print *, 
+write(*, "(9A)"),  "   ic    ", "  xBuff  ", "  yBuff  ", "   alph  ",&
+                   "   beta  ", "   gamm  ", "    rho  ", "   forc  "
+do i=1, N
+    write(*, "(8(F9.4 ))"), ic(i), xBuff(i), yBuff(i), alph(i), beta(i), &
+                        gamm(i), rho(i), forc(i)
+end do
 do i=1,NNDt
     nDt=nDtVec(i)
     print *, '============================================================='

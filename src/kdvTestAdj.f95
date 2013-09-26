@@ -7,14 +7,14 @@ implicit none
 
 integer                 ::  N, Ntrc, nDt, i
 double precision        ::  L, pAmp, diff, dt, tReal
-logical                 ::  test
+logical                 ::  test, rhoZero, forcZero
 
 double precision, dimension(:), allocatable ::  alph, beta, gamm, rho, &
                                                 ic, forc
 double precision, dimension(:, :), allocatable  ::  xBuff, yBuff
 double precision, dimension(:, :), allocatable  ::  u
 
-Ntrc=150
+Ntrc=50
 N=3*Ntrc+1
 L=3.D2
 
@@ -25,6 +25,8 @@ allocate(ic(N), alph(N), beta(N), gamm(N), rho(N), forc(N))
 pAmp=1.D-1
 dt=1.D-2
 nDt=10
+rhoZero=.False.
+forcZero=.False.
 
 allocate(u(nDt+1, N))
 
@@ -42,13 +44,36 @@ end do
 alph=initRandVec(N, Ntrc)
 beta=initRandVec(N, Ntrc)
 gamm=initRandVec(N, Ntrc)
-rho=initRandVec(N, Ntrc)
-forc=pAmp*initRandVec(N, Ntrc)
+if (rhoZero) then
+    do i=1,N
+        rho(i)=0D0
+    end do
+else
+    rho=initRandVec(N, Ntrc)
+end if 
+if (forcZero) then
+    do i=1,N
+        forc(i)=0D0
+    end do
+else
+    forc=pAmp*initRandVec(N, Ntrc)
+end if
 
 
 u=kdvPropagator(N, Ntrc, L, dt, nDt, tReal, ic, &
                             alph, beta, gamm, rho, forc)
 
+print *, 
+print *, '============================================================='
+print *, '====| Adjoint test : validity compared with TLM |============'
+print *, '============================================================='
+print *, 
+write(*, "(9A)"),  "   ic    ", " xBuff(1)", " yBuff(1)", "   alph  ",&
+                   "   beta  ", "   gamm  ", "    rho  ", "   forc  "
+do i=1, N
+    write(*, "(8(F9.4 ))"), ic(i), xBuff(1,i), yBuff(1,i), alph(i), &
+                            beta(i),gamm(i), rho(i), forc(i)
+end do
 print *, 
 print *, 'Testing adjoint property with filtered noise initialisation'
 print *, '  |<x, Ly>-<L*x, y>| <= 1D-14 ?'

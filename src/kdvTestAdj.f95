@@ -24,7 +24,7 @@ allocate(ic(N), alph(N), beta(N), gamm(N), rho(N), forc(N))
 
 pAmp=1.D-1
 dt=1.D-2
-nDt=10
+nDt=50
 rhoZero=.False.
 forcZero=.False.
 

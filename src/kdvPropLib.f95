@@ -18,7 +18,6 @@ function kdvPropagator(N, Ntrc, L, dt, nDt, tReal, ic, &
     !-----------------------------------------------------------
     intent(in)              ::  N, Ntrc, L, dt, nDt, &
                                 alph, beta, gamm, rho, forc
-    !intent(inout)           ::  ic, tReal
 
     double precision        ::  L, dt, tReal
     integer                 ::  N, Ntrc, nDt, j

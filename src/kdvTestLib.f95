@@ -144,9 +144,7 @@ function testRhoCenteredImplicitAdj(N, Ntrc, L, dt, diff, x, y, rho)
 
 
     Ly=rhoCenteredImplicit(N, Ntrc, dt, y,rho)
-    !LAdj_x=rhoCenteredImplicitAdj(N, Ntrc, dt, x, rho)
-    LAdj_x=rhoCenteredImplicit(N, Ntrc, dt, x,rho)
-    !  AUTOADJOINT?
+    LAdj_x=rhoCenteredImplicitAdj(N, Ntrc, dt, x, rho)
 
     ! adjoint validity test
     print *, '<x,Ly>= ', scalar_product(x,Ly)

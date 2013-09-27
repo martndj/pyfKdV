@@ -155,6 +155,31 @@ function testRhoCenteredImplicitAdj(N, Ntrc, L, dt, diff, x, y, rho)
 end function testRhoCenteredImplicitAdj
 
 !-------------------------------------------------------------------!
+function testRhoForwardAdj(N, Ntrc, L, dt, diff, x, y, rho)
+    intent(in)                      ::  N, Ntrc, L, dt, x, y, rho
+    intent(out)                     ::  diff
+
+    integer                         ::  N, Ntrc, j
+    
+    double precision, dimension(N)  ::  rho, x, y, Ly, LAdj_x
+    double precision                ::  L, diff, dt
+    logical                         ::  testRhoForwardAdj
+
+    double precision, parameter     :: tolerance=1D-14
+
+
+    Ly=rhoForward(N, Ntrc, dt, y,rho)
+    LAdj_x=rhoForwardAdj(N, Ntrc, dt, x, rho)
+
+    ! adjoint validity test
+    print *, '<x,Ly>= ', scalar_product(x,Ly)
+    print *, '<L*x,y>=', scalar_product(LAdj_x,y)
+    diff=dabs(scalar_product(x,Ly)-scalar_product(LAdj_x,y))
+    testRhoForwardAdj=(diff .le. tolerance)
+
+end function testRhoForwardAdj
+
+!-------------------------------------------------------------------!
 !-------------------------------------------------------------------!
 
 function testOpE1Adj(N, Ntrc, L, dt, pAmp, diff, &

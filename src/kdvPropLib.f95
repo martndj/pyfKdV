@@ -3,6 +3,10 @@ module kdvProp
 use spectral
 implicit none
 
+interface rhoScheme
+    module procedure rhoForward
+!    module procedure rhoCenteredImplicit
+end interface
 
 contains
 !====================================================================
@@ -40,7 +44,7 @@ function kdvPropagator(N, Ntrc, L, dt, nDt, tReal, ic, &
     !   leapfrog : Ax.A, Axxx, f'(x)
     !   centered : r.A
     do j=2,nDt
-        traj(j+1,:)=rhoCenteredImplicit(N, Ntrc, dt, traj(j-1,:),rho)&
+        traj(j+1,:)=rhoScheme(N, Ntrc, dt, traj(j-1,:),rho)&
                     +2.0D0*dt*kdvPseudoSpec(N, Ntrc, L, traj(j,:),&
                                           alph, beta, gamm, forc=forc)
        
@@ -48,6 +52,8 @@ function kdvPropagator(N, Ntrc, L, dt, nDt, tReal, ic, &
     end do
 end function kdvPropagator
 
+!--------------------------------------------------------------------
+!----| rhoSchemes |--------------------------------------------------
 !--------------------------------------------------------------------
 
 function rhoCenteredImplicit(N, Ntrc, dt, u, rho)
@@ -62,7 +68,23 @@ function rhoCenteredImplicit(N, Ntrc, dt, u, rho)
     call specFilt(rhoCenteredImplicit, N, Ntrc)
 end function rhoCenteredImplicit
 
+!--------------------------------------------------------------------
+
+function rhoForward(N, Ntrc, dt, u, rho)
+    intent (in)                     ::  N, Ntrc, dt, u, rho
+    integer                         ::  N, Ntrc
+    double precision                ::  dt
+    double precision, dimension(N)  ::  u, rho, rhoForward
+
+    rhoForward=u*(1.0D0-dt*rho)
+    call specFilt(rhoForward, N, Ntrc)
+end function rhoForward
+
+
 !--------------------------------------------------------------------!
+!----| KdV Scheme |--------------------------------------------------!
+!--------------------------------------------------------------------!
+
 function kdvPseudoSpec(N, Ntrc, L, u, alph, beta, gamm, rho, forc)
     !   Differential equation for Korteweg de-Vries system
     !      

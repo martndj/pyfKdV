@@ -126,6 +126,18 @@ if (test) then
         print *, ' >>Test FAILED', diff
         test=.false.
     end if
+    
+    print *, 
+    print *, '============================================================='
+    print *, 'Testing adjoint validity of rhoForward'
+    print *, N, Ntrc, L, dt
+    if (testRhoForwardAdj(N, Ntrc, L, dt, diff, &
+                                    xBuff(1,:), yBuff(1,:), rho)) then 
+        print *, ' >>Test succeeded:', diff
+    else
+        print *, ' >>Test FAILED', diff
+        test=.false.
+    end if
 end if
 
 

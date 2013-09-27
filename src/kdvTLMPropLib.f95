@@ -1,8 +1,18 @@
 module kdvTLMProp
 
 use spectral
-use kdvProp, only: rhoCenteredImplicit
+use kdvProp, only: rhoCenteredImplicit, rhoForward
 implicit none
+
+interface rhoScheme
+    module procedure rhoForward
+!    module procedure rhoCenteredImplicit
+end interface
+
+interface rhoSchemeAdj
+    module procedure rhoForwardAdj
+!    module procedure rhoCenteredImplicitAdj
+end interface
 
 contains
 !====================================================================
@@ -196,7 +206,7 @@ function opPn(N, Ntrc, L, dt, u, pBuff, alph, beta, gamm, rho)
 
     opPn(1,:)=pBuff(1,:)
     opPn(2,:)=pBuff(2,:)
-    opPn(3,:)=rhoCenteredImplicit(N, Ntrc, dt, pBuff(1,:), rho) &
+    opPn(3,:)=rhoScheme(N, Ntrc, dt, pBuff(1,:), rho) &
                    +2.0D0*dt*kdvTLMPseudoSpec(N, Ntrc, L, u, pBuff(2,:),&
                                             alph, beta, gamm)
     
@@ -214,7 +224,7 @@ function opPnAdj(N, Ntrc, L, dt, u, aBuff, alph, beta, gamm, rho)
     double precision, dimension(3,N)::  aBuff, opPnAdj
 
     opPnAdj(1,:)=aBuff(1,:) &
-                 +rhoCenteredImplicitAdj(N, Ntrc, dt, aBuff(3,:), rho) 
+                 +rhoSchemeAdj(N, Ntrc, dt, aBuff(3,:), rho) 
     opPnAdj(2,:)=aBuff(2,:) &
                  +2.0D0*dt*kdvTLMPseudoSpecAdj(N, Ntrc, L, u, aBuff(3,:),&
                                             alph, beta, gamm)
@@ -350,5 +360,16 @@ function rhoCenteredImplicitAdj(N, Ntrc, dt, p, rho)
     rhoCenteredImplicitAdj=amp*p
 end function rhoCenteredImplicitAdj
 
+!--------------------------------------------------------------------
+
+function rhoForwardAdj(N, Ntrc, dt, p, rho)
+    intent (in)                     ::  N, Ntrc, dt, p, rho
+    integer                         ::  N, Ntrc
+    double precision                ::  dt
+    double precision, dimension(N)  ::  p, rho, rhoForwardAdj
+
+    call specFilt(p, N, Ntrc)
+    rhoForwardAdj=p*(1.0D0-dt*rho)
+end function rhoForwardAdj
 
 end module kdvTLMProp

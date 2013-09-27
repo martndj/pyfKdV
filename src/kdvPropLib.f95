@@ -4,8 +4,8 @@ use spectral
 implicit none
 
 interface rhoScheme
-    module procedure rhoForward
-!    module procedure rhoCenteredImplicit
+!    module procedure rhoForward
+    module procedure rhoCenteredImplicit
 end interface
 
 contains
@@ -44,7 +44,7 @@ function kdvPropagator(N, Ntrc, L, dt, nDt, tReal, ic, &
     !   leapfrog : Ax.A, Axxx, f'(x)
     !   centered : r.A
     do j=2,nDt
-        traj(j+1,:)=rhoScheme(N, Ntrc, dt, traj(j-1,:),rho)&
+        traj(j+1,:)=rhoScheme(N, Ntrc,  dt, traj(j-1:j+1,:), rho)&
                     +2.0D0*dt*kdvPseudoSpec(N, Ntrc, L, traj(j,:),&
                                           alph, beta, gamm, forc=forc)
        
@@ -56,27 +56,27 @@ end function kdvPropagator
 !----| rhoSchemes |--------------------------------------------------
 !--------------------------------------------------------------------
 
-function rhoCenteredImplicit(N, Ntrc, dt, u, rho)
-    intent (in)                     ::  N, Ntrc, dt, u, rho
+function rhoCenteredImplicit(N, Ntrc, dt, uBuff, rho)
+    intent (in)                     ::  N, Ntrc, dt, uBuff, rho
     integer                         ::  N, Ntrc
     double precision                ::  dt
-    double precision, dimension(N)  ::  u, rho, rhoCenteredImplicit, amp
+    double precision, dimension(N)  ::  rho, rhoCenteredImplicit
+    double precision, dimension(3, N)       ::  uBuff 
 
-    amp=(1.0D0-dt*rho)/(1.0D0+dt*rho)
-
-    rhoCenteredImplicit=amp*u
+    rhoCenteredImplicit=uBuff(1,:)*(1.0D0-dt*rho)/(1.0D0+dt*rho)
     call specFilt(rhoCenteredImplicit, N, Ntrc)
 end function rhoCenteredImplicit
 
 !--------------------------------------------------------------------
 
-function rhoForward(N, Ntrc, dt, u, rho)
-    intent (in)                     ::  N, Ntrc, dt, u, rho
+function rhoForward(N, Ntrc, dt, uBuff, rho)
+    intent (in)                     ::  N, Ntrc, dt, uBuff, rho
     integer                         ::  N, Ntrc
     double precision                ::  dt
-    double precision, dimension(N)  ::  u, rho, rhoForward
+    double precision, dimension(N)  ::  rho, rhoForward
+    double precision, dimension(3, N)       ::  uBuff
 
-    rhoForward=u*(1.0D0-dt*rho)
+    rhoForward=uBuff(2,:)*(1.0D0-dt*rho)
     call specFilt(rhoForward, N, Ntrc)
 end function rhoForward
 

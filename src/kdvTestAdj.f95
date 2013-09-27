@@ -5,6 +5,7 @@ use kdvTLMProp
 use kdvTLMTest
 implicit none
 
+
 integer                 ::  N, Ntrc, nDt, i
 double precision        ::  L, pAmp, diff, dt, tReal
 logical                 ::  test, rhoZero, forcZero, rhoCte
@@ -25,7 +26,7 @@ allocate(ic(N), alph(N), beta(N), gamm(N), rho(N), forc(N))
 pAmp=1.D-1
 dt=1.D-2
 nDt=50
-rhoZero=.False.
+rhoZero=.True.
 rhoCte=.True.
 forcZero=.False.
 
@@ -120,7 +121,7 @@ if (test) then
     print *, 'Testing adjoint validity of rhoCenteredImplicit'
     print *, N, Ntrc, L, dt
     if (testRhoCenteredImplicitAdj(N, Ntrc, L, dt, diff, &
-                                    xBuff(1,:), yBuff(1,:), rho)) then 
+                                    xBuff(1,:), yBuff, rho)) then 
         print *, ' >>Test succeeded:', diff
     else
         print *, ' >>Test FAILED', diff
@@ -132,12 +133,13 @@ if (test) then
     print *, 'Testing adjoint validity of rhoForward'
     print *, N, Ntrc, L, dt
     if (testRhoForwardAdj(N, Ntrc, L, dt, diff, &
-                                    xBuff(1,:), yBuff(1,:), rho)) then 
+                                    xBuff(1,:), yBuff, rho)) then 
         print *, ' >>Test succeeded:', diff
     else
         print *, ' >>Test FAILED', diff
         test=.false.
     end if
+    
 end if
 
 

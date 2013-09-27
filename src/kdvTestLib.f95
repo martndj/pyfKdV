@@ -130,51 +130,53 @@ function testAutoAdjointSpecFilt(N, Ntrc, L, diff, x, y)
 end function testAutoAdjointSpecFilt
 !-------------------------------------------------------------------!
 !-------------------------------------------------------------------!
-function testRhoCenteredImplicitAdj(N, Ntrc, L, dt, diff, x, y, rho)
-    intent(in)                      ::  N, Ntrc, L, dt, x, y, rho
+function testRhoCenteredImplicitAdj(N, Ntrc, L, dt, diff, x, yBuff, rho)
+    intent(in)                      ::  N, Ntrc, L, dt, x, yBuff, rho
     intent(out)                     ::  diff
 
     integer                         ::  N, Ntrc, j
     
-    double precision, dimension(N)  ::  rho, x, y, Ly, LAdj_x
+    double precision, dimension(N)  ::  rho, x, Ly
     double precision                ::  L, diff, dt
+    double precision, dimension(3,N)::  yBuff, LAdj_x
     logical                         ::  testRhoCenteredImplicitAdj
 
     double precision, parameter     :: tolerance=1D-14
 
 
-    Ly=rhoCenteredImplicit(N, Ntrc, dt, y,rho)
+    Ly=rhoCenteredImplicit(N, Ntrc, dt, yBuff,rho)
     LAdj_x=rhoCenteredImplicitAdj(N, Ntrc, dt, x, rho)
 
     ! adjoint validity test
     print *, '<x,Ly>= ', scalar_product(x,Ly)
-    print *, '<L*x,y>=', scalar_product(LAdj_x,y)
-    diff=dabs(scalar_product(x,Ly)-scalar_product(LAdj_x,y))
+    print *, '<L*x,y>=', scalarNVec(LAdj_x,yBuff,3, N)
+    diff=dabs(scalar_product(x,Ly)-scalarNVec(LAdj_x,yBuff,3, N))
     testRhoCenteredImplicitAdj=(diff .le. tolerance)
 
 end function testRhoCenteredImplicitAdj
 
 !-------------------------------------------------------------------!
-function testRhoForwardAdj(N, Ntrc, L, dt, diff, x, y, rho)
-    intent(in)                      ::  N, Ntrc, L, dt, x, y, rho
+function testRhoForwardAdj(N, Ntrc, L, dt, diff, x, yBuff, rho)
+    intent(in)                      ::  N, Ntrc, L, dt, x, yBuff, rho
     intent(out)                     ::  diff
 
     integer                         ::  N, Ntrc, j
     
-    double precision, dimension(N)  ::  rho, x, y, Ly, LAdj_x
+    double precision, dimension(N)  ::  rho, x, Ly
     double precision                ::  L, diff, dt
+    double precision, dimension(3,N)::  yBuff, LAdj_x 
     logical                         ::  testRhoForwardAdj
 
     double precision, parameter     :: tolerance=1D-14
 
 
-    Ly=rhoForward(N, Ntrc, dt, y,rho)
+    Ly=rhoForward(N, Ntrc, dt, yBuff,rho)
     LAdj_x=rhoForwardAdj(N, Ntrc, dt, x, rho)
 
     ! adjoint validity test
     print *, '<x,Ly>= ', scalar_product(x,Ly)
-    print *, '<L*x,y>=', scalar_product(LAdj_x,y)
-    diff=dabs(scalar_product(x,Ly)-scalar_product(LAdj_x,y))
+    print *, '<L*x,y>=', scalarNVec(LAdj_x,yBuff,3, N)
+    diff=dabs(scalar_product(x,Ly)-scalarNVec(LAdj_x,yBuff,3, N))
     testRhoForwardAdj=(diff .le. tolerance)
 
 end function testRhoForwardAdj

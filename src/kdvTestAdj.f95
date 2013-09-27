@@ -7,7 +7,7 @@ implicit none
 
 integer                 ::  N, Ntrc, nDt, i
 double precision        ::  L, pAmp, diff, dt, tReal
-logical                 ::  test, rhoZero, forcZero
+logical                 ::  test, rhoZero, forcZero, rhoCte
 
 double precision, dimension(:), allocatable ::  alph, beta, gamm, rho, &
                                                 ic, forc
@@ -26,6 +26,7 @@ pAmp=1.D-1
 dt=1.D-2
 nDt=50
 rhoZero=.False.
+rhoCte=.True.
 forcZero=.False.
 
 allocate(u(nDt+1, N))
@@ -49,7 +50,13 @@ if (rhoZero) then
         rho(i)=0D0
     end do
 else
-    rho=initRandVec(N, Ntrc)
+    if (rhoCte) then
+        do i=1,N
+            rho(i)=1.D-1
+        end do
+    else
+        rho=initRandVec(N, Ntrc)
+    end if
 end if 
 if (forcZero) then
     do i=1,N

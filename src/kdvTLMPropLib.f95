@@ -277,8 +277,8 @@ function kdvTLMPseudoSpec(N, Ntrc, L, u, p, alph, beta, gamm, rho)
     end do
     ! Filtration
     ! F
-    call specFilt(udp, N, Ntrc)
-    call specFilt(pdu, N, Ntrc)
+    !call specFilt(udp, N, Ntrc)
+    !call specFilt(pdu, N, Ntrc)
 
     ! A
     kdvTLMPseudoSpec =-alph*dp-beta*(udp+pdu)-gamm*d3p
@@ -319,8 +319,8 @@ function kdvTLMPseudoSpecAdj(N, Ntrc, L, u, p, alph, beta, gamm, rho)
     end if
 
     ! F* (auto-adjoint)
-    call specFilt(udp, N, Ntrc)
-    call specFilt(pdu, N, Ntrc)
+    !call specFilt(udp, N, Ntrc)
+    !call specFilt(pdu, N, Ntrc)
     
     ! P*
     do j=1,N
@@ -338,16 +338,16 @@ end function kdvTLMPseudoSpecAdj
 !--------------------------------------------------------------------
 !--------------------------------------------------------------------
 
-function rhoCenteredImplicitAdj(N, Ntrc, dt, u, rho)
-    intent (in)                     ::  N, Ntrc, dt, u, rho
+function rhoCenteredImplicitAdj(N, Ntrc, dt, p, rho)
+    intent (in)                     ::  N, Ntrc, dt, p, rho
     integer                         ::  N, Ntrc
     double precision                ::  dt
-    double precision, dimension(N)  ::  u, rho, rhoCenteredImplicitAdj
+    double precision, dimension(N)  ::  p, rho, rhoCenteredImplicitAdj, amp
 
-    rhoCenteredImplicitAdj=u
-    call specFilt(rhoCenteredImplicitAdj, N, Ntrc)
-    rhoCenteredImplicitAdj=(1.0D0-dt*rho)/&
-                                (1.0D0+dt*rho)*rhoCenteredImplicitAdj
+    amp=(1.0D0-dt*rho)/(1.0D0+dt*rho)
+
+    call specFilt(p, N, Ntrc)
+    rhoCenteredImplicitAdj=amp*p
 end function rhoCenteredImplicitAdj
 
 

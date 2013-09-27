@@ -54,10 +54,11 @@ function rhoCenteredImplicit(N, Ntrc, dt, u, rho)
     intent (in)                     ::  N, Ntrc, dt, u, rho
     integer                         ::  N, Ntrc
     double precision                ::  dt
-    double precision, dimension(N)  ::  u, rho, rhoCenteredImplicit
+    double precision, dimension(N)  ::  u, rho, rhoCenteredImplicit, amp
 
-    rhoCenteredImplicit=(1.0D0-dt*rho)/(1.0D0+dt*rho)*u
-    ! prevent aliasing from multiplication (localised parameters)
+    amp=(1.0D0-dt*rho)/(1.0D0+dt*rho)
+
+    rhoCenteredImplicit=amp*u
     call specFilt(rhoCenteredImplicit, N, Ntrc)
 end function rhoCenteredImplicit
 
@@ -96,7 +97,7 @@ function kdvPseudoSpec(N, Ntrc, L, u, alph, beta, gamm, rho, forc)
     end do
     
     ! prevent aliasing from multiplication
-    call specFilt(udu, N, Ntrc)
+    !call specFilt(udu, N, Ntrc)  ! potentiellement superflu
     
     kdvPseudoSpec= - alph*du - beta*udu - gamm*d3u
     if (present(rho)) then

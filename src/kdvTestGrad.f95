@@ -7,7 +7,7 @@ implicit none
 
 integer                 ::  N, Ntrc, nDt, maxPower, i, NNDt
 double precision        ::  L, pAmp, diff, dt, tReal
-logical                 ::  test, rhoZero, forcZero
+logical                 ::  test, rhoZero, forcZero, rhoCte
 
 double precision, dimension(:), allocatable ::  alph, beta, gamm, rho, &
                                                 ic, forc
@@ -22,6 +22,7 @@ Ntrc=50
 N=3*Ntrc+1
 L=3.D2
 rhoZero=.False.
+rhoCte=.True.
 forcZero=.False.
 
 
@@ -51,7 +52,13 @@ if (rhoZero) then
         rho(i)=0D0
     end do
 else
-    rho=initRandVec(N, Ntrc)
+    if (rhoCte) then
+        do i=1,N
+            rho(i)=1.D-1
+        end do
+    else
+        rho=initRandVec(N, Ntrc)
+    end if
 end if 
 if (forcZero) then
     do i=1,N

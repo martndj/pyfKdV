@@ -24,7 +24,7 @@ allocate(xBuff(3,N), yBuff(3, N))
 allocate(ic(N), alph(N), beta(N), gamm(N), rho(N), forc(N))
 
 pAmp=1.0D-1
-rhoAmp=1.0D-2
+rhoAmp=1.0D-1
 
 dt=1.0D-2
 nDt=50

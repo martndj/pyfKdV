@@ -19,10 +19,11 @@ function kdvPropagator(N, Ntrc, L, dt, nDt, tReal, ic, &
                                 alph, beta, gamm, rho, forc
 
     double precision        ::  L, dt, tReal
-    integer                 ::  N, Ntrc, nDt, j
+    integer                 ::  N, Ntrc, nDt, j, i
     
     double precision, dimension(N)          ::  alph, beta, gamm, rho, &
-                                                ic, forc
+                                                ic, forc, &
+                                                rhoNum, rhoDenum
     double precision, dimension(nDt+1, N)   ::  traj
 
     ! explicit filtering of the IC
@@ -39,10 +40,14 @@ function kdvPropagator(N, Ntrc, L, dt, nDt, tReal, ic, &
     !   leapfrog : Ax.A, Axxx, f'(x)
     !   centered : r.A
     do j=2,nDt
-        traj(j+1,:)=(1.0D0+rho*dt)**(-1.0D0)*(&
+        do i=1, N
+            rhoNum(i)=1.0D0-rho(i)*dt
+            rhoDenum(i)=1.0D0/(1.0D0+rho(i)*dt)
+        end do
+        traj(j+1,:)=rhoDenum*(&
                         2.0D0*dt*kdvPseudoSpec(N, Ntrc, L, traj(j,:),&
                                           alph, beta, gamm, forc=forc) &
-                        +(1.0D0-rho*dt)*traj(j-1,:)&
+                        +rhoNum*traj(j-1,:)&
                         )
        
         tReal=tReal+dt

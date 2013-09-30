@@ -7,7 +7,7 @@ implicit none
 
 
 integer                 ::  N, Ntrc, nDt, i
-double precision        ::  L, pAmp, diff, dt, tReal
+double precision        ::  L, pAmp, diff, dt, tReal, rhoAmp
 logical                 ::  test, rhoZero, forcZero, rhoCte
 
 double precision, dimension(:), allocatable ::  alph, beta, gamm, rho, &
@@ -23,10 +23,13 @@ L=3.D2
 allocate(xBuff(3,N), yBuff(3, N))
 allocate(ic(N), alph(N), beta(N), gamm(N), rho(N), forc(N))
 
-pAmp=1.D-1
-dt=1.D-2
+pAmp=1.0D-1
+rhoAmp=1.0D-2
+
+dt=1.0D-2
 nDt=50
-rhoZero=.True.
+
+rhoZero=.False.
 rhoCte=.True.
 forcZero=.False.
 
@@ -53,10 +56,10 @@ if (rhoZero) then
 else
     if (rhoCte) then
         do i=1,N
-            rho(i)=1.D-1
+            rho(i)=rhoAmp
         end do
     else
-        rho=initRandVec(N, Ntrc)
+        rho=rhoAmp*initRandVec(N, Ntrc)
     end if
 end if 
 if (forcZero) then
@@ -110,30 +113,6 @@ if (test) then
     if (testKdvTLMPseudoSpecAdj(N, Ntrc, L, pAmp, diff, &
                         u(1,:), xBuff(1,:), yBuff(1,:), &
                         alph, beta, gamm, rho)) then 
-        print *, ' >>Test succeeded:', diff
-    else
-        print *, ' >>Test FAILED', diff
-        test=.false.
-    end if
-    
-    print *, 
-    print *, '============================================================='
-    print *, 'Testing adjoint validity of rhoCenteredImplicit'
-    print *, N, Ntrc, L, dt
-    if (testRhoCenteredImplicitAdj(N, Ntrc, L, dt, diff, &
-                                    xBuff(1,:), yBuff, rho)) then 
-        print *, ' >>Test succeeded:', diff
-    else
-        print *, ' >>Test FAILED', diff
-        test=.false.
-    end if
-    
-    print *, 
-    print *, '============================================================='
-    print *, 'Testing adjoint validity of rhoForward'
-    print *, N, Ntrc, L, dt
-    if (testRhoForwardAdj(N, Ntrc, L, dt, diff, &
-                                    xBuff(1,:), yBuff, rho)) then 
         print *, ' >>Test succeeded:', diff
     else
         print *, ' >>Test FAILED', diff

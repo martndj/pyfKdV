@@ -57,7 +57,8 @@ class kdvLauncher(Launcher):
         maxK=2.0*np.pi*self.grid.Ntrc/self.grid.L
         denom=np.zeros(shape=self.grid.N)
         denom=np.sqrt((self.param[3]*maxK**3-self.param[1]*maxK
-                       -self.param[2]*maxA*maxK)**2+self.param[4]**2)
+                            -self.param[2]*maxA*maxK)**2
+                       +self.param[4]**2)
 
         dt=1./denom.max()
         return dt

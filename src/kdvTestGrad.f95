@@ -6,7 +6,7 @@ use kdvTLMTest
 implicit none
 
 integer                 ::  N, Ntrc, nDt, maxPower, i, NNDt
-double precision        ::  L, pAmp, diff, dt, tReal
+double precision        ::  L, pAmp, diff, dt, tReal, rhoAmp
 logical                 ::  test, rhoZero, forcZero, rhoCte
 
 double precision, dimension(:), allocatable ::  alph, beta, gamm, rho, &
@@ -21,7 +21,7 @@ NNDt=5
 Ntrc=50
 N=3*Ntrc+1
 L=3.D2
-rhoZero=.True.
+rhoZero=.False.
 rhoCte=.True.
 forcZero=.False.
 
@@ -30,9 +30,9 @@ allocate(nDtVec(NNDt))
 allocate(xBuff(N), yBuff(N))
 allocate(ic(N), alph(N), beta(N), gamm(N), rho(N), forc(N))
 
-pAmp=1.D-1
-dt=1.D-2
-
+pAmp=1.0D-1
+rhoAmp=1.0D-2
+dt=1.0D-2
 
 maxPower=-9
 nDtVec=(/2,10,20,50,100/)
@@ -54,10 +54,10 @@ if (rhoZero) then
 else
     if (rhoCte) then
         do i=1,N
-            rho(i)=1.D-1
+            rho(i)=rhoAmp
         end do
     else
-        rho=initRandVec(N, Ntrc)
+        rho=rhoAmp*initRandVec(N, Ntrc)
     end if
 end if 
 if (forcZero) then

@@ -157,7 +157,8 @@ function opE1(N, Ntrc, L, dt, u, pBuff, alph, beta, gamm, rho)
 
     opE1(1,:)=pBuff(1,:)
     opE1(2,:)=pBuff(1,:)+dt*kdvTLMPseudoSpec(N, Ntrc, L, u, &
-                                        pBuff(1,:), alph, beta, gamm, rho)
+                                        pBuff(1,:), alph, beta, gamm)&
+                    -dt*rho*pBuff(1,:)
     opE1(3,:)=0.0D0
     
 end function opE1
@@ -175,7 +176,8 @@ function opE1Adj(N, Ntrc, L, dt, u, aBuff, alph, beta, gamm, rho)
 
     opE1Adj(1,:)=aBuff(1,:)+aBuff(2,:) &
                  +dt*kdvTLMPseudoSpecAdj(N, Ntrc, L, u, aBuff(2,:),&
-                                            alph, beta, gamm, rho)
+                                            alph, beta, gamm)&
+                 -dt*rho*aBuff(2,:)
     opE1Adj(2,:)=0.0D0
     opE1Adj(3,:)=0.0D0
     
@@ -265,16 +267,15 @@ end function opSAdj
 !-------------------------------------------------------------------!
 !-------------------------------------------------------------------!
 
-function kdvTLMPseudoSpec(N, Ntrc, L, u, p, alph, beta, gamm, rho)
+function kdvTLMPseudoSpec(N, Ntrc, L, u, p, alph, beta, gamm)
 
     intent(in)                      ::  N, Ntrc, L, u, p, &
-                                        alph, beta, gamm, rho
-    optional                        ::  rho
+                                        alph, beta, gamm
     integer                         ::  N, Ntrc, j
     double precision                ::  L
     double precision, dimension(N)  ::  kdvTLMPseudoSpec, p,&
                                         dp, u, du, udp, pdu, d3p, &
-                                        alph, beta, gamm, rho
+                                        alph, beta, gamm
 
     du=specDiff(u, 1, N, Ntrc, L)
 
@@ -295,9 +296,6 @@ function kdvTLMPseudoSpec(N, Ntrc, L, u, p, alph, beta, gamm, rho)
 
     ! A
     kdvTLMPseudoSpec =-alph*dp-beta*(udp+pdu)-gamm*d3p
-    if (present(rho)) then
-        kdvTLMPseudoSpec= kdvTLMPseudoSpec - rho*dp 
-    end if
     
     ! FR
     call specFilt(kdvTLMPseudoSpec, N, Ntrc)
@@ -305,16 +303,15 @@ end function kdvTLMPseudoSpec
 
 !-------------------------------------------------------------------!
 
-function kdvTLMPseudoSpecAdj(N, Ntrc, L, u, p, alph, beta, gamm, rho)
+function kdvTLMPseudoSpecAdj(N, Ntrc, L, u, p, alph, beta, gamm)
 
     intent(in)                      ::  N, Ntrc, L, u, p, &
-                                        alph, beta, gamm, rho
-    optional                        ::  rho
+                                        alph, beta, gamm
     integer                         ::  N, Ntrc, j
     double precision                ::  L
     double precision, dimension(N)  ::  kdvTLMPseudoSpecAdj, p, &
                                         dp, u, du, udp, pdu, d3p, &
-                                        alph, beta, gamm, rho
+                                        alph, beta, gamm
 
 
     du=specDiff(u, 1, N, Ntrc, L)
@@ -327,9 +324,6 @@ function kdvTLMPseudoSpecAdj(N, Ntrc, L, u, p, alph, beta, gamm, rho)
     pdu=-beta*p
     udp=-beta*p
     dp=-alph*p
-    if (present(rho)) then
-        dp= dp -rho*p
-    end if
 
     ! F* (auto-adjoint)
     !call specFilt(udp, N, Ntrc)

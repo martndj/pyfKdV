@@ -32,7 +32,8 @@ function kdvPropagator(N, Ntrc, L, dt, nDt, tReal, ic, &
     ! first step : Euler-forward
     traj(1,:)=ic
     traj(2,:)=traj(1,:)+dt*kdvPseudoSpec(N, Ntrc, L, traj(1,:), &
-                                         alph, beta, gamm, rho, forc)
+                                         alph, beta, gamm, forc)&
+                -dt*rho*traj(1,:)
 
     tReal=tReal+dt
 
@@ -40,6 +41,8 @@ function kdvPropagator(N, Ntrc, L, dt, nDt, tReal, ic, &
     !   leapfrog : Ax.A, Axxx, f'(x)
     !   centered : r.A
     do j=2,nDt
+
+        ! simplify this when precision is reached!
         do i=1, N
             rhoNum(i)=1.0D0-rho(i)*dt
             rhoDenum(i)=1.0D0/(1.0D0+rho(i)*dt)
@@ -59,7 +62,7 @@ end function kdvPropagator
 !----| KdV Scheme |--------------------------------------------------!
 !--------------------------------------------------------------------!
 
-function kdvPseudoSpec(N, Ntrc, L, u, alph, beta, gamm, rho, forc)
+function kdvPseudoSpec(N, Ntrc, L, u, alph, beta, gamm, forc)
     !   Differential equation for Korteweg de-Vries system
     !      
     !   pseudospectral derivation on a periodic domain
@@ -74,16 +77,16 @@ function kdvPseudoSpec(N, Ntrc, L, u, alph, beta, gamm, rho, forc)
     !   <!> rho, forc are optional   
     !
     !   RETURNS
-    !       Dt(u)=-alph*Dx(u)-beta*u*Dx(u)-gamm*Dx3(u)-rho*u+forc
+    !       Dt(u)=-alph*Dx(u)-beta*u*Dx(u)-gamm*Dx3(u)+forc
     !--------------------------------------------------------------
     intent(in)                      ::  N, Ntrc, L, u,&
-                                        alph, beta, gamm, rho, forc
-    optional                        ::  rho, forc 
+                                        alph, beta, gamm, forc
+    optional                        ::  forc 
     integer                         ::  N, Ntrc, j
     double precision                ::  L
     double precision, dimension(N)  ::  kdvPseudoSpec, &
                                         u, udu, du, d3u, &
-                                        alph, beta, gamm, rho, forc
+                                        alph, beta, gamm, forc
 
     ! udu=u*du
     du=specDiff(u, 1, N, Ntrc, L)    !=du
@@ -96,9 +99,6 @@ function kdvPseudoSpec(N, Ntrc, L, u, alph, beta, gamm, rho, forc)
     !call specFilt(udu, N, Ntrc)  ! potentiellement superflu
     
     kdvPseudoSpec= - alph*du - beta*udu - gamm*d3u
-    if (present(rho)) then
-        kdvPseudoSpec= kdvPseudoSpec - rho*u 
-    end if
     if (present(forc)) then
         kdvPseudoSpec= kdvPseudoSpec + forc
     end if

@@ -409,8 +409,8 @@ function testKdvTLMPseudoSpecAdj(N, Ntrc, L, pAmp, diff, &
     double precision, parameter     :: tolerance=1D-14
 
 
-    Ly=kdvTLMPseudoSpec(N, Ntrc, L, u, y, alph, beta, gamm, rho)
-    LAdj_x=kdvTLMPseudoSpecAdj(N, Ntrc, L, u, x, alph, beta, gamm, rho)
+    Ly=kdvTLMPseudoSpec(N, Ntrc, L, u, y, alph, beta, gamm)
+    LAdj_x=kdvTLMPseudoSpecAdj(N, Ntrc, L, u, x, alph, beta, gamm)
 
     ! adjoint validity test
     print *, '<x,Ly>= ', scalar_product(x,Ly)

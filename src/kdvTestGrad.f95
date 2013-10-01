@@ -19,11 +19,11 @@ integer, dimension(:), allocatable    ::  nDtVec
 double precision, dimension(:, :), allocatable  ::  u
 
 NNDt=5
-Ntrc=20
+Ntrc=100
 N=3*Ntrc+1
 L=3.D2
 
-NtrcRho=Ntrc
+NtrcRho=5
 rhoZero=.False.
 !rhoZero=.True.
 rhoCte=.False.
@@ -32,7 +32,7 @@ forcZero=.False.
 
 
 testLTStep=.True.
-testFullModel=.False.
+testFullModel=.True.
 
 
 allocate(nDtVec(NNDt))

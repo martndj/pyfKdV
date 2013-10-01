@@ -56,7 +56,8 @@ function eulerStep(N, Ntrc, L, preState, dt, alph, beta, gamm, rho, forc)
 
     eulerStep=preState+dt*kdvPseudoSpec(N, Ntrc, L, preState, &
                                          alph, beta, gamm)&
-                -dt*rho*preState + dt*forc
+                +dt*forc &
+                -dt*rho*preState 
 end function eulerStep
 
 !--------------------------------------------------------------------!

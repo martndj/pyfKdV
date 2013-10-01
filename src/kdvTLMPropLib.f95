@@ -41,6 +41,7 @@ function kdvTLMPropagator(N, Ntrc, L, dt, nDt, tReal, u, p0, &
 
     !pas subsequents avec Leapfrog-trapezoidal
     ! Qj , j=2, nDt
+    if (nDt.ne.1) then
     do j=2,nDt
         ! Pj
         pBuff=opPn(N, Ntrc, L, dt, u(j,:), pBuff, alph, beta, gamm, rho)
@@ -49,6 +50,8 @@ function kdvTLMPropagator(N, Ntrc, L, dt, nDt, tReal, u, p0, &
         if (present(pTraj)) pTraj(j+1,:)=pBuff(3,:)
         tReal=tReal+dt
     end do
+    end if
+
     ! R
     if (nDt.eq.1) then
         pf=pBuff(2,:)
@@ -98,6 +101,7 @@ function kdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, tReal, u, pf, &
 
     ! Leapfrog
     ! Qj*, j=nDt,2
+    if (nDt.ne.1) then
     do j=nDt, 2, -1
         if (present(aTraj)) aTraj(j+1,:)=aBuff(3,:)
         tReal=tReal+dt
@@ -106,6 +110,7 @@ function kdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, tReal, u, pf, &
         ! Pj*
         aBuff=opPnAdj(N, Ntrc, L, dt, u(j,:), aBuff, alph, beta, gamm, rho)
     end do
+    end if
 
     ! E1*              
     if (present(aTraj)) aTraj(2,:)=aBuff(2,:)

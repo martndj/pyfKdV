@@ -670,4 +670,127 @@ subroutine NLTestGradient(N, Ntrc, L, dt, nDt, maxPower, &
     end function gradFC
 
 end subroutine NLTestGradient
+
+
+!-------------------------------------------------------------------!
+
+!subroutine LTStepTestGradient(N, Ntrc, L, dt, nDt, maxPower, &
+!                            xSeed, nSpinUp, alph, beta, gamm, rho, forc)
+!    !
+!    !   J(x-eps\grad J)-J(x)
+!    !   --------------------  -1 < O(eps) ?
+!    !     eps||\grad J||^2
+!    !
+!    !   J(x)=1/2||M(x)||^2
+!    !   gradJ(x)=L*M(x)
+!    !------------------------------------------------------
+!    intent(in)                      ::  N, Ntrc, L, dt, nDt, &
+!                                        maxPower, &
+!                                        xSeed, alph, beta, gamm, rho, forc
+!
+!    integer                         ::  N, Ntrc, nDt, maxPower, j, k, pow
+!    
+!    double precision, dimension(N)  ::  alph, beta, gamm, rho, forc, &
+!                                        xSeed, grad
+!    double precision, dimension(2, N)  ::  xBuff
+!    double precision                ::  L, res, pAmp, dt, &
+!                                        tRealFct, tRealGrad, &
+!                                        eps, Jeps, J0
+!    
+!    double precision, dimension(nSpinUp, N)  ::  spinUp
+!
+!    double precision, parameter     :: tolerance=1D-14
+!    !logical                         ::  test, testGradient
+!
+!    spinUp=kdvPropagator(N, Ntrc, L, dt, nSpinUp, tReal,&
+!                            xSeed, alph, beta, gamm, rho, forc)
+!    xBuff(1,:)=spinUp(nSpinUp-1,:)
+!    xBuff(2,:)=spinUp(nSpinUp,:)
+!
+!    J0=fctCout(N, Ntrc, L, dt, nDt, tRealFct, u, xBuff &
+!                        alph, beta, gamm, rho, forc )
+!
+!    grad=gradFC(N, Ntrc, L, dt, nDt, tRealGrad, u, &
+!                        alph, beta, gamm, rho )
+!
+!
+!    print"(A E23.15)", "  J(x):         ",J0 
+!    print"(A E23.15)", "  |gradJ(x)|^2: ", scalar_product(grad,grad)
+!
+!    print*,"------------------------------------------------------"
+!    
+!    print"(A 5X A 18X A 13X A 20X)", "eps","J(x-eps.gradJ)","res"
+!    
+!    do pow=-1,maxPower, -1
+!        eps=1.0D1**pow
+!        Jeps=fctCout(N, Ntrc, L, dt, nDt, tRealFct, u, x-eps*grad, &
+!                        alph, beta, gamm, rho, forc)
+!
+!        res=((J0-Jeps)/(eps*scalar_product(grad,grad)))
+!
+!        
+!        if (pow.eq.-8) then
+!            print*,"--------------| half type precision |-----------------"
+!        end if
+!        print"(A I3  D23.15  D23.15)",&
+!             "10^",pow, Jeps, res
+!    end do
+!    contains
+!    !------------------------------------------------------
+!    function fctCout(N, Ntrc, L, dt, nDt, tReal, u, xBuff, &
+!                        alph, beta, gamm, rho, forc)
+!
+!        intent(in)                      ::  N, Ntrc, L, dt, nDt,  &
+!                                            alph, beta, gamm, rho, forc
+!        intent(out)                     ::  u
+!        integer                         ::  N, Ntrc, nDt, i
+!    
+!        double precision, dimension(N)  ::  alph, beta, gamm, rho, forc
+!        double precision                ::  fctCout, dt, L, tReal
+!        double precision, dimension(2, N)       ::  xBuff
+!        double precision, dimension(nDt+1, N)   ::  u
+!        
+!
+!        u(1)=leapfrogTrapezStep(N, Ntrc, L, xBuff(2,:), xBuff(1,:), dt, &
+!                                alph, beta, gamm, rho, forc)
+!        u(2)=leapfrogTrapezStep(N, Ntrc, L, u(1,:), xBuff(2,:), dt, &
+!                                alph, beta, gamm, rho, forc)
+!        do i=2, nDt
+!            u(i+1,:)=leapfrogTrapezStep(N, Ntrc, L, u(i,:), u(i-1,:), dt, &
+!                                alph, beta, gamm, rho, forc)
+!        end do
+!
+!        fctCout=scalar_product(u(nDt+1,:),u(nDt+1,:))/2.0D0
+!    end function fctCout
+!
+!    function gradFC(N, Ntrc, L, dt, nDt, tReal, u, &
+!                        alph, beta, gamm, rho, forc)
+!
+!        intent(in)                      ::  N, Ntrc, L, dt, nDt, u, &
+!                                            alph, beta, gamm, rho, forc
+!        integer                         ::  N, Ntrc, nDt, i
+!    
+!        double precision, dimension(N)  ::  alph, beta, gamm, rho, forc, &
+!                                            gradFC
+!        double precision                ::  fctCout, dt, L, tReal
+!        double precision, dimension(nDt+1, N)   ::  u
+!        ! R*
+!        aBuff(3,:)=u(nDt+1,:)
+!        aBuff(2,:)=u(nDt,:)
+!        aBuff(1,:)=0.0D0
+!
+!        do j=nDt, 2, -1
+!            ! S*
+!            aBuff=opSAdj(N, aBuff)
+!            ! Pj*
+!            aBuff=opPnAdj(N, Ntrc, L, dt, u(j,:), aBuff, &
+!                            alph, beta, gamm, rho)
+!        end do
+!        
+!        gradFC=aBuff(1,:) 
+!    end function gradFC
+!
+!end subroutine LTStepTestGradient
+
+
 end module kdvTLMTest

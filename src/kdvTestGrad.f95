@@ -22,8 +22,8 @@ Ntrc=50
 N=3*Ntrc+1
 L=3.D2
 rhoZero=.False.
-rhoCte=.False.
-!rhoCte=.True.
+!rhoCte=.False.
+rhoCte=.True.
 forcZero=.False.
 
 

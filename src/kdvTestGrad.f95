@@ -5,7 +5,7 @@ use kdvTLMProp
 use kdvTLMTest
 implicit none
 
-integer                 ::  N, Ntrc, nDt, maxPower, i, NNDt
+integer                 ::  N, Ntrc, nDt, maxPower, i, NNDt, NtrcRho
 double precision        ::  L, pAmp, diff, dt, tReal, rhoAmp
 logical                 ::  test, rhoZero, forcZero, rhoCte
 
@@ -18,12 +18,14 @@ integer, dimension(:), allocatable    ::  nDtVec
 double precision, dimension(:, :), allocatable  ::  u
 
 NNDt=5
-Ntrc=50
+Ntrc=20
 N=3*Ntrc+1
 L=3.D2
+
+NtrcRho=5
 rhoZero=.False.
-!rhoCte=.False.
-rhoCte=.True.
+rhoCte=.False.
+!rhoCte=.True.
 forcZero=.False.
 
 
@@ -40,7 +42,7 @@ nDtVec=(/1, 2,10,50,100/)
 
 ! Generating random fields
 !   unfiltered state vectors
-call init_random_seed()
+!call init_random_seed()
 ic=initRandVec(N)
 xBuff=pAmp*initRandVec(N)
 yBuff=pAmp*initRandVec(N)
@@ -58,7 +60,7 @@ else
             rho(i)=rhoAmp
         end do
     else
-        rho=rhoAmp*initRandVec(N, Ntrc)
+        rho=rhoAmp*initRandVec(N, NtrcRho)
     end if
 end if 
 if (forcZero) then

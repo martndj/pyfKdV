@@ -78,7 +78,6 @@ end subroutine init_random_seed
 
 function centeredRand()
     double precision        ::  centeredRand, r
-    call init_random_seed()
     call random_number(r)
     centeredRand=r-5D-1
 end function centeredRand

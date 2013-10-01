@@ -16,19 +16,21 @@ pyKdVDir=../pyKdV/
 userLibDir=/home/${user}/lib/
 compiler=gfortran
 
-optflag=-fbounds-check -fPIC
+optflag=-fbounds-check -fPIC -O3
 libflag=-L$(libDir) -larpack -lfftw3 -lm
 baseLib=matrixLib.o spectralLib.o
 kdvLib=kdvPropLib.o kdvTLMPropLib.o kdvLanczosLib.o kdvTestLib.o 
-kdvTests=kdvTestAdj.x kdvTestGrad.x testRnd.x 
+kdvTests=kdvTestAdj.x kdvTestGrad.x  
 wrapLib=kdvWrapC.o 
 
-kdv: $(baseLib) $(kdvLib)
 
-tests:  $(baseLib) $(kdvLib) $(kdvTests)
-	./testRnd.x
-	./kdvTestAdj.x
+kdv: $(baseLib) $(kdvLib) 
+
+testGrad: $(baseLib) $(kdvLib) $(kdvTests)
 	./kdvTestGrad.x
+
+testAdj: $(baseLib) $(kdvLib) $(kdvTests)
+	./kdvTestAdj.x
 
 pyKdV: libKdV.so
 	python setup.py build_ext --inplace

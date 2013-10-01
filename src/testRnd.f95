@@ -10,14 +10,9 @@ double precision, dimension(:), allocatable  :: x, y
 
 N=5
 
-!r=0D0
-!do i=1,N 
-!    call init_random_seed()
-!    call random_number(r)
-!    print *,r
-!end do
 
 allocate(x(N), y(N))
+!call init_random_seed()
 x=initRandVec(N)
 
 do i=1, N

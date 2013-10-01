@@ -6,7 +6,7 @@ use kdvTLMTest
 implicit none
 
 
-integer                 ::  N, Ntrc, nDt, i
+integer                 ::  N, Ntrc, nDt, i, NtrcRho
 double precision        ::  L, pAmp, diff, dt, tReal, rhoAmp
 logical                 ::  test, rhoZero, forcZero, rhoCte
 
@@ -29,6 +29,7 @@ rhoAmp=1.0D-1
 dt=1.0D-2
 nDt=50
 
+NtrcRho=Ntrc
 rhoZero=.False.
 rhoCte=.False.
 forcZero=.False.
@@ -59,7 +60,7 @@ else
             rho(i)=rhoAmp
         end do
     else
-        rho=rhoAmp*initRandVec(N, Ntrc)
+        rho=rhoAmp*initRandVec(N, NtrcRho)
     end if
 end if 
 if (forcZero) then

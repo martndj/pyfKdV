@@ -7,7 +7,8 @@ implicit none
 
 integer                 ::  N, Ntrc, nDt, maxPower, i, NNDt, NtrcRho
 double precision        ::  L, pAmp, diff, dt, tReal, rhoAmp
-logical                 ::  test, rhoZero, forcZero, rhoCte
+logical                 ::  test, rhoZero, forcZero, rhoCte, testLTStep, &
+                            testFullModel
 
 double precision, dimension(:), allocatable ::  alph, beta, gamm, rho, &
                                                 ic, forc
@@ -22,11 +23,16 @@ Ntrc=20
 N=3*Ntrc+1
 L=3.D2
 
-NtrcRho=5
+NtrcRho=Ntrc
 rhoZero=.False.
+!rhoZero=.True.
 rhoCte=.False.
 !rhoCte=.True.
 forcZero=.False.
+
+
+testLTStep=.True.
+testFullModel=.False.
 
 
 allocate(nDtVec(NNDt))
@@ -86,44 +92,49 @@ do i=1, N
                         gamm(i), rho(i), forc(i)
 end do
 
-!print *, 
-!print *, '============================================================='
-!print *, '====| Step functions test |=================================='
-!print *, '============================================================='
-!print *, 
-
-
-print *, 
-print *, '============================================================='
-print *, '====| Full model test |======================================'
-print *, '============================================================='
-print *, 
-do i=1,NNDt
-    nDt=nDtVec(i)
-    print *, '============================================================='
-    print *, '============================================================='
-    print *, 'nDt=',nDt
-    allocate(u(nDt+1, N))
-    u=kdvPropagator(N, Ntrc, L, dt, nDt, tReal, ic, &
-                            alph, beta, gamm, rho, forc)
-
-    print *, '============================================================='
-    print *, 'Testing adjoint validity of kdvTLMPropagator'
-    if (testKdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, pAmp, diff, &
-                        u, xBuff, yBuff, &
-                        alph, beta, gamm, rho)) then 
-        print *, ' >>Test succeeded:', diff
-    else
-        print *, ' >>Test FAILED', diff
-        test=.false.
-    end if
-
+if (testLTStep) then
     print *, 
     print *, '============================================================='
-    print *, 'Gradient test'
-    call NLTestGradient(N, Ntrc, L, dt, nDt, maxPower,&
-                                        xBuff, &
-                                        alph, beta, gamm, rho, forc)
-    deallocate(u)
-end do
+    print *, '====| Step functions test |=================================='
+    print *, '============================================================='
+    print *, 
+    call LTStepTestGradient(N, Ntrc, L, dt, maxPower,&
+                            xBuff, 10, alph, beta, gamm, rho, forc)
+end if
+
+if (testFullModel) then
+    print *, 
+    print *, '============================================================='
+    print *, '====| Full model test |======================================'
+    print *, '============================================================='
+    print *, 
+    do i=1,NNDt
+        nDt=nDtVec(i)
+        print *, '============================================================='
+        print *, '============================================================='
+        print *, 'nDt=',nDt
+        allocate(u(nDt+1, N))
+        u=kdvPropagator(N, Ntrc, L, dt, nDt, tReal, ic, &
+                                alph, beta, gamm, rho, forc)
+    
+        print *, '============================================================='
+        print *, 'Testing adjoint validity of kdvTLMPropagator'
+        if (testKdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, pAmp, diff, &
+                            u, xBuff, yBuff, &
+                            alph, beta, gamm, rho)) then 
+            print *, ' >>Test succeeded:', diff
+        else
+            print *, ' >>Test FAILED', diff
+            test=.false.
+        end if
+    
+        print *, 
+        print *, '============================================================='
+        print *, 'Gradient test'
+        call NLTestGradient(N, Ntrc, L, dt, nDt, maxPower,&
+                                            xBuff, &
+                                            alph, beta, gamm, rho, forc)
+        deallocate(u)
+    end do
+end if
 end program kdvTestGrad

@@ -22,8 +22,7 @@ function kdvPropagator(N, Ntrc, L, dt, nDt, tReal, ic, &
     integer                 ::  N, Ntrc, nDt, j, i
     
     double precision, dimension(N)          ::  alph, beta, gamm, rho, &
-                                                ic, forc, &
-                                                rhoNum, rhoDenum
+                                                ic, forc
     double precision, dimension(nDt+1, N)   ::  traj
 
     ! explicit filtering of the IC
@@ -31,32 +30,52 @@ function kdvPropagator(N, Ntrc, L, dt, nDt, tReal, ic, &
 
     ! first step : Euler-forward
     traj(1,:)=ic
-    traj(2,:)=traj(1,:)+dt*kdvPseudoSpec(N, Ntrc, L, traj(1,:), &
-                                         alph, beta, gamm, forc)&
-                -dt*rho*traj(1,:)
-
+    traj(2,:)=eulerStep(N, Ntrc, L, traj(1,:), dt, &
+                        alph, beta, gamm, rho, forc)
     tReal=tReal+dt
 
     ! subsequent step with mised Leapfrog-trapezoidal scheme
-    !   leapfrog : Ax.A, Axxx, f'(x)
-    !   centered : r.A
     do j=2,nDt
-
-        ! simplify this when precision is reached!
-        do i=1, N
-            rhoNum(i)=1.0D0-rho(i)*dt
-            rhoDenum(i)=1.0D0/(1.0D0+rho(i)*dt)
-        end do
-        traj(j+1,:)=rhoDenum*(&
-                        2.0D0*dt*kdvPseudoSpec(N, Ntrc, L, traj(j,:),&
-                                          alph, beta, gamm, forc=forc) &
-                        +rhoNum*traj(j-1,:)&
-                        )
-       
+        traj(j+1,:)=leapfrogTrapezStep(N, Ntrc, L, traj(j,:), traj(j-1,:), &
+                        dt, alph, beta, gamm, rho, forc)
         tReal=tReal+dt
     end do
 end function kdvPropagator
 
+
+!--------------------------------------------------------------------!
+!--------------------------------------------------------------------!
+
+function eulerStep(N, Ntrc, L, preState, dt, alph, beta, gamm, rho, forc)
+    intent(in)                      ::  N, Ntrc, L, preState, dt, &
+                                        alph, beta, gamm, rho, forc
+    integer                         ::  N, Ntrc 
+    double precision                ::  L, dt
+    double precision, dimension(N)  ::  preState, eulerStep, &
+                                        alph, beta, gamm, rho, forc
+
+    eulerStep=preState+dt*kdvPseudoSpec(N, Ntrc, L, preState, &
+                                         alph, beta, gamm)&
+                -dt*rho*preState + dt*forc
+end function eulerStep
+
+!--------------------------------------------------------------------!
+
+function leapfrogTrapezStep(N, Ntrc, L, pre, pre2,  dt, &
+                            alph, beta, gamm, rho, forc)
+    intent(in)                      ::  N, Ntrc, L, pre, pre2, dt, &
+                                        alph, beta, gamm, rho, forc
+    integer                         ::  N, Ntrc 
+    double precision                ::  L, dt
+    double precision, dimension(N)  ::  leapfrogTrapezStep, pre, pre2, &
+                                        alph, beta, gamm, rho, forc
+
+    leapfrogTrapezStep=((1.0D0-dt*rho)/(1.0D0+dt*rho))*pre2&
+                        +(2.0D0*dt/(1.0D0+dt*rho))*&
+                            kdvPseudoSpec(N, Ntrc, L, pre,&
+                                          alph, beta, gamm)&
+                        +(2.0D0*dt/(1.0D0+dt*rho))*forc
+end function leapfrogTrapezStep
 
 !--------------------------------------------------------------------!
 !----| KdV Scheme |--------------------------------------------------!
@@ -74,7 +93,6 @@ function kdvPseudoSpec(N, Ntrc, L, u, alph, beta, gamm, forc)
     !                   :   instantaneous parameters
     !       forc        :   instantaneous forcing
     !
-    !   <!> rho, forc are optional   
     !
     !   RETURNS
     !       Dt(u)=-alph*Dx(u)-beta*u*Dx(u)-gamm*Dx3(u)+forc
@@ -95,8 +113,6 @@ function kdvPseudoSpec(N, Ntrc, L, u, alph, beta, gamm, forc)
         udu(j)=u(j)*du(j)        !=udu
     end do
     
-    ! prevent aliasing from multiplication
-    !call specFilt(udu, N, Ntrc)  ! potentiellement superflu
     
     kdvPseudoSpec= - alph*du - beta*udu - gamm*d3u
     if (present(forc)) then

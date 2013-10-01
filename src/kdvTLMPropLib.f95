@@ -189,26 +189,23 @@ end function opE1Adj
 function opPn(N, Ntrc, L, dt, u, pBuff, alph, beta, gamm, rho)
     intent(in)                      ::  N, Ntrc, L, dt, u, pBuff, &
                                         alph, beta, gamm, rho
-    integer                         ::  N, Ntrc, i
+    integer                         ::  N, Ntrc
     double precision                ::  L, dt
 
-    double precision, dimension(N)  ::  alph, beta, gamm, rho, u, &
-                                        rhoNum, rhoDenum
-
+    double precision, dimension(N)  ::  alph, beta, gamm, rho, u
     double precision, dimension(3,N)::  pBuff, opPn
 
-    do i=1, N
-        rhoNum(i)=1.0D0-rho(i)*dt
-        rhoDenum(i)=1.0D0/(1.0D0+rho(i)*dt)
-    end do
 
+    ! P
     opPn(1,:)=pBuff(1,:)
     opPn(2,:)=pBuff(2,:)
-    opPn(3,:)=rhoDenum*(&
-                   2.0D0*dt*kdvTLMPseudoSpec(N, Ntrc, L, u, pBuff(2,:),&
-                                            alph, beta, gamm)&
-                   +rhoNum*pBuff(1,:)&
-                   )
+    opPn(3,:)=((1.0D0-dt*rho)/(1.0D0+dt*rho))*pBuff(1,:)&
+                +(2.0D0*dt/(1.0D0+dt*rho))*&
+                    kdvTLMPseudoSpec(N, Ntrc, L, u, pBuff(2,:),&
+                        alph, beta, gamm)
+                   
+    ! F
+    call specFilt(opPn(3,:), N, Ntrc)
     
 end function opPn
 
@@ -217,23 +214,23 @@ end function opPn
 function opPnAdj(N, Ntrc, L, dt, u, aBuff, alph, beta, gamm, rho)
     intent(in)                      ::  N, Ntrc, L, dt, u, aBuff, &
                                         alph, beta, gamm, rho
-    integer                         ::  N, Ntrc, i
+    integer                         ::  N, Ntrc
     double precision                ::  L, dt
 
-    double precision, dimension(N)  ::  alph, beta, gamm, rho, u, &
-                                        rho1, rho2
+    double precision, dimension(N)  ::  alph, beta, gamm, rho, u
     double precision, dimension(3,N)::  aBuff, opPnAdj, rhoSAdj
 
-    do i=1, N
-        rho1(i)=(1.0D0-rho(i)*dt)/(1.0D0+rho(i)*dt)
-        rho2(i)=2.0D0*dt/(1.0D0+rho(i)*dt)
-    end do
 
-    opPnAdj(1,:)=aBuff(1,:) + rho1*aBuff(3,:)
-    opPnAdj(2,:)=aBuff(2,:) &
-                    +rho2*kdvTLMPseudoSpecAdj(N, Ntrc, L, u, aBuff(3,:),&
-                                            alph, beta, gamm)
+    ! F*
+    call specFilt(aBuff(3,:), N, Ntrc)
+
+    ! P*
     opPnAdj(3,:)=0.0D0
+    opPnAdj(2,:)=aBuff(2,:)+&
+                    kdvTLMPseudoSpecAdj(N, Ntrc, L, u, &
+                        (2.0D0*dt/(1.0D0+dt*rho))*aBuff(3,:), &
+                        alph, beta, gamm)
+    opPnAdj(1,:)=aBuff(1,:)+((1.0D0-dt*rho)/(1.0D0+dt*rho))*aBuff(3,:)
     
 end function opPnAdj
 

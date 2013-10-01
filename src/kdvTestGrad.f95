@@ -22,7 +22,8 @@ Ntrc=50
 N=3*Ntrc+1
 L=3.D2
 rhoZero=.False.
-rhoCte=.True.
+rhoCte=.False.
+!rhoCte=.True.
 forcZero=.False.
 
 
@@ -31,7 +32,7 @@ allocate(xBuff(N), yBuff(N))
 allocate(ic(N), alph(N), beta(N), gamm(N), rho(N), forc(N))
 
 pAmp=1.0D-1
-rhoAmp=-1.0D-1
+rhoAmp=1.0D-1
 dt=1.0D-2
 
 maxPower=-9
@@ -82,6 +83,19 @@ do i=1, N
     write(*, "(8(F9.4 ))"), ic(i), xBuff(i), yBuff(i), alph(i), beta(i), &
                         gamm(i), rho(i), forc(i)
 end do
+
+!print *, 
+!print *, '============================================================='
+!print *, '====| Step functions test |=================================='
+!print *, '============================================================='
+!print *, 
+
+
+print *, 
+print *, '============================================================='
+print *, '====| Full model test |======================================'
+print *, '============================================================='
+print *, 
 do i=1,NNDt
     nDt=nDtVec(i)
     print *, '============================================================='

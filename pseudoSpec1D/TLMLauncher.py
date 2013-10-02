@@ -166,6 +166,6 @@ class TLMLauncher(object):
         else:
             output+="\n| tReal=%-23.15E"%self.tReal
         output+="\n| propagator=%s"%self.propagator
-        output+="\n| adjoint propagator=%s"%self.propagator
+        output+="\n| adjoint propagator=%s"%self.propagatorAdj
         output+="\n#######################################################\n"
         return output

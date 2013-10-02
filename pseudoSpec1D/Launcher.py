@@ -66,3 +66,14 @@ class Launcher(object):
             raise LauncherError('Potential loss of precision')
 
         return traj
+
+    #----| Classical overloads |----------------------------
+    #-------------------------------------------------------
+
+    def __str__(self):
+        output="====| Launcher |===================================\n"
+        output+=self.grid.__str__()
+        output+="\n| dt=%-23.15E"%self.dt
+        output+="\n| propagator=%s"%self.propagator
+        output+="\n===================================================\n"
+        return output

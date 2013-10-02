@@ -82,6 +82,9 @@ class kdvTLMLauncher(TLMLauncher):
     #-------------------------------------------------------
 
     def gradTest(self, ic, tInt=None, t0=0., maxPow=-10):
+        if not self.isInitialized:
+            raise self.kdvTLMLauncherError(
+                        "Not initialized with a reference trajectory")
         if not isinstance(ic, np.ndarray):
             raise self.kdvTLMLauncherError("ic <numpy.ndarray>")
         if ic.ndim <> 1 or ic.size <> self.grid.N:

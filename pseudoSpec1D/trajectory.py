@@ -159,11 +159,7 @@ class Trajectory(object):
     def __str__(self):
         output="====| Trajectory |=================================\n"
         output+=self.grid.__str__()
-        #if not self.isIntegrated:
-        #    output+="\n| Trajectory not integrated"
-        #else:
         output+="\n| nDt=%d"%self.nDt
-        output+="\n| tInt=%-23.15E"%self.tInt
         output+="\n| dt=%-23.15E"%self.dt
         output+="\n| tReal=%-23.15E"%self.tReal
         output+="\n===================================================\n"

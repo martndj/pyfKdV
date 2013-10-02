@@ -149,3 +149,23 @@ class TLMLauncher(object):
         self.nDtFinal=self.nDt0+self.nDt
         self.t0=self.nDt0*self.dt
         self.tFinal=self.nDtFinal*self.dt
+
+    #----| Classical overloads |----------------------------
+    #-------------------------------------------------------
+
+    def __str__(self):
+        output="====| TLMLauncher |================================\n"
+        output+=self.grid.__str__()
+        if not self.isInitialized:
+            output+="\n| not initialized with a reference trajectory"
+        else:
+            output+="\n| reference trajectory:\n"
+            output+=self.refTraj.__str__()
+        if not self.isIntegrated:
+            output+="\n| not integrated"
+        else:
+            output+="\n| tReal=%-23.15E"%self.tReal
+        output+="\n| propagator=%s"%self.propagator
+        output+="\n| adjoint propagator=%s"%self.propagator
+        output+="\n===================================================\n"
+        return output

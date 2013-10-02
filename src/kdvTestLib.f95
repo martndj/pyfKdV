@@ -589,7 +589,7 @@ subroutine NLTestGradient(N, Ntrc, L, dt, nDt, maxPower, &
                                         x, grad
     double precision                ::  L, res, pAmp, dt, &
                                         tRealFct, tRealGrad, &
-                                        eps, Jeps, J0
+                                        eps, Jeps, J0, grad2
     
     double precision, dimension(nDt+1, N)  ::  u
 
@@ -602,6 +602,7 @@ subroutine NLTestGradient(N, Ntrc, L, dt, nDt, maxPower, &
 
     grad=gradFC(N, Ntrc, L, dt, nDt, tRealGrad, u, &
                         alph, beta, gamm, rho )
+    grad2=scalar_product(grad,grad)
 
 
     print"(A E23.15)", "  J(x):         ",J0 
@@ -616,7 +617,7 @@ subroutine NLTestGradient(N, Ntrc, L, dt, nDt, maxPower, &
         Jeps=fctCout(N, Ntrc, L, dt, nDt, tRealFct, u, x-eps*grad, &
                         alph, beta, gamm, rho, forc)
 
-        res=((J0-Jeps)/(eps*scalar_product(grad,grad)))
+        res=((J0-Jeps)/(eps*grad2))
 
         !test=dabs(1D0-res).lt.eps
         !if ((pow>=-7) .and. (.not. test)) then

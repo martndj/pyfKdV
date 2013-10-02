@@ -154,7 +154,7 @@ class TLMLauncher(object):
     #-------------------------------------------------------
 
     def __str__(self):
-        output="====| TLMLauncher |================================\n"
+        output="####| TLMLauncher |####################################\n"
         output+=self.grid.__str__()
         if not self.isInitialized:
             output+="\n| not initialized with a reference trajectory"
@@ -167,5 +167,5 @@ class TLMLauncher(object):
             output+="\n| tReal=%-23.15E"%self.tReal
         output+="\n| propagator=%s"%self.propagator
         output+="\n| adjoint propagator=%s"%self.propagator
-        output+="\n===================================================\n"
+        output+="\n#######################################################\n"
         return output

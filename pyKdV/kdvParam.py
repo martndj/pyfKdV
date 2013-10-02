@@ -81,6 +81,23 @@ class Param(object):
             raise IndexError('[0:forcing(x), 1:alpha(x),'+
                             '2:beta(x), 3:gamma(x), 4:rho(x)]')
 
+    #----------------------------------------------------------------
+
+    def max(self):
+        val=0.
+        for i in xrange(5):
+            tryVal=np.max(self[i])
+            if tryVal>val: val=tryVal
+        return val
+
+    #----------------------------------------------------------------
+
+    def min(self):
+        val=0.
+        for i in xrange(5):
+            tryVal=np.min(self[i])
+            if tryVal<val: val=tryVal
+        return val
 
 #==========================================================
 #----------------------------------------------------------

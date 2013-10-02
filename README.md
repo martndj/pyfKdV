@@ -76,7 +76,7 @@ Compiling informations
 
  3. Build the ./src/ directory
 
-        make [tests] pyKdV [clean]
+        make pyKdV [clean]
 
 
  4. Add the path to the python modules pyKdV and pseudoSpec1D to your PYTHONPATH environment variable, in Linux bash environment you can do it running.
@@ -95,37 +95,38 @@ Configuring and launching an integration
 ----------------------------------------
 
  1. Write a launcher python script:
- 
+
         import numpy as np
         import pyKdV as kdv
         import matplotlib.pyplot as plt 
-          
+        
         #----| Grid configuration |-------------------
-        grid=kdv.PeriodicGrid(150,300.)
-        tInt=30.
-        maxA=5.
-            
+        Ntrc=200
+        grid=kdv.PeriodicGrid(Ntrc,300.)
+        
         #----| KdV parameters arguments |-------------
         def rhoProfile(x):
             x0=-10.
-            sig=10.
-            amp=0.1
-            return -amp*kdv.gauss(x,x0,sig)
+            sig=30.
+            amp=0.01
+            return -amp*kdv.gauss(x,x0,sig)+2.*amp*kdv.gauss(x,x0+30,sig/3.)
                 
         param=kdv.Param(grid, beta=1., gamma=-1, rho=rhoProfile)
             
         #----| Initial condition |--------------------
-        base=kdv.rndFiltVec(grid, Ntrc=grid.Ntrc/4, amp=1.)
+        baseLF=kdv.rndSpecVec(grid, 15, amp=1.3)
         soliton=kdv.soliton(grid.x, 0., amp=3. , beta=1., gamma=-1)
-        ic=base+soliton
-    
-        #----| Launching the integration |------------
+        ic=baseLF+soliton
+            
+        #----| Integration |--------------------------
+        maxA=5.
+        tInt=15.
         launcher=kdv.kdvLauncher(param, maxA)
         traj=launcher.integrate(ic, tInt)
-            
+        print("\nnDt=%d\ndt=%f\ntReal=%f\n"%(traj.nDt, traj.dt, traj.tReal))
         
         #----| Perturbating the trajectory |----------
-        pert=0.5*kdv.gauss(grid.x, 0., 20.)
+        pert=0.1*kdv.gauss(grid.x, 0., 20.)
         #-- linear perturbation
         tlmLauncher=kdv.kdvTLMLauncher(param)
         tlmLauncher.initialize(traj)
@@ -134,26 +135,39 @@ Configuring and launching an integration
         fNLPert=launcher.integrate(ic+pert, tInt).final-traj.final
         
         #----| Plotting the result |------------------
-        subplt1=plt.subplot(311)
-        subplt2=plt.subplot(312)
-        subplt3=plt.subplot(313)
-        traj.waterfall(axe=subplt1)
-        subplt1.legend([r"$x(t)$"], loc="lower right")
-        subplt2.plot(grid.x, fLinearPert)
-        subplt2.plot(grid.x, fNLPert)
-        subplt2.legend(["$\mathbf{L}\delta x$", 
-                        "$\mathcal{M}(x+\delta x)-\mathcal{M}(x)$"],
-                        loc='lower right')
-        traj.fftTraj().waterfall(axe=subplt3, color='r')
-        subplt3.legend([ "$N_{trc}$", r"$\mathcal{F}[x(t)]$"], loc="lower right")
+        plt.figure(figsize=(12.,12.))
+        subplt1=plt.subplot(411)
+        subplt2=plt.subplot(412)
+        subplt3=plt.subplot(413)
+        subplt4=plt.subplot(414)
         
-        plt.show()
+        traj.waterfall(axe=subplt1)
+        subplt1.legend([r"$x(t)$"], loc="best")
+        
+        for i in xrange(4):
+            subplt2.plot(grid.x, param[i])
+        subplt2.plot(grid.x, param[4]*100.)
+        subplt2.legend([r"$f$", r"$\alpha$", r"$\beta$", r"$\gamma$", r"$\rho\times100$"], loc='best')
+        subplt2.set_ylim(param.min()*1.1, param.max()*1.1)
+        
+        subplt3.plot(grid.x, pert, 'k:')
+        subplt3.plot(grid.x, fLinearPert, 'g')
+        subplt3.plot(grid.x, fNLPert, 'b')
+        subplt3.legend(["$\delta x$", "$\mathbf{L}\delta x$", 
+                        "$\mathcal{M}(x+\delta x)-\mathcal{M}(x)$"],
+                        loc='best')
+        
+        traj.fftTraj().waterfall(axe=subplt4, color='r')
+        subplt4.legend([ "$N_{trc}="+str(Ntrc)+"$", r"$\mathcal{F}[x(t)]$"], loc="best")
+        
+        plt.show() 
 
 
  2. Singular vector calculation work similarly, but are way longer to obtain:
 
+        Nev=2
         svLauncher=kdv.kdvSVLauncher(traj, param)
-        sVal=svLauncher.lanczos(3, tInt=1.)
+        sVal=svLauncher.lanczos(Nev, tInt=1.)
         print(sVal)
         plt.figure()
         for sv in svLauncher.sVec:

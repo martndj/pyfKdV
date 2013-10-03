@@ -45,6 +45,22 @@ class PeriodicGrid(Grid):
         self.x=np.linspace(-self.L/2.,self.L/2-self.dx,self.N)
     
     #-------------------------------------------------------
+    #----| Public methods |---------------------------------
+    #-------------------------------------------------------
+    def pos2Idx(self, pos):
+        """
+        Convert space position to grid index
+        """
+        if not isinstance(pos, np.ndarray):
+            raise self.PeriodicGridError("pos <numpy.ndarray>")
+        if pos.ndim<>1:
+            raise self.PeriodicGridError("pos.ndim=1")
+        N=len(pos)
+        idx=np.zeros(N, dtype=int)
+        for i in xrange(N):
+            idx[i]=np.min(np.where(self.x>=pos[i]))
+        return idx 
+    #-------------------------------------------------------
     #----| Private methods |--------------------------------
     #-------------------------------------------------------
 

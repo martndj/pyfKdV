@@ -33,6 +33,9 @@ def soliton(x, x0, amp=1., alpha=0., beta=1., gamma=-1.):
 
     return fct 
 
+def cSoliton(amp=1., alpha=0., beta=1., gamma=-1.):
+    return np.abs(beta)/3.*beta*gamma/(np.abs(beta*gamma))*amp
+
 def gauss(x, x0, sig):
     return np.exp(-((x-x0)**2)/(2*sig**2))
 

@@ -51,14 +51,18 @@ class PeriodicGrid(Grid):
         """
         Convert space position to grid index
         """
-        if not isinstance(pos, np.ndarray):
+        if isinstance(pos, np.ndarray):
+            if pos.ndim<>1:
+                raise self.PeriodicGridError("pos.ndim=1")
+            N=len(pos)
+            idx=np.empty(N, dtype=int)
+            for i in xrange(N):
+                idx[i]=np.min(np.where(self.x>=pos[i]))
+        elif isinstance(pos, (float, int)):
+            idx=np.empty(1, dtype=int)
+            idx[0]=np.min(np.where(self.x>=pos))
+        else:
             raise self.PeriodicGridError("pos <numpy.ndarray>")
-        if pos.ndim<>1:
-            raise self.PeriodicGridError("pos.ndim=1")
-        N=len(pos)
-        idx=np.zeros(N, dtype=int)
-        for i in xrange(N):
-            idx[i]=np.min(np.where(self.x>=pos[i]))
         return idx 
     #-------------------------------------------------------
     #----| Private methods |--------------------------------

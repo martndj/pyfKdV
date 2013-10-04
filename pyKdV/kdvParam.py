@@ -2,36 +2,35 @@ import numpy as np
 from pseudoSpec1D import *
 
 class Param(object):
-    """
+    r"""
      Augmented KdV differential system parameters
 
-        \partial_t A(x,t)= forcing(x,t) - \alpha(x,t) A 
-                           - \beta(x,t)A \partial_x A 
-                           - \gamma(x,t) \partial_x^3 A - \rho(x,t) A 
+        \partial_t A(x,t)= forcing(x) - \alpha(x) A 
+                           - \beta(x)A \partial_x A 
+                           - \gamma(x) \partial_x^3 A - \rho(x) A 
+
+        Param(grid, alpha=None, beta=None, gamma=None, 
+                    rho=None, forcing=None)
+
+        Parameters can be specified either as constant or function
+        In the later case, function must be of one variable
+        (the space variable 'x')
 
         <TODO>  For now parameters (including forcing) are static
                 although localized (Param.py)
+                It would be interresting for parameters to be
+                Trajectory object, although, the Fortran model
+                would have to be profundly modified.
 
-        <TODO>  forcing, alpha, ...
-                could either be:
-                    * constant
-                    * vectors (localized static parameters)
-                    * Trajectory object
-                    * user defined function param(x,t)
-                        <!> x and t must be explicit
-                            so that the type be conserved
-                        def func(x,t):
-                            return 0.*x + 0.1*t**2
-                the later being the more general, we'll use this one
-                for start
+        <TODO>  parameters defined as array  
 
     """
     class ParamError(Exception):
         pass
 
 
-    def __init__(self, grid, alpha=None, beta=None, gamma=None, rho=None,
-                    forcing=None):
+    def __init__(self, grid, forcing=None, alpha=None, beta=None,
+                    gamma=None,  rho=None):
 
         if not (isinstance(grid, PeriodicGrid)):
             raise self.ParamError("grid must be an instance of PeriodicGrid")

@@ -50,6 +50,15 @@ class kdvTLMLauncher(TLMLauncher):
 
     def integrate(self, pert, tInt=None, t0=0., fullPertTraj=False,
                     filtNtrc=False):
+        """
+        Call to the KdV TLM propagator
+
+            kdvTLMLauncher.integrate(pert, tInt, filtNtrc=True)
+
+            pert    :   initial perturbation <numpy.ndarray>
+            tInt    :   integration time <float>
+            t0      :   initial time <float>
+        """
     
         # the Fortran propagator filter implicitly
         return super(kdvTLMLauncher, self).integrate(pert, tInt, t0,
@@ -59,6 +68,15 @@ class kdvTLMLauncher(TLMLauncher):
     #-------------------------------------------------------
 
     def adjoint(self, pert, tInt=None, t0=0., filtNtrc=False):         
+        """
+        Call to the KdV TLM Adjoint retro-propagator
+
+            kdvTLMLauncher.integrate(pert, tInt, filtNtrc=True)
+
+            pert    :   initial perturbation <numpy.ndarray>
+            tInt    :   integration time <float>
+            t0      :   initial time <float>
+        """
 
         return super(kdvTLMLauncher, self).adjoint(pert, tInt, t0,
                                                         filtNtrc)
@@ -66,6 +84,15 @@ class kdvTLMLauncher(TLMLauncher):
     #-------------------------------------------------------
 
     def singularOp(self, pert, tInt=None, t0=0., filtNtrc=True):
+        """
+        Call to the KdV singular operator 
+
+            kdvTLMLauncher.singularOp(pert, tInt, filtNtrc=True)
+
+            pert    :   initial perturbation <numpy.ndarray>
+            tInt    :   integration time <float>
+            t0      :   initial time <float>
+        """
         
         if not isinstance(pert, np.ndarray):
             raise self.kdvTLMLauncherError("pert <numpy.ndarray>")
@@ -82,6 +109,26 @@ class kdvTLMLauncher(TLMLauncher):
     #-------------------------------------------------------
 
     def gradTest(self, ic, tInt=None, t0=0., maxPow=-10):
+        """
+        Gradient test
+
+            Check consistency between the TLM adjoint and the
+            nonlinear model.
+
+            J(x)    =0.5|M(x)|^2
+            gradJ(x)=L*M(x)
+
+
+            kdvTLMLauncher.gradTest(ic, tInt=None, t0=0., maxPow=-10)
+
+            ic      :   initial condition of the model <numpy.ndarray>
+            tInt    :   integration time <float>
+            t0      :   initial time <float>
+            maxpower:   smallest power of 10 to test the difference
+                        in the cost function
+
+
+        """
         if not self.isInitialized:
             raise self.kdvTLMLauncherError(
                         "Not initialized with a reference trajectory")
@@ -191,11 +238,14 @@ if __name__=='__main__':
     param=Param(grid, beta=1., gamma=-1.)
     
     #----| Reference trajectory |-----------------
-    u0=rndFiltVec(grid, Ntrc=grid.Ntrc/5,  amp=0.3, seed=0.1)
+    u0=rndSpecVec(grid, Ntrc=grid.Ntrc/5,  amp=0.3, seed=0.1)
     M=kdvLauncher(param, maxA)
     u=M.integrate(u0, tInt)
 
     
+    #----| Gradient test |------------------------
+    L=kdvTLMLauncher(param, traj=u)
+    L.gradTest(u0)
 
     #----| TLM vs NL model |----------------------
     if tlmVsModel:
@@ -214,8 +264,8 @@ if __name__=='__main__':
         print("Testting adjoint validity")
         L=kdvTLMLauncher(param, traj=u)
     
-        dx=rndFiltVec(grid, Ntrc=Ntrc, amp=0.2, seed=0.2)
-        dy=rndFiltVec(grid, Ntrc=Ntrc, amp=0.2, seed=0.3)
+        dx=rndSpecVec(grid, Ntrc=Ntrc, amp=0.2, seed=0.2)
+        dy=rndSpecVec(grid, Ntrc=Ntrc, amp=0.2, seed=0.3)
     
         Ldy=L.integrate(dy)
         print("dy     >>|%3d(%.3f) - L - %3d(%.3f)|>> Ldy"%(

@@ -17,9 +17,6 @@ class Grid(object):
         pass
     
     def __init__(self, N, L, centered=True):
-        """
-        Grid default constructor
-        """
         if  not(type(N) is int) or not(isinstance(L, (float,int))):
             raise self.GridError("Grid(N <int>| L <float|int>)")
         
@@ -48,8 +45,6 @@ class Grid(object):
     #-------------------------------------------------------
 
     def __str__(self):
-        """
-        """
         output="----| Grid |---------------------------\n"
         output+="| N=%d\n"%(self.N)
         output+="| dx=%-23.15E\n"%(self.dx)

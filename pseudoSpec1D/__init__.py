@@ -12,4 +12,3 @@ from periodicGrid import *
 from trajectory import *
 from Launcher import *
 from TLMLauncher import *
-from validateTLM import *

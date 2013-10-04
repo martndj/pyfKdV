@@ -45,6 +45,15 @@ class kdvLauncher(Launcher):
     #------------------------------------------------------
 
     def integrate(self, ic, tInt, filtNtrc=False):
+        """
+        Call to the model propagator
+
+            Launcher.integrate(ic, tInt, filtNtrc=True)
+
+            ic  :   initial condition <numpy.ndarray>
+            tInt:   integration time <float>
+
+        """
     
         # the Fortran propagator filter implicitly
         return super(kdvLauncher, self).integrate(ic, tInt,
@@ -53,6 +62,13 @@ class kdvLauncher(Launcher):
     #------------------------------------------------------
 
     def dtStable(self, maxA):
+        """
+        Stable time incremement
+
+            kdvLauncher.dtStable(maxA)
+
+            maxA    :   expected maximum amplitude <float>
+        """
     
         maxK=2.0*np.pi*self.grid.Ntrc/self.grid.L
         denom=np.zeros(shape=self.grid.N)

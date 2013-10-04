@@ -1,6 +1,9 @@
 import numpy as np
 
-from pseudoSpec1D import PeriodicGrid, Trajectory, specFilt, Launcher
+from periodicGrid import PeriodicGrid
+from trajectory import Trajectory
+from spectralLib import specFilt
+from Launcher import Launcher
 
 
 
@@ -54,6 +57,15 @@ class TLMLauncher(object):
     #------------------------------------------------------
     
     def initialize(self, traj):
+        """
+        Initialize the TLM by associating a reference trajectory
+            (mandatory before integration)
+
+            TLMLauncher.initialize(traj)
+
+            traj    :   reference trajectory <Trajectory>
+            
+        """
         if not(isinstance(traj, Trajectory)):
             raise self.TLMLauncherError("traj <Trajectory>")
         if not (traj.grid==self.grid):
@@ -75,6 +87,15 @@ class TLMLauncher(object):
 
     def integrate(self, pert, tInt=None, t0=0., fullPertTraj=False,
                     filtNtrc=True):
+        """
+        Call to the TLM propagator
+
+            TLMLauncher.integrate(pert, tInt, filtNtrc=True)
+
+            pert    :   initial perturbation <numpy.ndarray>
+            tInt    :   integration time <float>
+            t0      :   initial time <float>
+        """
         
         if not self.isInitialized:
             raise self.TLMLauncherError(
@@ -107,6 +128,15 @@ class TLMLauncher(object):
     #-------------------------------------------------------
 
     def adjoint(self, pert, tInt=None, t0=0., filtNtrc=True):         
+        """
+        Call to the TLM Adjoint retro-propagator
+
+            TLMLauncher.integrate(pert, tInt, filtNtrc=True)
+
+            pert    :   initial perturbation <numpy.ndarray>
+            tInt    :   integration time <float>
+            t0      :   initial time <float>
+        """
         
         if not isinstance(pert, np.ndarray):
             raise self.TLMLauncherError("pert <numpy.ndarray>")
@@ -161,11 +191,7 @@ class TLMLauncher(object):
         else:
             output+="\n  reference trajectory:\n"
             output+=self.refTraj.__str__()
-        if not self.isIntegrated:
-            output+="\n  not integrated"
-        else:
-            output+="  tReal=%-23.15E"%self.tReal
-        output+="\n  propagator=%s"%self.propagator
-        output+="\n  adjoint propagator=%s"%self.propagatorAdj
+        output+="\n\n  propagator\n  %s"%self.propagator
+        output+="\n\n  adjoint propagator\n  %s"%self.propagatorAdj
         output+="\n#######################################################\n"
         return output

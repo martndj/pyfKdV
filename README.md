@@ -120,19 +120,25 @@ Configuring and launching an integration
             
         #----| Integration |--------------------------
         maxA=5.
-        tInt=15.
+        tInt=30.
         launcher=kdv.kdvLauncher(param, maxA)
+        print(launcher)
         traj=launcher.integrate(ic, tInt)
-        print("\nnDt=%d\ndt=%f\ntReal=%f\n"%(traj.nDt, traj.dt, traj.tReal))
+        
         
         #----| Perturbating the trajectory |----------
         pert=0.1*kdv.gauss(grid.x, 0., 20.)
         #-- linear perturbation
         tlmLauncher=kdv.kdvTLMLauncher(param)
         tlmLauncher.initialize(traj)
+        print(tlmLauncher)
         fLinearPert=tlmLauncher.integrate(pert, tInt)
         #-- nonlinear perturbation
         fNLPert=launcher.integrate(ic+pert, tInt).final-traj.final
+        
+        
+        #----| Gradient test |------------------------
+        tlmLauncher.gradTest(ic)
         
         #----| Plotting the result |------------------
         plt.figure(figsize=(12.,12.))
@@ -157,10 +163,11 @@ Configuring and launching an integration
                         "$\mathcal{M}(x+\delta x)-\mathcal{M}(x)$"],
                         loc='best')
         
+        
         traj.fftTraj().waterfall(axe=subplt4, color='r')
         subplt4.legend([ "$N_{trc}="+str(Ntrc)+"$", r"$\mathcal{F}[x(t)]$"], loc="best")
         
-        plt.show() 
+        plt.show()
 
 
  2. Singular vector calculation work similarly, but are way longer to obtain:

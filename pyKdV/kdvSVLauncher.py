@@ -45,6 +45,17 @@ class kdvSVLauncher(object):
     #------------------------------------------------------
 
     def lanczos(self, Nev, tInt=None):
+        """
+        Call to the Lanczos procedure to calculate singular vectors 
+
+            kdvSVLauncher.lanczos(Nev, tInt=None)
+
+            Nev     :   number of dominant singular vectors <int>
+            tInt    :   integration time <float>
+            
+            if tInt==None, the full reference trajectory integration
+            time is taken.
+        """
         if tInt==None:
             self.tInt=self.traj.tInt
         elif isinstance(tInt, (int, float)):

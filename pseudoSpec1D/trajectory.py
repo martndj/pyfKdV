@@ -13,6 +13,9 @@ class Trajectory(object):
     Trajectory class
     for periodic 1+1D partial differential system
 
+        Trajectory(grid)
+
+        grid    :   <Grid>
     """
     
     class TrajectoryError(Exception):
@@ -62,6 +65,19 @@ class Trajectory(object):
     #-------------------------------------------------------
     
     def initialize(self, ic, nDt, dt):
+        """
+        Trajectory initialization
+            (memory allocation and IC association)
+
+            Trajectory.initialize(ic, nDt, dt)
+
+            ic  :   initial condition <numpy.ndarray>
+            nDt :   time steps <int>
+            dt  :   time step increment <float>
+        """
+        if not (isinstance(ic, np.ndarray)):
+            raise self.TrajectoryError(
+                  "ic <numpy.ndarray>")
         if ic.ndim <> 1 or ic.size <> self.grid.N:
             raise self.TrajectoryError("ic.shape<>(grid.N,)")
         self.__allocate(nDt, dt)
@@ -85,6 +101,9 @@ class Trajectory(object):
     #-------------------------------------------------------
 
     def norm2(self, ret=True):
+        """
+        Euclidian Square norm evolution
+        """
         if not self.isIntegrated:
             raise self.TrajectoryError("Trajectory not integrated")
 
@@ -97,6 +116,9 @@ class Trajectory(object):
     #-------------------------------------------------------
 
     def norm(self, ret=True):
+        """
+        Euclidian Norm evolution
+        """
         if not self.isIntegrated:
             raise self.TrajectoryError("Trajectory not integrated")
 
@@ -112,11 +134,17 @@ class Trajectory(object):
     #-------------------------------------------------------
 
     def getData(self):
+        """
+        Trajectory values access method (output)
+        """
         return self.__data
 
     #-------------------------------------------------------
 
     def putData(self, data):
+        """
+        Trajectory values access method (input)
+        """
         if not self.isInitialised :
             raise self.TrajectoryError("Trajectory not initialised")
         if (data.shape<>(self.nDt+1, self.grid.N)):
@@ -130,6 +158,16 @@ class Trajectory(object):
         return np.where(self.time>=time)[0].min()
 
     def whereTime(self, time):
+        """
+        Return the instantaneous field at specified time
+
+            Trajectory.whereTime(time)
+
+            time    :   desired time <float>
+
+            <!> will find the nearest egal or superior time
+                in the discretized time serie
+        """
         return self.__data[self.whereTimeIdx(time)]
 
 
@@ -237,6 +275,9 @@ class Trajectory(object):
     #-------------------------------------------------------
     
     def fftTraj(self):
+        """
+        Return the SpectralTrajectory associated
+        """
         nDemi=int(self.grid.N-1)/2
         data=np.zeros(shape=(self.nDt+1, nDemi))
         for i in xrange(len(self.time)):
@@ -254,7 +295,18 @@ class Trajectory(object):
     def waterfall(self, xlim=None, nbLines=50, title=None, 
                   offset=None, ampl=None, color='b', axe=None):
         """
-            @TODO: ajout d'une echelle de grandeur
+        Make a normalized waterfall plot of the Trajectory
+
+            Trajectory.waterfall(xlim=None, nbLines=50, title=None, 
+                  offset=None, ampl=None, color='b', axe=None)
+
+                xlim    :   x axis limits <tuple>
+                nbLines :   number of lines in the plot <int>
+                title   :   title <str>
+                color   :   color <str>
+                axe     :   subplot object <Axes | GridSpec>
+
+            @TODO: a scale
         """
 
         axe=self._checkAxe(axe)
@@ -298,7 +350,15 @@ class Trajectory(object):
     #-------------------------------------------------------
 
     def plotA(self, title=None, axe=None, **kwargs):
+        """
+        Amplitude evolution plot
 
+                Trajectory.plotA(title=None, axe=None, **kwargs)
+
+                title   :   title <str>
+                axe     :   subplot object <Axes | GridSpec>
+                kwargs  :   matplotlib extra arguments <dict>
+        """
         axe=self._checkAxe(axe)
 
         self.normA(ret=False)
@@ -311,7 +371,16 @@ class Trajectory(object):
 
     #-------------------------------------------------------
 
-    def plotA2(self, title=None, **kwargs):
+    def plotA2(self, title=None, axe=None, **kwargs):
+        """
+        Square Amplitude evolution plot
+
+                Trajectory.plotA(title=None, axe=None, **kwargs)
+
+                title   :   title <str>
+                axe     :   subplot object <Axes | GridSpec>
+                kwargs  :   matplotlib extra arguments <dict>
+        """
 
         axe=self._checkAxe(axe)
 
@@ -343,6 +412,15 @@ class Trajectory(object):
 #====================================================================  
 #--------------------------------------------------------------------
 class SpectralTrajectory(Trajectory):
+    """
+    Spectral Trajectory class
+    for periodic 1+1D partial differential system
+
+        Trajectory(grid, Ntrc=None)
+
+        grid    :   <Grid>
+        Ntrc    :   truncature <int>
+    """
 
     class SpectralTrajectoryError(Exception):
         pass
@@ -361,6 +439,20 @@ class SpectralTrajectory(Trajectory):
 
     def waterfall(self, xlim=None, nbLines=50, title=None, 
                   offset=None, ampl=None, color='b', axe=None):
+        """
+        Make a normalized waterfall plot of the Spectral Trajectory
+
+            Trajectory.waterfall(xlim=None, nbLines=50, title=None, 
+                  offset=None, ampl=None, color='b', axe=None)
+
+                xlim    :   x axis limits <tuple>
+                nbLines :   number of lines in the plot <int>
+                title   :   title <str>
+                color   :   color <str>
+                axe     :   subplot object <Axes | GridSpec>
+
+            @TODO: a scale
+        """
         axe=self._checkAxe(axe)
         super(SpectralTrajectory, self).waterfall(xlim, nbLines, title,
                                                     offset, ampl, color,

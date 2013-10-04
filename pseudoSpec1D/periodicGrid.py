@@ -22,9 +22,6 @@ class PeriodicGrid(Grid):
         pass
     
     def __init__(self, Ntrc, L, aliasing=3):
-        """
-        Grid default constructor
-        """
         if  not(type(Ntrc) is int) or not(isinstance(L, (float,int))):
             raise self.PeriodicGridError("PeriodicGrid(Ntrc <int>| L <float>)")
         
@@ -50,6 +47,10 @@ class PeriodicGrid(Grid):
     def pos2Idx(self, pos):
         """
         Convert space position to grid index
+
+            PeriodicGrid.pos2Idx(pos)
+
+            pos :   array of positions <numpy.ndarray>
         """
         if isinstance(pos, np.ndarray):
             if pos.ndim<>1:
@@ -80,8 +81,6 @@ class PeriodicGrid(Grid):
     #-------------------------------------------------------
 
     def __str__(self):
-        """
-        """
         output="----| Grid |---------------------------\n"
         output+="| Ntrc=%d   N=%d\n"%(self.Ntrc, self.N)
         output+="| dx=%-23.15E\n"%(self.dx)

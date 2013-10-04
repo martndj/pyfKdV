@@ -1,5 +1,7 @@
 import numpy as np
-from pseudoSpec1D import PeriodicGrid, Trajectory, specFilt 
+from periodicGrid import PeriodicGrid
+from trajectory import Trajectory
+from spectralLib import specFilt 
 
 
 class Launcher(object):
@@ -39,6 +41,15 @@ class Launcher(object):
     #------------------------------------------------------
 
     def integrate(self, ic, tInt, filtNtrc=True):
+        """
+        Call to the model propagator
+
+            Launcher.integrate(ic, tInt, filtNtrc=True)
+
+            ic  :   initial condition <numpy.ndarray>
+            tInt:   integration time <float>
+
+        """
 
         if not isinstance(ic, np.ndarray):
             raise self.LauncherError("ic <numpy.ndarray>")
@@ -74,6 +85,6 @@ class Launcher(object):
         output="####| Launcher |#######################################\n"
         output+=self.grid.__str__()
         output+="\n  dt=%-23.15E"%self.dt
-        output+="\n  propagator=%s"%self.propagator
+        output+="\n\n  propagator\n  %s"%self.propagator
         output+="\n#######################################################\n"
         return output

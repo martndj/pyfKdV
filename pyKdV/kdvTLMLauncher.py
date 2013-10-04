@@ -60,7 +60,7 @@ class kdvTLMLauncher(TLMLauncher):
 
     def adjoint(self, pert, tInt=None, t0=0., filtNtrc=False):         
 
-        return super(kdvTLMLauncher, self).integrate(pert, tInt, t0,
+        return super(kdvTLMLauncher, self).adjoint(pert, tInt, t0,
                                                         filtNtrc)
         
     #-------------------------------------------------------

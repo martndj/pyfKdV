@@ -157,15 +157,15 @@ class TLMLauncher(object):
         output="####| TLMLauncher |####################################\n"
         output+=self.grid.__str__()
         if not self.isInitialized:
-            output+="\n| not initialized with a reference trajectory"
+            output+="\n  not initialized with a reference trajectory"
         else:
-            output+="\n| reference trajectory:\n"
+            output+="\n  reference trajectory:\n"
             output+=self.refTraj.__str__()
         if not self.isIntegrated:
-            output+="\n| not integrated"
+            output+="\n  not integrated"
         else:
-            output+="\n| tReal=%-23.15E"%self.tReal
-        output+="\n| propagator=%s"%self.propagator
-        output+="\n| adjoint propagator=%s"%self.propagatorAdj
+            output+="  tReal=%-23.15E"%self.tReal
+        output+="\n  propagator=%s"%self.propagator
+        output+="\n  adjoint propagator=%s"%self.propagatorAdj
         output+="\n#######################################################\n"
         return output

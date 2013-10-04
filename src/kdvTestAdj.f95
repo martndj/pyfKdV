@@ -6,9 +6,9 @@ use kdvTLMTest
 implicit none
 
 
-integer                 ::  N, Ntrc, nDt, i, NtrcRho
+integer                 ::  N, Ntrc, nDt, i, NtrcParam
 double precision        ::  L, pAmp, diff, dt, tReal, rhoAmp
-logical                 ::  test, rhoZero, forcZero, rhoCte
+logical                 ::  test, rhoZero, forcZero, paramCte, rhoCte
 
 double precision, dimension(:), allocatable ::  alph, beta, gamm, rho, &
                                                 ic, forc
@@ -29,10 +29,11 @@ rhoAmp=1.0D-1
 dt=1.0D-2
 nDt=50
 
-NtrcRho=Ntrc
+NtrcParam=30
+paramCte=.True.
 rhoZero=.False.
 rhoCte=.False.
-forcZero=.False.
+forcZero=.True.
 
 allocate(u(nDt+1, N))
 
@@ -46,10 +47,17 @@ do i=1,3
     xBuff(i,:)=pAmp*initRandVec(N)
     yBuff(i,:)=pAmp*initRandVec(N)
 end do
-!   filtered parameters vectors
-alph=initRandVec(N, Ntrc)
-beta=initRandVec(N, Ntrc)
-gamm=initRandVec(N, Ntrc)
+
+! Parameters vectors
+if (paramCte) then
+    alph(:)=0.0D0
+    beta(:)=1.0D0
+    gamm(:)=-1.0D0
+else
+    alph=initRandVec(N, NtrcParam)
+    beta=initRandVec(N, NtrcParam)
+    gamm=initRandVec(N, NtrcParam)
+end if
 if (rhoZero) then
     do i=1,N
         rho(i)=0D0
@@ -60,7 +68,7 @@ else
             rho(i)=rhoAmp
         end do
     else
-        rho=rhoAmp*initRandVec(N, NtrcRho)
+        rho=rhoAmp*initRandVec(N, NtrcParam)
     end if
 end if 
 if (forcZero) then

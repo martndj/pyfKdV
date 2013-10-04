@@ -30,6 +30,16 @@ class Grid(object):
     #-------------------------------------------------------
     #----| Public methods |---------------------------------
     #-------------------------------------------------------
+    def max(self):
+        return np.max(self.x)
+       
+    #-------------------------------------------------------
+
+    def min(self):
+        return np.min(self.x)
+
+    #-------------------------------------------------------
+
     def pos2Idx(self, pos):
         """
         Convert space position to grid index
@@ -38,16 +48,26 @@ class Grid(object):
 
             pos :   array of positions <numpy.ndarray>
         """
+
+        def findIdx(posValue):
+            whereVec=np.where(self.x>=posValue)
+            if len(whereVec[0])==0:
+                raise self.PeriodicGridError(
+                    "Position outside of the grid:\n %f not in [%f,%f]"%(
+                                posValue, self.min(), self.max()))
+            else:
+                return np.min(whereVec)
+
         if isinstance(pos, np.ndarray):
             if pos.ndim<>1:
                 raise self.PeriodicGridError("pos.ndim=1")
             N=len(pos)
             idx=np.empty(N, dtype=int)
             for i in xrange(N):
-                idx[i]=np.min(np.where(self.x>=pos[i]))
+                idx[i]=findIdx(pos[i])
         elif isinstance(pos, (float, int)):
             idx=np.empty(1, dtype=int)
-            idx[0]=np.min(np.where(self.x>=pos))
+            idx[0]=findIdx(posValue)
         else:
             raise self.PeriodicGridError("pos <numpy.ndarray>")
         return idx 

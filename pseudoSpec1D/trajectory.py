@@ -177,7 +177,7 @@ class Trajectory(object):
     #------------------------------------------------------
 
     def __SquareNorm(self, z):
-        return np.dot(z,z)*self.grid.dx
+        return self.grid.squareNorm(z)
 
     #-------------------------------------------------------
 

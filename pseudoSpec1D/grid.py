@@ -44,15 +44,15 @@ class Grid(object):
         """
         Convert space position to grid index
 
-            PeriodicGrid.pos2Idx(pos)
+            Grid.pos2Idx(pos)
 
             pos :   array of positions <numpy.ndarray>
         """
 
         def findIdx(posValue):
             whereVec=np.where(self.x>=posValue)
-            if len(whereVec[0])==0:
-                raise self.PeriodicGridError(
+            if len(whereVec[0])==0 or self.min()>posValue:
+                raise self.GridError(
                     "Position outside of the grid:\n %f not in [%f,%f]"%(
                                 posValue, self.min(), self.max()))
             else:
@@ -60,7 +60,7 @@ class Grid(object):
 
         if isinstance(pos, np.ndarray):
             if pos.ndim<>1:
-                raise self.PeriodicGridError("pos.ndim=1")
+                raise self.GridError("pos.ndim=1")
             N=len(pos)
             idx=np.empty(N, dtype=int)
             for i in xrange(N):
@@ -69,8 +69,33 @@ class Grid(object):
             idx=np.empty(1, dtype=int)
             idx[0]=findIdx(posValue)
         else:
-            raise self.PeriodicGridError("pos <numpy.ndarray>")
+            raise self.GridError("pos <numpy.ndarray>")
         return idx 
+
+
+    #-------------------------------------------------------
+
+    def squareNorm(self, field, metric=None):
+        if not isinstance(field, np.ndarray):
+            raise self.GridError("field <numpy.ndarray>")
+        if field.ndim<>1 or field.shape[-1]<>self.N:
+            raise self.GridError("field icompatible dimensions")
+
+        if metric==None:
+            return np.dot(field,field)*self.dx
+        else:
+            if not isinstance(metric, np.ndarray):
+                raise self.GridError("metric <numpy.ndarray>")
+            if ((not (metric.ndim==1 or metric.ndim==2))
+                    or metric.shape[-1]<>self.N):
+                raise self.GridError("metric icompatible dimensions")
+                
+            return np.dot(field, np.dot(metric, field))*self.dx
+    
+    #-------------------------------------------------------
+
+    def norm(self, field, metric=None):
+        return np.sqrt(self.squareNorm(field, metric=metric))
     #-------------------------------------------------------
     #----| Private methods |--------------------------------
     #-------------------------------------------------------

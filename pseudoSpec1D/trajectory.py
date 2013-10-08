@@ -80,10 +80,27 @@ class Trajectory(object):
                   "ic <numpy.ndarray>")
         if ic.ndim <> 1 or ic.size <> self.grid.N:
             raise self.TrajectoryError("ic.shape<>(grid.N,)")
-        self.__allocate(nDt, dt)
+        self.__allocate(nDt)
+        self.dt=dt
+        self.tInt=self.nDt*self.dt
         self.ic=ic
         self.isInitialised=True
 
+    #-------------------------------------------------------
+    
+    def zeros(self, nDt):
+        """
+        Trajectory initialization
+            (memory allocation)
+
+            Trajectory.zeros(nDt)
+
+            nDt :   time steps <int>
+        """
+        self.__allocate(nDt)
+        self.dt=None
+        self.ic=np.zeros(self.grid.N)
+        self.isInitialised=True
     
     #-------------------------------------------------------
     
@@ -192,13 +209,9 @@ class Trajectory(object):
 
     #-------------------------------------------------------
 
-    def __allocate(self, nDt, dt):
+    def __allocate(self, nDt):
         self.nDt=nDt
-        self.dt=dt
-        self.tInt=self.nDt*self.dt
-        
         self.__data=np.zeros(shape=(self.nDt+1,self.grid.N))
-        self.ic=np.zeros(self.grid.N)
 
 
 

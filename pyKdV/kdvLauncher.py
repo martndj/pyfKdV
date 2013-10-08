@@ -2,6 +2,7 @@ import numpy as np
 
 from pseudoSpec1D import *
 from kdvParam import *
+from kdvMisc import dtStable
 
 import fKdV
 
@@ -35,7 +36,7 @@ class kdvLauncher(Launcher):
         self.isTimeDependant=self.param.isTimeDependant
         
         self.dtMod=dtMod
-        self.dt=self.dtMod*self.dtStable(maxA)
+        self.dt=self.dtStable(maxA, self.dtMod)
         self.maxA=maxA
 
         if not self.isTimeDependant:
@@ -65,7 +66,7 @@ class kdvLauncher(Launcher):
 
     #------------------------------------------------------
 
-    def dtStable(self, maxA):
+    def dtStable(self, maxA, dtMod=0.7):
         """
         Stable time incremement
 
@@ -74,21 +75,7 @@ class kdvLauncher(Launcher):
             maxA    :   expected maximum amplitude <float>
         """
     
-        minRho=self.param[4].min()
-        maxRho=self.param[4].max()
-        if np.abs(minRho)>np.abs(maxRho):
-            maxAbsRho=np.abs(minRho)
-        else:
-            maxAbsRho=np.abs(maxRho)
-
-        maxK=2.0*np.pi*self.grid.Ntrc/self.grid.L
-        denom=np.zeros(shape=self.grid.N)
-        denom=np.sqrt((self.param[3].max()*maxK**3-self.param[1].min()*maxK
-                            -self.param[2].min()*maxA*maxK)**2
-                       +maxAbsRho**2)
-
-        dt=1./denom
-        return dt
+        return dtStable(self.grid, self.param, maxA, dtMod=dtMod)
 
     #------------------------------------------------------
     #----| Private methods |-------------------------------
@@ -124,10 +111,10 @@ class kdvLauncher(Launcher):
         tReal=0.
 
         # to be corrected
-        #if self.dt <> param.dt:
-        #    raise self.kdvLauncherError(
-        #            "incompatible parameter time increment (%f, %f)"%(
-        #                                                self.dt, param.dt))
+        if self.dt <> param.dt:
+            raise self.kdvLauncherError(
+                    "incompatible parameter time increment (%f, %f)"%(
+                                                        self.dt, param.dt))
         
         trajData=fKdV.fKdVPropagator_pt(
                     grid.N, grid.Ntrc, grid.L, self.dt, self.nDt, param.nDt,
@@ -163,7 +150,8 @@ if __name__=='__main__':
     def funcTimeDependant(x, t):
         return 0.1*np.sin(x/50.)*np.cos(t/10.)
 
-    dt=dtStable(grid, 0., 1., -1., 0.1, maxA)
+    dt=dtStable(grid, Param(grid, beta=1.,gamma=-1., rho=0.1),
+                    maxA, dtMod=0.7)
     nDtParam=int(tInt/dt)
     data=np.zeros(shape=(nDtParam+1, grid.N))
     for n in xrange(nDtParam+1):
@@ -174,11 +162,12 @@ if __name__=='__main__':
 
 
     #param=Param(grid, beta=1., gamma=-1., rho=gaussNeg, forcing=sinus)
-    param=Param(grid, beta=1., gamma=-1., rho=0., forcing=traj)
+    param=Param(grid, beta=1., gamma=-1., rho=gaussNeg, forcing=traj)
     ic=soliton(grid.x, 1., beta=1., gamma=-1. )
 
     # NL model integration
     launcher=kdvLauncher(param, maxA)
+    param.putDt(launcher.dt)
     
     traj=launcher.integrate(ic, tInt)
     axe=traj.waterfall()

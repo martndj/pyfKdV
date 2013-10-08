@@ -51,6 +51,36 @@ class Param(object):
             self.shape=(5,grid.N)
 
     #----------------------------------------------------------------
+    #----| Public methods |------------------------------------------
+    #----------------------------------------------------------------
+
+    def max(self):
+        val=0.
+        for i in xrange(5):
+            tryVal=np.max(self[i])
+            if tryVal>val: val=tryVal
+        return val
+
+    #----------------------------------------------------------------
+
+    def min(self):
+        val=0.
+        for i in xrange(5):
+            tryVal=np.min(self[i])
+            if tryVal<val: val=tryVal
+        return val
+    #----------------------------------------------------------------
+
+    def putDt(self, dt):
+        if not self.isTimeDependant:
+            raise self.ParamError(
+                    "not a time dependant parametrisation")
+        else:
+            self.dt=dt
+
+    #----------------------------------------------------------------
+    #----| Private methods |-----------------------------------------
+    #----------------------------------------------------------------
 
     def __initTraj(self, forcing, alpha, beta, gamma, rho):
         params=(forcing, alpha, beta, gamma, rho)
@@ -88,7 +118,7 @@ class Param(object):
                 newdata[0:params[i].nDt,:]=data
                 newdata[params[i].nDt:, :]=data[params[i].nDt, :]
                 traj=Trajectory(self.grid)
-                traj.initialize(param[0], self.nDt-1, self.dt)
+                traj.zeros(self.nDt-1)
                 traj.putData(newdata)
                  
             if param.nDt==self.nDt:
@@ -96,11 +126,11 @@ class Param(object):
     
         elif param==None:
             traj=Trajectory(self.grid)
-            traj.initialize(np.zeros(self.grid.N), self.nDt-1, self.dt)
+            traj.zeros(self.nDt-1)
             traj.putData(np.zeros(shape=(self.nDt, self.grid.N)))
         elif isinstance(param, (int, float)):
             traj=Trajectory(self.grid)
-            traj.initialize(np.zeros(self.grid.N), self.nDt-1, self.dt)
+            traj.zeros(self.nDt-1)
             traj.putData(np.ones(shape=(self.nDt, self.grid.N))\
                             *param)
 
@@ -109,13 +139,13 @@ class Param(object):
             data=np.empty(shape=(self.nDt, self.grid.N))
             data[:]=constData
             traj=Trajectory(self.grid)
-            traj.initialize(np.zeros(self.grid.N), self.nDt-1, self.dt)
+            traj.zeros(self.nDt-1)
             traj.putData(data)
 
         else:
             raise self.ParamError("<None|float|Trajectory>")
         
-        traj.incrmTReal(finished=True, tReal=self.nDt*self.dt)
+        traj.incrmTReal(finished=True)
         return traj
             
     #----------------------------------------------------------------
@@ -170,23 +200,6 @@ class Param(object):
                                 '2:beta(x), 3:gamma(x), 4:rho(x)]')
         
 
-    #----------------------------------------------------------------
-
-    def max(self):
-        val=0.
-        for i in xrange(5):
-            tryVal=np.max(self[i])
-            if tryVal>val: val=tryVal
-        return val
-
-    #----------------------------------------------------------------
-
-    def min(self):
-        val=0.
-        for i in xrange(5):
-            tryVal=np.min(self[i])
-            if tryVal<val: val=tryVal
-        return val
 
 #==========================================================
 #----------------------------------------------------------

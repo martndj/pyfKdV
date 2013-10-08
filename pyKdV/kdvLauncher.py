@@ -161,7 +161,8 @@ if __name__=='__main__':
         return 0.1*np.sin(2.*2*np.pi*x/150.)
 
     def funcTimeDependant(x, t):
-        return 0.1*np.sin(x-t*100.)*np.cos(t*100.)
+        return 0.1*np.sin(x/50.)*np.cos(t/10.)
+
     dt=dtStable(grid, 0., 1., -1., 0.1, maxA)
     nDtParam=int(tInt/dt)
     data=np.zeros(shape=(nDtParam+1, grid.N))
@@ -179,6 +180,6 @@ if __name__=='__main__':
     # NL model integration
     launcher=kdvLauncher(param, maxA)
     
-    #traj=launcher.integrate(ic, tInt)
-    #axe=traj.waterfall()
-    #plt.show()
+    traj=launcher.integrate(ic, tInt)
+    axe=traj.waterfall()
+    plt.show()

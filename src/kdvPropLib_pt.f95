@@ -23,7 +23,7 @@ function kdvPropagator_pt(N, Ntrc, L, dt, nDt, nDtParam, tReal, ic, &
     
     double precision, dimension(N)          ::  ic
 
-    double precision, dimension(nDtParam+1, N) &
+    double precision, dimension(nDtParam, N) &
                                             ::  alph, beta, gamm, rho, &
                                                 forc
     double precision, dimension(nDt+1, N)   ::  traj
@@ -40,7 +40,7 @@ function kdvPropagator_pt(N, Ntrc, L, dt, nDt, nDtParam, tReal, ic, &
 
     ! subsequent step with mised Leapfrog-trapezoidal scheme
     do j=2,nDt
-        if (j.le.nDtParam+1) then
+        if (j.le.nDtParam) then
             traj(j+1,:)=leapfrogTrapezStep(N, Ntrc, L, &
                             traj(j,:), traj(j-1,:), dt,&
                             alph(j,:), beta(j,:), gamm(j,:), rho(j,:),&
@@ -48,9 +48,9 @@ function kdvPropagator_pt(N, Ntrc, L, dt, nDt, nDtParam, tReal, ic, &
         else
             traj(j+1,:)=leapfrogTrapezStep(N, Ntrc, L, &
                             traj(j,:), traj(j-1,:), dt,&
-                            alph(nDtParam+1,:), beta(nDtParam+1,:),&
-                            gamm(nDtParam+1,:), rho(nDtParam+1,:),&
-                            forc(nDtParam+1,:))
+                            alph(nDtParam,:), beta(nDtParam,:),&
+                            gamm(nDtParam,:), rho(nDtParam,:),&
+                            forc(nDtParam,:))
         end if
         tReal=tReal+dt
     end do

@@ -147,6 +147,8 @@ class Trajectory(object):
         """
         if not self.isInitialised :
             raise self.TrajectoryError("Trajectory not initialised")
+        if not isinstance(data, np.ndarray):
+            raise self.TrajectoryError("data <numpy.ndarray>")
         if (data.shape<>(self.nDt+1, self.grid.N)):
             raise self.TrajectoryError("Incompatible data affectation")
         self.__data=data
@@ -170,6 +172,15 @@ class Trajectory(object):
         """
         return self.__data[self.whereTimeIdx(time)]
 
+
+    #-------------------------------------------------------
+    
+    def max(self):
+        return self.getData().max()
+
+
+    def min(self):
+        return self.getData().min()
 
 
     #------------------------------------------------------
@@ -235,7 +246,8 @@ class Trajectory(object):
                   self.grid.L==traj2.grid.L)
             raise self.TrajectoryError("Incompatible grids")
 
-        trajSub=putData(self.__data-traj2.__data,self.dt)
+        trajSub=self.copy()
+        trajSub.putData(self.__data-traj2.__data)
         return trajSub
 
     #-------------------------------------------------------
@@ -255,8 +267,9 @@ class Trajectory(object):
                   self.grid.L==traj2.grid.L)
             raise self.TrajectoryError("Incompatible grids")
 
-        trajSub=putData(self.__data+traj2.__data,self.dt)
-        return trajSub
+        trajAdd=self.copy()
+        trajAdd.putData(self.__data+traj2.__data)
+        return trajAdd
 
     #-------------------------------------------------------
 

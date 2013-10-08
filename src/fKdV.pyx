@@ -28,13 +28,13 @@ def fKdVPropagator(int N, int Ntrc, double L,
 
 cdef extern:
     void c_kdvpropagator_pt(int N, int Ntrc, double L,
-                            double dt, int nDt,
+                            double dt, int nDt, int nDtParam, 
                             double* ic, double* traj, 
                             double* alph, double* beta, double* gamm,
                             double* rho, double* forc)
 
 def fKdVPropagator_pt(int N, int Ntrc, double L,
-                    double dt, int nDt,
+                    double dt, int nDt, int nDtParam, 
                     double[::1] ic not None,
                     double[:,::1] alph not None,
                     double[:,::1] beta not None,
@@ -45,7 +45,8 @@ def fKdVPropagator_pt(int N, int Ntrc, double L,
     traj=np.empty(shape=(nDt+1, N))
     cdef double[:,::1] c_traj = traj
 
-    c_kdvpropagator_pt(N, Ntrc, L, dt, nDt, &ic[0], &c_traj[0,0], 
+    c_kdvpropagator_pt(N, Ntrc, L, dt, nDt, nDtParam,
+                    &ic[0], &c_traj[0,0], 
                     &alph[0,0], &beta[0,0], &gamm[0,0], &rho[0,0],
                     &forc[0,0])
 

@@ -79,3 +79,20 @@ def gauss(x, x0, sig):
     return np.exp(-((x-x0)**2)/(2*sig**2))
 
 
+def dtStable(grid, minAlpha, minBeta, maxGamma, maxAbsRho, maxA):
+    """
+    Stable time incremement
+
+        dtStable(grid, minAlpha, minBeta, maxGamma, maxAbsRho, maxA)
+
+        maxA    :   expected maximum amplitude <float>
+    """
+
+    maxK=2.0*np.pi*grid.Ntrc/grid.L
+    denom=np.zeros(shape=grid.N)
+    denom=np.sqrt((maxGamma*maxK**3-minAlpha*maxK
+                        -minBeta*maxA*maxK)**2
+                   +maxAbsRho**2)
+
+    dt=1./denom
+    return dt

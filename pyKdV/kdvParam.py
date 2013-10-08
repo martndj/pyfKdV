@@ -37,8 +37,8 @@ class Param(object):
             or isinstance(rho, Trajectory)):
             self.__initTraj(forcing, alpha, beta, gamma, rho)
 
-            self.isTrajectory=True
-            self.shape=(self.nDtParam, 5,grid.N)
+            self.isTimeDependant=True
+            self.shape=(5, self.nDt ,grid.N)
 
         else:
             self.forcing=self.__setFunc(forcing)
@@ -47,7 +47,7 @@ class Param(object):
             self.gamma=self.__setFunc(gamma)
             self.rho=self.__setFunc(rho)
             
-            self.isTrajectory=False
+            self.isTimeDependant=False
             self.shape=(5,grid.N)
 
     #----------------------------------------------------------------
@@ -68,7 +68,7 @@ class Param(object):
 
                 if p.nDt>nDtParam:
                     nDtParam=p.nDt
-            self.nDtParam=nDtParam
+            self.nDt=nDtParam
 
         self.forcing=self.__setTraj(forcing)
         self.alpha=self.__setTraj(alpha)
@@ -82,41 +82,40 @@ class Param(object):
     def __setTraj(self, param):
 
         if isinstance(param, Trajectory):
-            if param.nDt<self.nDtParam:
+            if param.nDt<self.nDt:
                 data=params[i].getData()
-                newdata=np.empty(shape=(self.nDtParam+1, self.grid.N))
-                newdata[0:params[i].nDt+1,:]=data
-                newdata[params[i].nDt+1:, :]=data[params[i].nDt, :]
+                newdata=np.empty(shape=(self.nDt, self.grid.N))
+                newdata[0:params[i].nDt,:]=data
+                newdata[params[i].nDt:, :]=data[params[i].nDt, :]
                 traj=Trajectory(self.grid)
-                traj.initialize(param[0], self.nDtParam, self.dt)
+                traj.initialize(param[0], self.nDt-1, self.dt)
                 traj.putData(newdata)
                  
-            if param.nDt==self.nDtParam:
+            if param.nDt==self.nDt:
                 traj=param
     
         elif param==None:
             traj=Trajectory(self.grid)
-            traj.initialize(np.zeros(self.grid.N), self.nDtParam, self.dt)
-            traj.putData(np.zeros(shape=(self.nDtParam+1, self.grid.N)\
-                            *param))
+            traj.initialize(np.zeros(self.grid.N), self.nDt-1, self.dt)
+            traj.putData(np.zeros(shape=(self.nDt, self.grid.N)))
         elif isinstance(param, (int, float)):
             traj=Trajectory(self.grid)
-            traj.initialize(np.zeros(self.grid.N), self.nDtParam, self.dt)
-            traj.putData(np.ones(shape=(self.nDtParam+1, self.grid.N)\
-                            *param))
+            traj.initialize(np.zeros(self.grid.N), self.nDt-1, self.dt)
+            traj.putData(np.ones(shape=(self.nDt, self.grid.N))\
+                            *param)
 
         elif callable(param):
             constData=np.vectorize(param)(self.grid.x)
-            data=np.empty(shape=(self.nDtParam+1, self.grid.N))
+            data=np.empty(shape=(self.nDt, self.grid.N))
             data[:]=constData
             traj=Trajectory(self.grid)
-            traj.initialize(np.zeros(self.grid.N), self.nDtParam, self.dt)
+            traj.initialize(np.zeros(self.grid.N), self.nDt-1, self.dt)
             traj.putData(data)
 
         else:
             raise self.ParamError("<None|float|Trajectory>")
         
-        traj.incrmTReal(finished=True, tReal=self.nDtParam*self.dt)
+        traj.incrmTReal(finished=True, tReal=self.nDt*self.dt)
         return traj
             
     #----------------------------------------------------------------
@@ -141,7 +140,7 @@ class Param(object):
     #----------------------------------------------------------------
 
     def __getitem__(self,i):
-        if self.isTrajectory:
+        if self.isTimeDependant:
             if i==0:
                 return self.forcing
             elif i==1:
@@ -218,8 +217,8 @@ if __name__=='__main__':
     traj.putData(data)
 
     p=Param(grid, traj, func2, func1, func1, func3)
-    if p.isTrajectory:
-        p[1].waterfall()
+    if p.isTimeDependant:
+        p[0].waterfall()
     else:
         plt.plot(grid.x, p[4])
     

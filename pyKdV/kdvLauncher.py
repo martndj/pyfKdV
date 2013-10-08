@@ -32,12 +32,16 @@ class kdvLauncher(Launcher):
 
         self.grid=param.grid
         self.param=param
+        self.isTimeDependant=self.param.isTimeDependant
         
         self.dtMod=dtMod
         self.dt=self.dtMod*self.dtStable(maxA)
         self.maxA=maxA
 
-        self.propagator=self.__kdvProp_Fortran
+        if not self.isTimeDependant:
+            self.propagator=self.__kdvProp_Fortran
+        else: 
+            self.propagator=self.__kdvProp_Fortran_pt
 
         
     #------------------------------------------------------
@@ -70,13 +74,20 @@ class kdvLauncher(Launcher):
             maxA    :   expected maximum amplitude <float>
         """
     
+        minRho=self.param[4].min()
+        maxRho=self.param[4].max()
+        if np.abs(minRho)>np.abs(maxRho):
+            maxAbsRho=np.abs(minRho)
+        else:
+            maxAbsRho=np.abs(maxRho)
+
         maxK=2.0*np.pi*self.grid.Ntrc/self.grid.L
         denom=np.zeros(shape=self.grid.N)
-        denom=np.sqrt((self.param[3]*maxK**3-self.param[1]*maxK
-                            -self.param[2]*maxA*maxK)**2
-                       +self.param[4]**2)
+        denom=np.sqrt((self.param[3].max()*maxK**3-self.param[1].min()*maxK
+                            -self.param[2].min()*maxA*maxK)**2
+                       +maxAbsRho**2)
 
-        dt=1./denom.max()
+        dt=1./denom
         return dt
 
     #------------------------------------------------------
@@ -103,13 +114,41 @@ class kdvLauncher(Launcher):
         return traj
 
 
+    #------------------------------------------------------
+
+    def __kdvProp_Fortran_pt(self, ic, traj):
+        
+        # Local variables names
+        grid=self.grid
+        param=self.param
+        tReal=0.
+
+        # to be corrected
+        #if self.dt <> param.dt:
+        #    raise self.kdvLauncherError(
+        #            "incompatible parameter time increment (%f, %f)"%(
+        #                                                self.dt, param.dt))
+        
+        trajData=fKdV.fKdVPropagator_pt(
+                    grid.N, grid.Ntrc, grid.L, self.dt, self.nDt, param.nDt,
+                    ic, param[1].getData(), param[2].getData(),
+                    param[3].getData(), param[4].getData(),
+                    param[0].getData()
+                    )
+
+        tReal=traj.nDt*traj.dt
+        traj.putData(trajData)
+        traj.incrmTReal(finished=True, tReal=tReal)
+
+        return traj
+
 #====================================================================
 #--------------------------------------------------------------------
 #====================================================================
 
 if __name__=='__main__':
     
-    from kdvMisc import gauss, soliton
+    from kdvMisc import gauss, soliton, dtStable
     grid=PeriodicGrid(150,300.)
     tInt=50.
     maxA=2.
@@ -121,12 +160,25 @@ if __name__=='__main__':
     def sinus(x):
         return 0.1*np.sin(2.*2*np.pi*x/150.)
 
-    param=Param(grid, beta=1., gamma=-1., rho=gaussNeg, forcing=sinus)
+    def funcTimeDependant(x, t):
+        return 0.1*np.sin(x-t*100.)*np.cos(t*100.)
+    dt=dtStable(grid, 0., 1., -1., 0.1, maxA)
+    nDtParam=int(tInt/dt)
+    data=np.zeros(shape=(nDtParam+1, grid.N))
+    for n in xrange(nDtParam+1):
+        data[n,:]=funcTimeDependant(grid.x, n*dt)
+    traj=Trajectory(grid)
+    traj.initialize(data[0,:], nDtParam, dt)
+    traj.putData(data)
+
+
+    #param=Param(grid, beta=1., gamma=-1., rho=gaussNeg, forcing=sinus)
+    param=Param(grid, beta=1., gamma=-1., rho=0., forcing=traj)
     ic=soliton(grid.x, 1., beta=1., gamma=-1. )
 
     # NL model integration
     launcher=kdvLauncher(param, maxA)
     
-    traj=launcher.integrate(ic, tInt)
-    axe=traj.waterfall()
-    plt.show()
+    #traj=launcher.integrate(ic, tInt)
+    #axe=traj.waterfall()
+    #plt.show()

@@ -77,6 +77,11 @@ class Param(object):
                     "not a time dependant parametrisation")
         else:
             self.dt=dt
+            self.alpha.incrmTReal(finished=True, tReal=self.dt*self.nDt)
+            self.beta.incrmTReal(finished=True, tReal=self.dt*self.nDt)
+            self.gamma.incrmTReal(finished=True, tReal=self.dt*self.nDt)
+            self.rho.incrmTReal(finished=True, tReal=self.dt*self.nDt)
+            self.forcing.incrmTReal(finished=True, tReal=self.dt*self.nDt)
 
     #----------------------------------------------------------------
     #----| Private methods |-----------------------------------------
@@ -145,7 +150,6 @@ class Param(object):
         else:
             raise self.ParamError("<None|float|Trajectory>")
         
-        traj.incrmTReal(finished=True)
         return traj
             
     #----------------------------------------------------------------

@@ -96,6 +96,36 @@ def fKdVTLMPropagator(int N, int Ntrc, double L,
         return np.array(pf)
 
 #--------------------------------------------------------------------
+
+cdef extern:
+    void c_kdvtlmpropagator_pt(int N, int Ntrc, double L,
+                            double dt, int nDt, int nDtParam, 
+                            double* u,
+                            double* p0, double* pf, 
+                            double* alph, double* beta, double* gamm,
+                            double* rho)
+
+
+def fKdVTLMPropagator_pt(int N, int Ntrc, double L,
+                    double dt, int nDt, int nDtParam, 
+                    double[::1] p0 not None,
+                    double[:,::1] u not None,
+                    double[:,::1] alph not None,
+                    double[:,::1] beta not None,
+                    double[:,::1] gamm not None,
+                    double[:,::1] rho not None,
+                    fullTraj=False):
+
+    pTraj=np.empty(shape=(nDt+1, N))
+    cdef double[:,::1] c_pTraj = pTraj
+    cdef double[::1] pf = np.empty(N)
+
+    c_kdvtlmpropagator_pt(N, Ntrc, L, dt, nDt, nDtParam, &u[0,0], 
+                            &p0[0], &pf[0], &alph[0,0], &beta[0,0],
+                            &gamm[0,0], &rho[0,0])
+    return np.array(pf)
+
+#--------------------------------------------------------------------
 #--------------------------------------------------------------------
 
 cdef extern:
@@ -139,6 +169,35 @@ def fKdVTLMPropagatorAdj(int N, int Ntrc, double L,
         return np.array(adj)
 
 #--------------------------------------------------------------------
+
+cdef extern:
+    void c_kdvtlmpropagatoradj_pt(int N, int Ntrc, double L,
+                            double dt, int nDt, int nDtParam, double* u,
+                            double* pf, double* adj, 
+                            double* alph, double* beta, double* gamm,
+                            double* rho)
+
+
+def fKdVTLMPropagatorAdj_pt(int N, int Ntrc, double L,
+                    double dt, int nDt, int nDtParam, 
+                    double[::1] pf not None,
+                    double[:,::1] u not None,
+                    double[:,::1] alph not None,
+                    double[:,::1] beta not None,
+                    double[:,::1] gamm not None,
+                    double[:,::1] rho not None,
+                    fullTraj=False):
+
+    aTraj=np.empty(shape=(nDt+1, N))
+    cdef double[:,::1] c_aTraj = aTraj
+    cdef double[::1] adj= np.empty(N)
+
+    c_kdvtlmpropagatoradj_pt(N, Ntrc, L, dt, nDt, nDtParam, &u[0,0], 
+                        &pf[0], &adj[0], &alph[0,0], &beta[0,0],
+                        &gamm[0,0], &rho[0,0])
+    return np.array(adj)
+
+#--------------------------------------------------------------------
 #--------------------------------------------------------------------
 
 cdef extern:
@@ -162,6 +221,31 @@ def fKdVTLMSingularOp(int N, int Ntrc, double L,
     c_kdvtlmsingularop(N, Ntrc, L, dt, nDt, &u[0,0], 
                         &x[0], &y[0], 
                         &alph[0], &beta[0], &gamm[0], &rho[0])
+    return np.array(y)
+
+#--------------------------------------------------------------------
+
+cdef extern:
+    void c_kdvtlmsingularop_pt(int N, int Ntrc, double L,
+                            double dt, int nDt, int nDtParam, double* u,
+                            double* x, double* y, 
+                            double* alph, double* beta, double* gamm,
+                            double* rho)
+
+def fKdVTLMSingularOp_pt(int N, int Ntrc, double L,
+                    double dt, int nDt, int nDtParam,
+                    double[::1] x not None,
+                    double[:,::1] u not None,
+                    double[:,::1] alph not None,
+                    double[:,::1] beta not None,
+                    double[:,::1] gamm not None,
+                    double[:,::1] rho not None):
+
+    cdef double[::1] y = np.empty(N)
+
+    c_kdvtlmsingularop_pt(N, Ntrc, L, dt, nDt, nDtParam, &u[0,0], 
+                        &x[0], &y[0], &alph[0,0], &beta[0,0], 
+                        &gamm[0,0], &rho[0,0])
     return np.array(y)
 
 #--------------------------------------------------------------------

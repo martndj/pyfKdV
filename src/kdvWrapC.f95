@@ -4,6 +4,7 @@ use iso_c_binding, only: c_double, c_int, c_bool
 use kdvProp
 use kdvProp_pt
 use kdvTLMProp
+use kdvTLMProp_pt
 use kdvTLMTest
 use kdvLanczos
 
@@ -85,6 +86,34 @@ end subroutine c_kdvTLMPropagator
 
 !--------------------------------------------------------------------
 
+subroutine c_kdvTLMPropagator_pt(N, Ntrc, L, dt, nDt, nDtParam,&
+                                    u, p0, pf, &
+                                    alph, beta, gamm, rho) bind(c)
+
+    integer(c_int), intent(in), value           ::  N, Ntrc, nDt,&
+                                                    nDtParam
+    real(c_double), intent(in), value           ::  L, dt
+    real(c_double)               ::  tReal
+
+                                                   
+    real(c_double), intent(in), dimension(N)   ::  p0
+    real(c_double), intent(out), dimension(N)   ::  pf
+
+    ! note that in C the indices will be reversed!:
+    real(c_double), intent(in), dimension(N, nDtParam)&
+                                            ::  alph, beta, gamm, rho 
+    real(c_double), intent(in), dimension(N, nDt+1)     ::  u
+    
+    ! ...hence the transpose:
+    pf=kdvTLMPropagator_pt(N, Ntrc, L, dt, nDt, nDtParam, tReal,&
+                        transpose(u), p0, transpose(alph), &
+                        transpose(beta), transpose(gamm), &
+                        transpose(rho))
+
+end subroutine c_kdvTLMPropagator_pt
+
+!--------------------------------------------------------------------
+
 subroutine c_kdvTLMPropagatorFullTraj(N, Ntrc, L, dt, nDt, u, p0, pf, &
                         pTraj, alph, beta, gamm, rho) bind(c)
 
@@ -130,6 +159,33 @@ subroutine c_kdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, u, pf, adj, &
                         transpose(u), pf, alph, beta, gamm, rho)
 
 end subroutine c_kdvTLMPropagatorAdj
+
+!--------------------------------------------------------------------
+
+subroutine c_kdvTLMPropagatorAdj_pt(N, Ntrc, L, dt, nDt, nDtParam, &
+                                    u, pf, adj, &
+                                    alph, beta, gamm, rho) bind(c)
+
+    integer(c_int), intent(in), value           ::  N, Ntrc, nDt, &
+                                                    nDtParam
+    real(c_double), intent(in), value           ::  L, dt
+    real(c_double)               ::  tReal
+
+    real(c_double), intent(in), dimension(N)    ::  pf
+    real(c_double), intent(out), dimension(N)   ::  adj
+
+    ! note that in C the indices will be reversed!:
+    real(c_double), intent(in), dimension(N, nDtParam)&
+                                            ::  alph, beta, gamm, rho
+    real(c_double), intent(in), dimension(N, nDt+1)     ::  u
+    
+    ! ...hence the transpose:
+    adj=kdvTLMPropagatorAdj_pt(N, Ntrc, L, dt, nDt, nDtParam, tReal,&
+                        transpose(u), pf, transpose(alph), &
+                        transpose(beta), transpose(gamm), &
+                        transpose(rho))
+
+end subroutine c_kdvTLMPropagatorAdj_pt
 
 !--------------------------------------------------------------------
 
@@ -179,6 +235,34 @@ subroutine c_kdvTLMSingularOp(N, Ntrc, L, dt, nDt, u, x, y, &
                         transpose(u), x, alph, beta, gamm, rho)
 
 end subroutine c_kdvTLMSingularOp
+
+!--------------------------------------------------------------------
+
+
+subroutine c_kdvTLMSingularOp_pt(N, Ntrc, L, dt, nDt, nDtParam, &
+                                    u, x, y, &
+                                    alph, beta, gamm, rho) bind(c)
+
+    integer(c_int), intent(in), value           ::  N, Ntrc, nDt, &
+                                                    nDtParam
+    real(c_double), intent(in), value           ::  L, dt
+    real(c_double)               ::  tReal
+
+    real(c_double), intent(in), dimension(N)    ::  x
+    real(c_double), intent(out), dimension(N)   ::  y
+
+    ! note that in C the indices will be reversed!:
+    real(c_double), intent(in), dimension(N, nDtParam) &
+                                            ::  alph, beta, gamm, rho
+    real(c_double), intent(in), dimension(N, nDt+1)     ::  u
+    
+    ! ...hence the transpose:
+    y=kdvTLMSingularOp_pt(N, Ntrc, L, dt, nDt, nDtParam, tReal,&
+                        transpose(u), x, transpose(alph), &
+                        transpose(beta), transpose(gamm), &
+                        transpose(rho))
+
+end subroutine c_kdvTLMSingularOp_pt
 
 !--------------------------------------------------------------------
 !--------------------------------------------------------------------

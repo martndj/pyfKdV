@@ -29,8 +29,9 @@ class kdvTLMLauncher(TLMLauncher):
         if not(isinstance(param, Param)):
             raise self.kdvTLMLauncherError("param <Param>")
 
-        self.param=param
         self.grid=param.grid
+        self.param=param
+        self.isTimeDependant=self.param.isTimeDependant
 
         self.isInitialized=False 
         if not traj==None: self.initialize(traj)
@@ -41,8 +42,16 @@ class kdvTLMLauncher(TLMLauncher):
         self.fullPertTraj=False
         self.tReal=0.
 
-        self.propagator=self.__kdvTLMProp_Fortran
-        self.propagatorAdj=self.__kdvTLMProp_Fortran_Adj
+        if not self.isTimeDependant:
+            self.propagator=self.__kdvTLMProp_Fortran
+            self.propagatorAdj=self.__kdvTLMProp_Fortran_Adj
+            self.propagatorSing=self.__kdvTLMSingularOp_Fortran
+            #self.gradTest=self.__kdvTLMGradTest_Fortran
+        else:
+            self.propagator=self.__kdvTLMProp_Fortran_pt
+            self.propagatorAdj=self.__kdvTLMProp_Fortran_Adj_pt
+            self.propagatorSing=self.__kdvTLMSingularOp_Fortran_pt
+            #self.gradTest=self.__kdvTLMGradTest_Fortran_pt
     
     #------------------------------------------------------
     #----| Public methods |--------------------------------
@@ -103,7 +112,7 @@ class kdvTLMLauncher(TLMLauncher):
             specFilt(pert, self.grid)
         super(kdvTLMLauncher, self)._timeValidation(tInt, t0)
 
-        return self.__kdvTLMSingularOp_Fortran(pert)
+        return self.propagatorSing(pert)
 
     #----| Diagnostics |------------------------------------
     #-------------------------------------------------------
@@ -180,6 +189,27 @@ class kdvTLMLauncher(TLMLauncher):
 
     #------------------------------------------------------
 
+    def __kdvTLMProp_Fortran_pt(self, pert):
+
+        # Local variables names
+        grid=self.grid
+        param=self.param
+
+        Pert=fKdV.fKdVTLMPropagator_pt(
+                grid.N, grid.Ntrc, grid.L, self.dt, self.nDt, param.nDt,
+                pert, 
+                self.refTraj.getData()[self.nDt0:self.nDt0+self.nDt+1],
+                param[1].getData(), param[2].getData(), param[3].getData(),
+                param[4].getData(), fullTraj=False)
+
+        tReal=self.nDt*self.dt
+
+        self.incrmTReal(finished=True, tReal=tReal)
+        return fPert
+
+
+    #------------------------------------------------------
+
     def __kdvTLMProp_Fortran_Adj(self, pert):
 
         # Local variables names
@@ -191,6 +221,26 @@ class kdvTLMLauncher(TLMLauncher):
                 self.refTraj.getData()[self.nDt0:self.nDt0+self.nDt+1],
                 param[1], param[2], param[3], param[4], 
                 fullTraj=False)
+
+        tReal=self.nDt*self.dt
+
+        self.incrmTReal(finished=True, tReal=tReal)
+        return aPert
+
+    #------------------------------------------------------
+
+    def __kdvTLMProp_Fortran_Adj_pt(self, pert):
+
+        # Local variables names
+        grid=self.grid
+        param=self.param
+
+        aPert=fKdV.fKdVTLMPropagatorAdj_pt(
+                grid.N, grid.Ntrc, grid.L, self.dt, self.nDt, param.nDt,
+                pert,
+                self.refTraj.getData()[self.nDt0:self.nDt0+self.nDt+1],
+                param[1].getData(), param[2].getData(), param[3].getData(),
+                param[4].getData(), fullTraj=False)
 
         tReal=self.nDt*self.dt
 
@@ -216,6 +266,25 @@ class kdvTLMLauncher(TLMLauncher):
         return LAdjLx
 
 
+    #------------------------------------------------------
+
+    def __kdvTLMSingularOp_Fortran_pt(self, pert):
+
+        # Local variables names
+        grid=self.grid
+        param=self.param
+
+        LAdjLx=fKdV.fKdVTLMSingularOp(
+                grid.N, grid.Ntrc, grid.L, self.dt, self.nDt, param.nDt,
+                pert,
+                self.refTraj.getData()[self.nDt0:self.nDt0+selfnDt+1],
+                param[1].getData(), param[2].getData(), param[3].getData(),
+                param[4].getData())
+
+        tReal=2.*self.nDt*self.dt
+
+        self.incrmTReal(finished=True, tReal=tReal)
+        return LAdjLx
 
 #--------------------------------------------------------------------
 #====================================================================

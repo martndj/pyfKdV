@@ -77,11 +77,14 @@ class Param(object):
                     "not a time dependant parametrisation")
         else:
             self.dt=dt
-            self.alpha.incrmTReal(finished=True, tReal=self.dt*self.nDt)
-            self.beta.incrmTReal(finished=True, tReal=self.dt*self.nDt)
-            self.gamma.incrmTReal(finished=True, tReal=self.dt*self.nDt)
-            self.rho.incrmTReal(finished=True, tReal=self.dt*self.nDt)
-            self.forcing.incrmTReal(finished=True, tReal=self.dt*self.nDt)
+            self.tReal=self.dt*self.nDt
+            self.alpha.incrmTReal(finished=True, tReal=self.tReal)
+            self.beta.incrmTReal(finished=True, tReal=self.tReal)
+            self.gamma.incrmTReal(finished=True, tReal=self.tReal)
+            self.rho.incrmTReal(finished=True, tReal=self.tReal)
+            self.forcing.incrmTReal(finished=True, 
+                                        tReal=self.tReal)
+        
 
     #----------------------------------------------------------------
     #----| Private methods |-----------------------------------------

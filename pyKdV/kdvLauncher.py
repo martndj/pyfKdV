@@ -25,7 +25,7 @@ class kdvLauncher(Launcher):
     #----| Init |------------------------------------------
     #------------------------------------------------------
 
-    def __init__(self, param, maxA, dtMod=0.7):
+    def __init__(self, param, maxA, dt=None, dtMod=1.):
 
         if not (isinstance(param, Param)):
             raise self.kdvLauncherError(
@@ -35,9 +35,12 @@ class kdvLauncher(Launcher):
         self.param=param
         self.isTimeDependant=self.param.isTimeDependant
         
-        self.dtMod=dtMod
-        self.dt=self.dtStable(maxA, self.dtMod)
         self.maxA=maxA
+        self.dtMod=dtMod
+        if dt==None:
+            self.dt=self.dtStable(self.maxA, self.dtMod)
+        else:
+            self.dt=self.dtMod*dt
 
         if not self.isTimeDependant:
             self.propagator=self.__kdvProp_Fortran
@@ -163,11 +166,11 @@ if __name__=='__main__':
 
     #param=Param(grid, beta=1., gamma=-1., rho=gaussNeg, forcing=sinus)
     param=Param(grid, beta=1., gamma=-1., rho=gaussNeg, forcing=traj)
+    param.putDt(dt)
     ic=soliton(grid.x, 1., beta=1., gamma=-1. )
 
     # NL model integration
-    launcher=kdvLauncher(param, maxA)
-    param.putDt(launcher.dt)
+    launcher=kdvLauncher(param, maxA, dt=dt)
     
     traj=launcher.integrate(ic, tInt)
     axe=traj.waterfall()

@@ -16,8 +16,8 @@ subroutine c_kdvPropagator(N, Ntrc, L, dt, nDt, ic, traj, &
     real(c_double), intent(in), value           ::  L, dt
     real(c_double)               ::  tReal
 
-    real(c_double), intent(in), dimension(N)    ::  alph, beta, gamm, rho, &
-                                                    forc
+    real(c_double), intent(in), dimension(N)    ::  alph, beta, gamm, &
+                                                    rho, forc
     real(c_double), dimension(N) ::  ic
 
     ! note that in C the indices will be reversed!:
@@ -28,6 +28,31 @@ subroutine c_kdvPropagator(N, Ntrc, L, dt, nDt, ic, traj, &
                                     alph, beta, gamm, rho, forc))
 
 end subroutine c_kdvPropagator
+
+
+!--------------------------------------------------------------------
+
+subroutine c_kdvPropagator_pt(N, Ntrc, L, dt, nDt, nDtParam, ic, traj, &
+                                alph, beta, gamm, rho, forc) bind(c)
+
+    integer(c_int), intent(in), value           ::  N, Ntrc, nDt
+    real(c_double), intent(in), value           ::  L, dt
+    real(c_double)               ::  tReal
+
+    real(c_double), dimension(N) ::  ic
+
+    ! note that in C the indices will be reversed!:
+    real(c_double), intent(in), dimension(N, nDtParam+1)&
+                                        ::  alph, beta, gamm, rho, forc
+    real(c_double), intent(out), dimension(N, nDt+1)    ::  traj
+    
+    ! ...hence the transpose:
+    traj=transpose(kdvPropagator(N, Ntrc, L, dt, nDt, tReal, ic, &
+                                    transpose(alph), transpose(beta),&
+                                    transpose(gamm), transpose(rho),&
+                                    transpose(forc)))
+
+end subroutine c_kdvPropagator_pt
 
 
 !--------------------------------------------------------------------

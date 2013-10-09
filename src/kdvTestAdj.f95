@@ -6,12 +6,13 @@ use kdvTLMTest
 implicit none
 
 
-integer                 ::  N, Ntrc, nDt, i, NtrcParam
+integer                 ::  N, Ntrc, nDt, nDtParam, i, NtrcParam
 double precision        ::  L, pAmp, diff, dt, tReal, rhoAmp
 logical                 ::  test, rhoZero, forcZero, paramCte, rhoCte
 
-double precision, dimension(:), allocatable ::  alph, beta, gamm, rho, &
-                                                ic, forc
+double precision, dimension(:), allocatable     ::  ic
+double precision, dimension(:,:), allocatable   ::  alph, beta, gamm,&
+                                                    rho, forc
 double precision, dimension(:, :), allocatable  ::  xBuff, yBuff
 double precision, dimension(:, :), allocatable  ::  u
 
@@ -21,13 +22,14 @@ L=3.D2
 
 
 allocate(xBuff(3,N), yBuff(3, N))
-allocate(ic(N), alph(N), beta(N), gamm(N), rho(N), forc(N))
+allocate(ic(N))
 
 pAmp=1.0D-1
 rhoAmp=1.0D-1
 
 dt=1.0D-2
 nDt=50
+nDtParam=1
 
 NtrcParam=30
 paramCte=.True.
@@ -35,6 +37,8 @@ rhoZero=.False.
 rhoCte=.False.
 forcZero=.True.
 
+allocate(alph(nDtParam,N), beta(nDtParam,N), gamm(nDtParam,N), &
+            rho(nDtParam,N), forc(nDtParam,N))
 allocate(u(nDt+1, N))
 
 
@@ -50,37 +54,37 @@ end do
 
 ! Parameters vectors
 if (paramCte) then
-    alph(:)=0.0D0
-    beta(:)=1.0D0
-    gamm(:)=-1.0D0
+    alph(1,:)=0.0D0
+    beta(1,:)=1.0D0
+    gamm(1,:)=-1.0D0
 else
-    alph=initRandVec(N, NtrcParam)
-    beta=initRandVec(N, NtrcParam)
-    gamm=initRandVec(N, NtrcParam)
+    alph(1,:)=initRandVec(N, NtrcParam)
+    beta(1,:)=initRandVec(N, NtrcParam)
+    gamm(1,:)=initRandVec(N, NtrcParam)
 end if
 if (rhoZero) then
     do i=1,N
-        rho(i)=0D0
+        rho(1,i)=0D0
     end do
 else
     if (rhoCte) then
         do i=1,N
-            rho(i)=rhoAmp
+            rho(1,i)=rhoAmp
         end do
     else
-        rho=rhoAmp*initRandVec(N, NtrcParam)
+        rho(1,:)=rhoAmp*initRandVec(N, NtrcParam)
     end if
 end if 
 if (forcZero) then
     do i=1,N
-        forc(i)=0D0
+        forc(1,i)=0D0
     end do
 else
-    forc=pAmp*initRandVec(N, Ntrc)
+    forc(1,:)=pAmp*initRandVec(N, Ntrc)
 end if
 
 
-u=kdvPropagator(N, Ntrc, L, dt, nDt, tReal, ic, &
+u=kdvPropagator(N, Ntrc, L, dt, nDt, nDtParam, tReal, ic, &
                             alph, beta, gamm, rho, forc)
 
 print *, 
@@ -91,8 +95,8 @@ print *,
 write(*, "(9A)"),  "   ic    ", " xBuff(1)", " yBuff(1)", "   alph  ",&
                    "   beta  ", "   gamm  ", "    rho  ", "   forc  "
 do i=1, N
-    write(*, "(8(F9.4 ))"), ic(i), xBuff(1,i), yBuff(1,i), alph(i), &
-                            beta(i),gamm(i), rho(i), forc(i)
+    write(*, "(8(F9.4 ))"), ic(i), xBuff(1,i), yBuff(1,i), alph(1,i), &
+                            beta(1,i),gamm(1,i), rho(1,i), forc(1,i)
 end do
 print *, 
 print *, 'Testing adjoint property with filtered noise initialisation'
@@ -121,7 +125,8 @@ if (test) then
     print *, N, Ntrc, L, pAmp
     if (testKdvTLMPseudoSpecAdj(N, Ntrc, L, pAmp, diff, &
                         u(1,:), xBuff(1,:), yBuff(1,:), &
-                        alph, beta, gamm, rho)) then 
+                        alph(1,:), beta(1,:), gamm(1,:), &
+                        rho(1,:))) then 
         print *, ' >>Test succeeded:', diff
     else
         print *, ' >>Test FAILED', diff
@@ -140,7 +145,8 @@ if (test) then
     print *, 'Testing adjoint validity of opE1'
     print *, N, Ntrc, L, dt, pAmp
     if (testOpE1Adj(N, Ntrc, L, dt, pAmp, diff, &
-                        u(1,:), xBuff, yBuff, alph, beta, gamm, rho)) then 
+                        u(1,:), xBuff, yBuff, alph(1,:), beta(1,:),&
+                        gamm(1,:), rho(1,:))) then 
         print *, ' >>Test succeeded:', diff
     else
         print *, ' >>Test FAILED', diff
@@ -153,7 +159,8 @@ if (test) then
     print *, 'Testing adjoint validity of opPn'
     print *, N, Ntrc, L, dt, pAmp
     if (testOpPnAdj(N, Ntrc, L, dt, pAmp, diff, &
-                        u(2,:), xBuff, yBuff, alph, beta, gamm, rho)) then 
+                        u(2,:), xBuff, yBuff, alph(1,:), beta(1,:), &
+                        gamm(1,:), rho(1,:))) then 
         print *, ' >>Test succeeded:', diff
     else
         print *, ' >>Test FAILED', diff
@@ -182,7 +189,8 @@ if (test) then
     print *, 'Testing adjoint validity of S.Pn'
     print *, N, Ntrc, L, dt, pAmp
     if (testOpSPnAdj(N, Ntrc, L, dt, pAmp, diff, &
-                        u(2,:), xBuff, yBuff, alph, beta, gamm, rho)) then 
+                        u(2,:), xBuff, yBuff, alph(1,:), beta(1,:), &
+                        gamm(1,:), rho(1,:))) then 
         print *, ' >>Test succeeded:', diff
     else
         print *, ' >>Test FAILED', diff
@@ -196,7 +204,7 @@ if (test) then
     print *, N, Ntrc, L, dt, pAmp
     if (testOpPnE1Adj(N, Ntrc, L, dt, pAmp, diff, &
                        u(1,:), u(2,:), xBuff, yBuff,&
-                       alph, beta, gamm, rho)) then 
+                       alph(1,:), beta(1,:), gamm(1,:), rho(1,:))) then 
         print *, ' >>Test succeeded:', diff
     else
         print *, ' >>Test FAILED', diff
@@ -213,7 +221,8 @@ if (test) then
     print *, N, Ntrc, L, dt, pAmp
     if (testOpSPnE1Adj(N, Ntrc, L, dt, pAmp, diff, &
                         u(1,:), u(2,:), xBuff, yBuff, &
-                        alph, beta, gamm, rho)) then 
+                        alph(1,:), beta(1,:), gamm(1,:), &
+                        rho(1,:))) then 
         print *, ' >>Test succeeded:', diff
     else
         print *, ' >>Test FAILED', diff
@@ -230,7 +239,8 @@ if (test) then
     print *, N, Ntrc, L, dt, pAmp
     if (testOpAllAdj(N, Ntrc, L, dt, pAmp, diff, &
                         u(1,:),u(2,:), xBuff, yBuff, &
-                        alph, beta, gamm, rho)) then 
+                        alph(1,:), beta(1,:), gamm(1,:), &
+                        rho(1,:))) then 
         print *, ' >>Test succeeded:', diff
     else
         print *, ' >>Test FAILED', diff
@@ -244,8 +254,8 @@ if (test) then
     print *, '============================================================='
     print *, 'Testing adjoint validity of kdvTLMPropagator'
     print *, N, Ntrc, L, dt, nDt, pAmp
-    if (testKdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, pAmp, diff, &
-                        u, xBuff(1,:), yBuff(1,:), &
+    if (testKdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, nDtParam, pAmp,&
+                        diff, u, xBuff(1,:), yBuff(1,:), &
                         alph, beta, gamm, rho)) then 
         print *, ' >>Test succeeded:', diff
     else

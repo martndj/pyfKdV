@@ -3,18 +3,18 @@ use kdvTLMProp
 
 
 contains
-function lanczos(N, Ntrc, L, dt, nDt, tReal, u, &
+function lanczos(N, Ntrc, L, dt, nDt, nDtParam, tReal, u, &
                     alph, beta, gamm, rho, Nev, sv, Nconv) result(V)
 
-    intent(in)              ::  N, Ntrc, L, dt, nDt, u,  &
+    intent(in)              ::  N, Ntrc, L, dt, nDt, nDtParam, u,  &
                                 alph, beta, gamm, rho, &
                                 Nev
     intent(out)             ::  sv, Nconv
 
     double precision        ::  L, dt, tReal
-    integer                 ::  N, Ntrc, nDt, j
+    integer                 ::  N, Ntrc, nDt, nDtParam, j
 
-    double precision, dimension(N)          ::  alph, beta, gamm, rho
+    double precision, dimension(nDtParam, N)::  alph, beta, gamm, rho
 
     double precision, dimension(nDt+1, N)   ::  u
 
@@ -61,7 +61,7 @@ function lanczos(N, Ntrc, L, dt, nDt, tReal, u, &
 
         j=j+1
         if (ido .eq. 1 .or. ido .eq. -1) then 
-            call oper(N, Ntrc, L, dt, nDt, u, &
+            call oper(N, Ntrc, L, dt, nDt, nDtParam, u, &
                         workd(ipntr(1)), workd(ipntr(2)),&
                         alph, beta, gamm, rho)
 
@@ -97,27 +97,28 @@ function lanczos(N, Ntrc, L, dt, nDt, tReal, u, &
     deallocate(workd, workl, Vwork)
     
     contains
-    subroutine oper(N, Ntrc, L, dt, nDt, u, x, y,&
+    subroutine oper(N, Ntrc, L, dt, nDt, nDtParam, u, x, y,&
                     alph, beta, gamm, rho)
-        intent(in)              ::  N, Ntrc, L, dt, nDt, u, x, &
-                                    alph, beta, gamm, rho
+        intent(in)              ::  N, Ntrc, L, dt, nDt, nDtParam, &
+                                    u, x, alph, beta, gamm, rho
         intent(out)             ::  y
 
         double precision        ::  L, dt, tReal
-        integer                 ::  N, Ntrc, nDt, j
+        integer                 ::  N, Ntrc, nDt, nDtParam, j
 
-        double precision, dimension(N)  ::  alph, beta, gamm, rho, &
-                                            x, y
+        double precision, dimension(N)  ::  x, y
 
+        double precision, dimension(nDtParam, N)&
+                                        ::  alph, beta, gamm, rho
         double precision, dimension(nDt+1, N)       ::  u
 
 
-            y=kdvTLMPropagator(N, Ntrc, L, dt, nDt, tReal, u, x, &
-                        alph, beta, gamm, rho) 
+            y=kdvTLMPropagator(N, Ntrc, L, dt, nDt, nDtParam, &
+                                tReal, u, x, alph, beta, gamm, rho) 
             ! <TODO> external function 'metric' here!
             ! (see interface in fKdV4/src/kdvLanczosLib.f95)
-            y=kdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, tReal, u, y, &
-                        alph, beta, gamm, rho)
+            y=kdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, nDtParam, &
+                                    tReal, u, y, alph, beta, gamm, rho)
 
         end subroutine oper
 end function lanczos

@@ -173,6 +173,35 @@ class Param(object):
             
     #----------------------------------------------------------------
 
+    def __matricize(self, funcXT):
+        time=np.linspace(0., self.nDt*self.dt, self.nDt+1)
+        matrix=np.empty(shape=(self.nDt+1, self.grid.N))
+        for i in xrange(self.grid.N):
+            for j in xrange(self.nDt+1):
+                matrix[j][i]=funcXT(self.grid.x[i], time[j])
+
+        return matrix
+
+    #----| Classical overloads |----------------------------
+    #-------------------------------------------------------
+
+    def __str__(self):
+        output="~~~~| Param |~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
+        output+=self.grid.__str__()
+        output+="\n nDt=%d"%self.nDt
+        output+="\n dt=%-23.15E"%self.dt
+        output+="\n tReal=%-23.15E"%self.tReal
+        paramList=("forcing", "alpha", "beta", "gamma", "rho")
+        for i in xrange(len(paramList)):
+            output+="\n  :: "+paramList[i]+" ::"
+            output+="\n  min= %f"%self[i].min()
+            output+="\n  max= %f\n"%self[i].max()
+
+        output+="\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
+        return output
+
+    #----------------------------------------------------------------
+
     def __getitem__(self,i, j=None, k=None):
         if i==0:
             param=self.forcing
@@ -196,16 +225,6 @@ class Param(object):
             return param
 
     
-    #----------------------------------------------------------------
-
-    def __matricize(self, funcXT):
-        time=np.linspace(0., self.nDt*self.dt, self.nDt+1)
-        matrix=np.empty(shape=(self.nDt+1, self.grid.N))
-        for i in xrange(self.grid.N):
-            for j in xrange(self.nDt+1):
-                matrix[j][i]=funcXT(self.grid.x[i], time[j])
-
-        return matrix
         
 
 #==========================================================
@@ -213,17 +232,17 @@ class Param(object):
 #==========================================================
 if __name__=='__main__':
     import matplotlib.pyplot as plt
+    L=300.
+    grid=PeriodicGrid(142, L)
     
-    grid=PeriodicGrid(142, 5.)
     
-    
-    def func3(x,t):
-        return np.sin(x)
+    def func(x,t):
+        return np.sin(3.*x/L)
 
     def funcTimeDependant(x, t):
-        return np.sin(x-t)*np.cos(t)
+        return np.sin(2.*x/L-t/2.)*np.cos(t/2.)
 
-    p=Param(grid, funcTimeDependant, 0., -1., -1., func3,
+    p=Param(grid, funcTimeDependant, 0., -1., -1., func,
                 tInt=10., dt=0.05)
     if p.isTimeDependant:
         p[0].waterfall()

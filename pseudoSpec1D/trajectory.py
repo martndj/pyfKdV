@@ -347,7 +347,9 @@ class Trajectory(object):
         if offset==None:
             offset=self.tInt/nbLines
         if ampl==None:
-            ampl=8./(np.max(np.abs(self.__data)))*\
+            denom=(np.max(np.abs(self.__data)))
+            if denom==0.: denom=1.
+            ampl=8./denom*\
                     (self.tInt/nbLines)
         lines=[]
         for i in xrange(nbLines):

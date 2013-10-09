@@ -42,16 +42,10 @@ class kdvTLMLauncher(TLMLauncher):
         self.fullPertTraj=False
         self.tReal=0.
 
-        if not self.isTimeDependant:
-            self.propagator=self.__kdvTLMProp_Fortran
-            self.propagatorAdj=self.__kdvTLMProp_Fortran_Adj
-            self.propagatorSing=self.__kdvTLMSingularOp_Fortran
-            #self.gradTest=self.__kdvTLMGradTest_Fortran
-        else:
-            self.propagator=self.__kdvTLMProp_Fortran_pt
-            self.propagatorAdj=self.__kdvTLMProp_Fortran_Adj_pt
-            self.propagatorSing=self.__kdvTLMSingularOp_Fortran_pt
-            #self.gradTest=self.__kdvTLMGradTest_Fortran_pt
+        self.propagator=self.__kdvTLMProp_Fortran
+        self.propagatorAdj=self.__kdvTLMProp_Fortran_Adj
+        self.propagatorSing=self.__kdvTLMSingularOp_Fortran
+        self.propagatorGradTest=self.__kdvTLMGradTest_Fortran
     
     #------------------------------------------------------
     #----| Public methods |--------------------------------
@@ -121,7 +115,8 @@ class kdvTLMLauncher(TLMLauncher):
         """
         Gradient test
 
-            Check consistency between the TLM adjoint and the
+            Check consisten__kdvTLMGradTest_Fortran
+ucy between the TLM adjoint and the
             nonlinear model.
 
             J(x)    =0.5|M(x)|^2
@@ -147,55 +142,22 @@ class kdvTLMLauncher(TLMLauncher):
             raise self.kdvTLMLauncherError("ic.shape = (launcher.grid.N,)")
         super(kdvTLMLauncher, self)._timeValidation(tInt, t0)
 
-        grid=self.grid
-        param=self.param
-        fKdV.fKdVTestGradient(grid.N, grid.Ntrc, grid.L, 
-                self.dt, self.nDt, maxPow, ic,
-                param[1], param[2], param[3], param[4], param[0])
+        self.propagatorGradTest(ic, maxPow)
+
 
     #------------------------------------------------------
     #----| Private methods          |----------------------
     #----| Propagator (and adjoint) |-----------------------
     #------------------------------------------------------
 
-    def __kdvTLMProp_Fortran(self, pert, fullOutput=False):
+
+    def __kdvTLMProp_Fortran(self, pert):
 
         # Local variables names
         grid=self.grid
         param=self.param
 
-        if self.fullPertTraj:
-            self.pertTraj.putData(fKdV.fKdVTLMPropagator(
-                grid.N, grid.Ntrc, grid.L, self.dt, self.nDt, pert, 
-                self.refTraj.getData()[self.nDt0:self.nDt0+self.nDt+1],
-                param[1], param[2], param[3], param[4],
-                fullTraj=True))
-
-            tReal=self.nDt*self.dt
-            self.pertTraj.incrmTReal(finished=True, tReal=tReal)
-            fPert=self.pertTraj[self.nDt]
-        else:
-            fPert=fKdV.fKdVTLMPropagator(
-                grid.N, grid.Ntrc, grid.L, self.dt, self.nDt, pert, 
-                self.refTraj.getData()[self.nDt0:self.nDt0+self.nDt+1],
-                param[1], param[2], param[3], param[4], 
-                fullTraj=False)
-
-            tReal=self.nDt*self.dt
-
-        self.incrmTReal(finished=True, tReal=tReal)
-        return fPert
-
-
-    #------------------------------------------------------
-
-    def __kdvTLMProp_Fortran_pt(self, pert):
-
-        # Local variables names
-        grid=self.grid
-        param=self.param
-
-        Pert=fKdV.fKdVTLMPropagator_pt(
+        fPert=fKdV.fKdVTLMPropagator(
                 grid.N, grid.Ntrc, grid.L, self.dt, self.nDt, param.nDt,
                 pert, 
                 self.refTraj.getData()[self.nDt0:self.nDt0+self.nDt+1],
@@ -217,30 +179,11 @@ class kdvTLMLauncher(TLMLauncher):
         param=self.param
 
         aPert=fKdV.fKdVTLMPropagatorAdj(
-                grid.N, grid.Ntrc, grid.L, self.dt, self.nDt, pert,
-                self.refTraj.getData()[self.nDt0:self.nDt0+self.nDt+1],
-                param[1], param[2], param[3], param[4], 
-                fullTraj=False)
-
-        tReal=self.nDt*self.dt
-
-        self.incrmTReal(finished=True, tReal=tReal)
-        return aPert
-
-    #------------------------------------------------------
-
-    def __kdvTLMProp_Fortran_Adj_pt(self, pert):
-
-        # Local variables names
-        grid=self.grid
-        param=self.param
-
-        aPert=fKdV.fKdVTLMPropagatorAdj_pt(
                 grid.N, grid.Ntrc, grid.L, self.dt, self.nDt, param.nDt,
                 pert,
                 self.refTraj.getData()[self.nDt0:self.nDt0+self.nDt+1],
-                param[1].getData(), param[2].getData(), param[3].getData(),
-                param[4].getData(), fullTraj=False)
+                param[1].getData(), param[2].getData(),
+                param[3].getData(), param[4].getData())
 
         tReal=self.nDt*self.dt
 
@@ -250,25 +193,6 @@ class kdvTLMLauncher(TLMLauncher):
     #------------------------------------------------------
 
     def __kdvTLMSingularOp_Fortran(self, pert):
-
-        # Local variables names
-        grid=self.grid
-        param=self.param
-
-        LAdjLx=fKdV.fKdVTLMSingularOp(
-                grid.N, grid.Ntrc, grid.L, self.dt, self.nDt, pert,
-                self.refTraj.getData()[self.nDt0:self.nDt0+selfnDt+1],
-                param[1], param[2], param[3], param[4])
-
-        tReal=2.*self.nDt*self.dt
-
-        self.incrmTReal(finished=True, tReal=tReal)
-        return LAdjLx
-
-
-    #------------------------------------------------------
-
-    def __kdvTLMSingularOp_Fortran_pt(self, pert):
 
         # Local variables names
         grid=self.grid
@@ -286,6 +210,20 @@ class kdvTLMLauncher(TLMLauncher):
         self.incrmTReal(finished=True, tReal=tReal)
         return LAdjLx
 
+        
+        
+    #------------------------------------------------------
+
+    def __kdvTLMGradTest_Fortran(self, ic, maxPow):
+        
+        grid=self.grid
+        param=self.param
+        
+        fKdV.fKdVTestGradient(grid.N, grid.Ntrc, grid.L, 
+                self.dt, self.nDt, param.nDt, maxPow, ic,
+                param[1].getData(), param[2].getData(), 
+                param[3].getData(), param[4].getData(),
+                param[0].getData())
 #--------------------------------------------------------------------
 #====================================================================
 #--------------------------------------------------------------------

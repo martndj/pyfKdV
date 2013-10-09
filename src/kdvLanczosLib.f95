@@ -14,7 +14,7 @@ function lanczos(N, Ntrc, L, dt, nDt, nDtParam, tReal, u, &
     double precision        ::  L, dt, tReal
     integer                 ::  N, Ntrc, nDt, nDtParam, j
 
-    double precision, dimension(nDtParam, N)::  alph, beta, gamm, rho
+    double precision, dimension(nDtParam+1, N)::  alph, beta, gamm, rho
 
     double precision, dimension(nDt+1, N)   ::  u
 
@@ -108,7 +108,7 @@ function lanczos(N, Ntrc, L, dt, nDt, nDtParam, tReal, u, &
 
         double precision, dimension(N)  ::  x, y
 
-        double precision, dimension(nDtParam, N)&
+        double precision, dimension(nDtParam+1, N)&
                                         ::  alph, beta, gamm, rho
         double precision, dimension(nDt+1, N)       ::  u
 

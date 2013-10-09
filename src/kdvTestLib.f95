@@ -438,7 +438,7 @@ function testKdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, nDtParam, pAmp,&
     double precision                ::  L, diff, pAmp, dt, tReal, tRealAdj
     logical                         ::  testKdvTLMPropagatorAdj
     
-    double precision, dimension(nDtParam, N)&
+    double precision, dimension(nDtParam+1, N)&
                                             ::  alph, beta, gamm, rho
     double precision, dimension(nDt+1, N)   ::  u
 
@@ -491,7 +491,7 @@ subroutine testGradient(N, Ntrc, L, dt, nDt, nDtParam, maxPower, &
                                         tRealFct, tRealGrad, &
                                         eps, Jeps, J0
     
-    double precision, dimension(nDtParam, N)&
+    double precision, dimension(nDtParam+1, N)&
                                             ::  alph, beta, gamm, rho
     double precision, dimension(nDt+1, N)   ::  u
 
@@ -539,7 +539,7 @@ subroutine testGradient(N, Ntrc, L, dt, nDt, nDtParam, maxPower, &
     
         double precision, dimension(N)  ::  x, Lx
         double precision                ::  fctCout, dt, L, tReal
-        double precision, dimension(nDtParam, N)&
+        double precision, dimension(nDtParam+1, N)&
                                             ::  alph, beta, gamm, rho
         double precision, dimension(nDt+1,N)    ::  u
         
@@ -558,7 +558,7 @@ subroutine testGradient(N, Ntrc, L, dt, nDt, nDtParam, maxPower, &
     
         double precision, dimension(N)  ::  x, gradFC
         double precision                ::  dt, L, tReal
-        double precision, dimension(nDtParam, N)&
+        double precision, dimension(nDtParam+1, N)&
                                             ::  alph, beta, gamm, rho
         double precision, dimension(nDt+1,N)    ::  u
 
@@ -594,7 +594,7 @@ subroutine NLTestGradient(N, Ntrc, L, dt, nDt, nDtParam, maxPower, &
                                         tRealFct, tRealGrad, &
                                         eps, Jeps, J0, grad2
     
-    double precision, dimension(nDtParam, N) &
+    double precision, dimension(nDtParam+1, N) &
                                         ::  alph, beta, gamm, rho, forc
     double precision, dimension(nDt+1, N)  ::  u
 
@@ -644,7 +644,7 @@ subroutine NLTestGradient(N, Ntrc, L, dt, nDt, nDtParam, maxPower, &
         double precision, dimension(N)  ::  x, Mx
         double precision                ::  fctCout, dt, L, tReal
 
-        double precision, dimension(nDtParam, N)&
+        double precision, dimension(nDtParam+1, N)&
                                         ::  alph, beta, gamm, rho, forc
         double precision, dimension(nDt+1,N)    ::  u
         
@@ -664,7 +664,7 @@ subroutine NLTestGradient(N, Ntrc, L, dt, nDt, nDtParam, maxPower, &
         double precision, dimension(N)  ::  x, gradFC
         double precision                ::  dt, L, tReal
 
-        double precision, dimension(nDtParam, N)&
+        double precision, dimension(nDtParam+1, N)&
                                         ::  alph, beta, gamm, rho
         double precision, dimension(nDt+1,N)    ::  u
 

@@ -29,7 +29,7 @@ rhoAmp=1.0D-1
 
 dt=1.0D-2
 nDt=50
-nDtParam=1
+nDtParam=0
 
 NtrcParam=30
 paramCte=.True.
@@ -37,8 +37,8 @@ rhoZero=.False.
 rhoCte=.False.
 forcZero=.True.
 
-allocate(alph(nDtParam,N), beta(nDtParam,N), gamm(nDtParam,N), &
-            rho(nDtParam,N), forc(nDtParam,N))
+allocate(alph(nDtParam+1,N), beta(nDtParam+1,N), gamm(nDtParam+1,N), &
+            rho(nDtParam+1,N), forc(nDtParam+1,N))
 allocate(u(nDt+1, N))
 
 

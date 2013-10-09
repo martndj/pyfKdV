@@ -75,9 +75,12 @@ class kdvSVLauncher(object):
 
 
         sVal, sVec=fKdV.fKdVLanczos(grid.N, grid.Ntrc, grid.L,
-                                    traj.dt, self.nDt, traj.getData(), 
-                                    self.Nev,
-                                    param[1], param[2], param[3], param[4])
+                                    traj.dt, self.nDt, param.nDt,
+                                    traj.getData(), self.Nev,
+                                    param[1].getData(), 
+                                    param[2].getData(),
+                                    param[3].getData(), 
+                                    param[4].getData())
 
         self.sVal=sVal
         self.sVec=sVec
@@ -102,14 +105,14 @@ if __name__=='__main__':
     maxA=2.
     Nev=2
     
-    def gaussNeg(x):
+    def gaussNeg(x,t):
         x0=0.
         sig=5.
         return -0.1*gauss(x, x0, sig) 
-    def sinus(x):
+    def sinus(x,t):
         return 0.1*np.sin(2.*2*np.pi*x/150.)
 
-    param=Param(grid, beta=1., gamma=-1., rho=gaussNeg, forcing=sinus)
+    param=Param(grid, beta=1., gamma=-1.)#, rho=gaussNeg, forcing=sinus)
     ic=soliton(grid.x, 1., beta=1., gamma=-1. )
     
     # NL model integration

@@ -42,10 +42,7 @@ class kdvLauncher(Launcher):
         else:
             self.dt=self.dtMod*dt
 
-        if not self.isTimeDependant:
-            self.propagator=self.__kdvProp_Fortran
-        else: 
-            self.propagator=self.__kdvProp_Fortran_pt
+        self.propagator=self.__kdvProp_Fortran
 
         
     #------------------------------------------------------
@@ -84,6 +81,7 @@ class kdvLauncher(Launcher):
     #----| Private methods |-------------------------------
     #------------------------------------------------------
 
+
     def __kdvProp_Fortran(self, ic, traj):
         
         # Local variables names
@@ -91,36 +89,16 @@ class kdvLauncher(Launcher):
         param=self.param
         tReal=0.
 
-        trajData=fKdV.fKdVPropagator(
-                    grid.N, grid.Ntrc, grid.L, self.dt, self.nDt,
-                    ic, param[1], param[2], param[3], param[4],
-                    param[0]
-                    )
-
-        tReal=traj.nDt*traj.dt
-        traj.putData(trajData)
-        traj.incrmTReal(finished=True, tReal=tReal)
-
-        return traj
-
-
-    #------------------------------------------------------
-
-    def __kdvProp_Fortran_pt(self, ic, traj):
-        
-        # Local variables names
-        grid=self.grid
-        param=self.param
-        tReal=0.
-
         # to be corrected
-        if self.dt <> param.dt:
+        if (not (param.nDt==0 and param.dt==0.)
+            and (self.dt <> param.dt)):
             raise self.kdvLauncherError(
                     "incompatible parameter time increment (%f, %f)"%(
                                                         self.dt, param.dt))
         
-        trajData=fKdV.fKdVPropagator_pt(
-                    grid.N, grid.Ntrc, grid.L, self.dt, self.nDt, param.nDt,
+        trajData=fKdV.fKdVPropagator(
+                    grid.N, grid.Ntrc, grid.L, self.dt, self.nDt,
+                    param.nDt,
                     ic, param[1].getData(), param[2].getData(),
                     param[3].getData(), param[4].getData(),
                     param[0].getData()
@@ -143,11 +121,11 @@ if __name__=='__main__':
     tInt=50.
     maxA=2.
     
-    def gaussNeg(x):
+    def gaussNeg(x,t):
         x0=0.
         sig=5.
         return -0.1*gauss(x, x0, sig) 
-    def sinus(x):
+    def sinus(x,t):
         return 0.1*np.sin(2.*2*np.pi*x/150.)
 
     def funcTimeDependant(x, t):
@@ -156,17 +134,13 @@ if __name__=='__main__':
     dt=dtStable(grid, Param(grid, beta=1.,gamma=-1., rho=0.1),
                     maxA, dtMod=0.7)
     nDtParam=int(tInt/dt)
-    data=np.zeros(shape=(nDtParam+1, grid.N))
-    for n in xrange(nDtParam+1):
-        data[n,:]=funcTimeDependant(grid.x, n*dt)
-    traj=Trajectory(grid)
-    traj.initialize(data[0,:], nDtParam, dt)
-    traj.putData(data)
 
 
-    #param=Param(grid, beta=1., gamma=-1., rho=gaussNeg, forcing=sinus)
-    param=Param(grid, beta=1., gamma=-1., rho=gaussNeg, forcing=traj)
-    param.putDt(dt)
+    param=Param(grid, beta=1., gamma=-1., rho=gaussNeg,
+                forcing=funcTimeDependant, 
+                nDt=nDtParam, dt=dt)
+    paramStatic=Param(grid, beta=1., gamma=-1.)
+
     ic=soliton(grid.x, 1., beta=1., gamma=-1. )
 
     # NL model integration

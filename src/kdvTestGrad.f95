@@ -46,9 +46,9 @@ dt=1.0D-2
 
 maxPower=-9
 nDtVec=(/1, 2,10,50,100/)
-nDtParam=1
-allocate(alph(nDtParam,N), beta(nDtParam,N), gamm(nDtParam,N), &
-            rho(nDtParam,N), forc(nDtParam,N))
+nDtParam=0
+allocate(alph(nDtParam+1,N), beta(nDtParam+1,N), gamm(nDtParam+1,N), &
+            rho(nDtParam+1,N), forc(nDtParam+1,N))
 
 ! Generating random fields
 !   unfiltered state vectors

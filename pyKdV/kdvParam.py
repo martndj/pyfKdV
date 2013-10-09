@@ -24,7 +24,7 @@ class Param(object):
 
 
     def __init__(self, grid, forcing=None, alpha=None, beta=None,
-                    gamma=None,  rho=None, nDt=None, dt=None):
+                    gamma=None,  rho=None, nDt=0, dt=0.):
 
         if not (isinstance(grid, PeriodicGrid)):
             raise self.ParamError(
@@ -49,19 +49,14 @@ class Param(object):
         else:
             self.inputAsFunction=False
 
-        if (not self.inputAsTrajectory and self.inputAsFunction
-            and nDt==None):
+        if self.inputAsFunction and dt==0. and nDt>0:
             raise self.ParamError(
-            "if no parameter is <Trajectory>, nDt must be specified")
-        if self.inputAsFunction and (nDt==None or dt==None):
-            raise self.ParamError(
-            "if one parameter is <function(x,t)>, nDt and dt must be specified")
+            "if one parameter is <function(x,t)> and nDt>0 => dt>0")
         self.nDt=nDt
         self.dt=dt
 
         self.__initTraj(forcing, alpha, beta, gamma, rho)
-        if self.dt<>None:
-            self.putDt(self.dt)
+        self.putDt(self.dt)
     #----------------------------------------------------------------
     #----| Public methods |------------------------------------------
     #----------------------------------------------------------------
@@ -84,18 +79,14 @@ class Param(object):
     #----------------------------------------------------------------
 
     def putDt(self, dt):
-        if not self.isTimeDependant:
-            raise self.ParamError(
-                    "not a time dependant parametrisation")
-        else:
-            self.dt=dt
-            self.tReal=self.dt*self.nDt
-            self.alpha.incrmTReal(finished=True, tReal=self.tReal)
-            self.beta.incrmTReal(finished=True, tReal=self.tReal)
-            self.gamma.incrmTReal(finished=True, tReal=self.tReal)
-            self.rho.incrmTReal(finished=True, tReal=self.tReal)
-            self.forcing.incrmTReal(finished=True, 
-                                        tReal=self.tReal)
+        self.dt=dt
+        self.tReal=self.dt*self.nDt
+        self.alpha.incrmTReal(finished=True, tReal=self.tReal)
+        self.beta.incrmTReal(finished=True, tReal=self.tReal)
+        self.gamma.incrmTReal(finished=True, tReal=self.tReal)
+        self.rho.incrmTReal(finished=True, tReal=self.tReal)
+        self.forcing.incrmTReal(finished=True, 
+                                    tReal=self.tReal)
         
 
     #----------------------------------------------------------------
@@ -107,16 +98,15 @@ class Param(object):
         if self.inputAsTrajectory:
             for p in params:
                 if isinstance(p, Trajectory):
-                    if self.dt==None:
+                    if self.dt==0.:
                         self.dt=p.dt
                     else:
                         if p.dt<>self.dt:
                             raise ParamError(
                         "parameter trajectories must have the same dt")
 
-                    if self.nDt==None or p.nDt>self.nDt:
+                    if p.nDt>self.nDt:
                         self.nDt=p.nDt
-        if self.nDt==None: self.nDt=1
 
         self.forcing=self.__setTraj(forcing)
         self.alpha=self.__setTraj(alpha)
@@ -124,7 +114,7 @@ class Param(object):
         self.gamma=self.__setTraj(gamma)
         self.rho=self.__setTraj(rho)
         
-        if self.nDt>1:
+        if self.nDt>0:
             self.isTimeDependant=True
         else:   
             self.isTimeDependant=False
@@ -136,11 +126,11 @@ class Param(object):
         if isinstance(param, Trajectory):
             if param.nDt<self.nDt:
                 data=params[i].getData()
-                newdata=np.empty(shape=(self.nDt, self.grid.N))
-                newdata[0:params[i].nDt,:]=data
-                newdata[params[i].nDt:, :]=data[params[i].nDt, :]
+                newdata=np.empty(shape=(self.nDt+1, self.grid.N))
+                newdata[0:params[i].nDt+1,:]=data
+                newdata[params[i].nDt+1:, :]=data[params[i].nDt+1, :]
                 traj=Trajectory(self.grid)
-                traj.zeros(self.nDt-1)
+                traj.zeros(self.nDt)
                 traj.putData(newdata)
                  
             if param.nDt==self.nDt:
@@ -148,19 +138,19 @@ class Param(object):
     
         elif param==None:
             traj=Trajectory(self.grid)
-            traj.zeros(self.nDt-1)
-            traj.putData(np.zeros(shape=(self.nDt, self.grid.N)))
+            traj.zeros(self.nDt)
+            traj.putData(np.zeros(shape=(self.nDt+1, self.grid.N)))
 
         elif isinstance(param, (int, float)):
             traj=Trajectory(self.grid)
-            traj.zeros(self.nDt-1)
-            traj.putData(np.ones(shape=(self.nDt, self.grid.N))\
+            traj.zeros(self.nDt)
+            traj.putData(np.ones(shape=(self.nDt+1, self.grid.N))\
                             *param)
 
         elif callable(param):
             data=self.__matricize(param)
             traj=Trajectory(self.grid)
-            traj.zeros(self.nDt-1)
+            traj.zeros(self.nDt)
             traj.putData(data)
 
         else:
@@ -190,10 +180,10 @@ class Param(object):
     #----------------------------------------------------------------
 
     def __matricize(self, funcXT):
-        time=np.linspace(0., self.nDt*self.dt, self.nDt)
-        matrix=np.empty(shape=(self.nDt, self.grid.N))
+        time=np.linspace(0., self.nDt*self.dt, self.nDt+1)
+        matrix=np.empty(shape=(self.nDt+1, self.grid.N))
         for i in xrange(self.grid.N):
-            for j in xrange(self.nDt):
+            for j in xrange(self.nDt+1):
                 matrix[j][i]=funcXT(self.grid.x[i], time[j])
 
         return matrix
@@ -220,18 +210,13 @@ if __name__=='__main__':
         return np.sin(x-t)*np.cos(t)
     nDtParam=100
     dt=0.1
-    data=np.zeros(shape=(nDtParam+1, grid.N))
-    for n in xrange(nDtParam+1):
-        data[n,:]=funcTimeDependant(grid.x, n*dt)
-    traj=Trajectory(grid)
-    traj.initialize(data[0,:], nDtParam, dt)
-    traj.putData(data)
 
-    p=Param(grid, traj, func2, func1, func1, func3, nDt=nDtParam, dt=dt)
+    p=Param(grid, funcTimeDependant, func2, func1, func1, func3,
+                nDt=nDtParam, dt=dt)
     if p.isTimeDependant:
         p[0].waterfall()
     else:
-        plt.plot(grid.x, p[4])
+        plt.plot(grid.x, p[0].getData()[0,:])
     
     plt.show() 
 

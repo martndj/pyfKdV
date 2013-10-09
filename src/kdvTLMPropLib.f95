@@ -19,7 +19,7 @@ function kdvTLMPropagator(N, Ntrc, L, dt, nDt, nDtParam, tReal, &
     integer                 ::  N, Ntrc, nDt, nDtParam, j
     
     double precision, dimension(N)          ::  p0, pf
-    double precision, dimension(nDtParam, N)&
+    double precision, dimension(nDtParam+1, N)&
                                             ::  alph, beta, gamm, rho 
 
     double precision, dimension(3, N)       ::  pBuff
@@ -45,14 +45,14 @@ function kdvTLMPropagator(N, Ntrc, L, dt, nDt, nDtParam, tReal, &
     ! Qj , j=2, nDt
     if (nDt.ne.1) then
     do j=2,nDt
-        if (j.le.nDtParam) then
+        if (j.le.nDtParam+1) then
             ! Pj
             pBuff=opPn(N, Ntrc, L, dt, u(j,:), pBuff, &
                         alph(j,:), beta(j,:), gamm(j,:), rho(j,:))
         else
             pBuff=opPn(N, Ntrc, L, dt, u(j,:), pBuff, &
-                        alph(nDtParam,:), beta(nDtParam,:), &
-                        gamm(nDtParam,:), rho(nDtParam,:))
+                        alph(nDtParam+1,:), beta(nDtParam+1,:), &
+                        gamm(nDtParam+1,:), rho(nDtParam+1,:))
         end if
         ! S
         pBuff=opS(N, pBuff)
@@ -88,7 +88,7 @@ function kdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, nDtParam, tReal,&
     integer                 ::  N, Ntrc, nDt, nDtParam, j
     
     double precision, dimension(N)          ::  pf, adj
-    double precision, dimension(nDtParam, N)&
+    double precision, dimension(nDtParam+1, N)&
                                             ::  alph, beta, gamm, rho 
 
     double precision, dimension(3, N)       ::  aBuff
@@ -118,14 +118,14 @@ function kdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, nDtParam, tReal,&
         tReal=tReal+dt
         ! S*
         aBuff=opSAdj(N, aBuff)
-        if (j.le.nDtParam) then
+        if (j.le.nDtParam+1) then
             ! Pj*
             aBuff=opPnAdj(N, Ntrc, L, dt, u(j,:), aBuff,&
                             alph(j,:), beta(j,:), gamm(j,:), rho(j,:))
         else
             aBuff=opPnAdj(N, Ntrc, L, dt, u(j,:), aBuff,&
-                            alph(nDtParam,:), beta(nDtParam,:),&
-                            gamm(nDtParam,:), rho(nDtParam,:))
+                            alph(nDtParam+1,:), beta(nDtParam+1,:),&
+                            gamm(nDtParam+1,:), rho(nDtParam+1,:))
         end if
     end do
     end if
@@ -157,7 +157,7 @@ function kdvTLMSingularOp(N, Ntrc, L, dt, nDt, nDtParam, tReal,&
     double precision        ::  L, dt, tReal
     integer                 ::  N, Ntrc, nDt, nDtParam
     
-    double precision, dimension(nDtParam, N)&
+    double precision, dimension(nDtParam+1, N)&
                                             ::  alph, beta, gamm, rho 
     double precision, dimension(N)          ::  x, y
     double precision, dimension(nDt+1, N)   ::  u

@@ -21,7 +21,7 @@ subroutine c_kdvPropagator(N, Ntrc, L, dt, nDt, nDtParam, ic, traj, &
     real(c_double), dimension(N) ::  ic
 
     ! note that in C the indices will be reversed!:
-    real(c_double), intent(in), dimension(N, nDtParam)&
+    real(c_double), intent(in), dimension(N, nDtParam+1)&
                                         ::  alph, beta, gamm, rho, forc
     real(c_double), intent(out), dimension(N, nDt+1)    ::  traj
     
@@ -54,7 +54,7 @@ subroutine c_kdvTLMPropagator(N, Ntrc, L, dt, nDt, nDtParam,&
     real(c_double), intent(out), dimension(N)   ::  pf
 
     ! note that in C the indices will be reversed!:
-    real(c_double), intent(in), dimension(N, nDtParam)&
+    real(c_double), intent(in), dimension(N, nDtParam+1)&
                                             ::  alph, beta, gamm, rho 
     real(c_double), intent(in), dimension(N, nDt+1)     ::  u
     
@@ -81,7 +81,7 @@ subroutine c_kdvTLMPropagatorFullTraj(N, Ntrc, L, dt, nDt, nDtParam,&
     real(c_double), intent(out), dimension(N)   ::  pf
 
     ! note that in C the indices will be reversed!:
-    real(c_double), intent(in), dimension(N, nDtParam)&
+    real(c_double), intent(in), dimension(N, nDtParam+1)&
                                             ::  alph, beta, gamm, rho 
     real(c_double), intent(in), dimension(N, nDt+1)     ::  u
     real(c_double), intent(out), dimension(N, nDt+1)    ::  pTraj
@@ -114,7 +114,7 @@ subroutine c_kdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, nDtParam, &
     real(c_double), intent(out), dimension(N)   ::  adj
 
     ! note that in C the indices will be reversed!:
-    real(c_double), intent(in), dimension(N, nDtParam)&
+    real(c_double), intent(in), dimension(N, nDtParam+1)&
                                             ::  alph, beta, gamm, rho
     real(c_double), intent(in), dimension(N, nDt+1)     ::  u
     
@@ -141,7 +141,7 @@ subroutine c_kdvTLMPropagatorAdjFullTraj(N, Ntrc, L, dt, nDt,nDtParam, &
     real(c_double), intent(out), dimension(N)   ::  adj
 
     ! note that in C the indices will be reversed!:
-    real(c_double), intent(in), dimension(N, nDtParam)&
+    real(c_double), intent(in), dimension(N, nDtParam+1)&
                                             ::  alph, beta, gamm, rho
     real(c_double), intent(in), dimension(N, nDt+1)     ::  u
     real(c_double), intent(out), dimension(N, nDt+1)    ::  aTraj
@@ -173,7 +173,7 @@ subroutine c_kdvTLMSingularOp(N, Ntrc, L, dt, nDt, nDtParam, &
     real(c_double), intent(out), dimension(N)   ::  y
 
     ! note that in C the indices will be reversed!:
-    real(c_double), intent(in), dimension(N, nDtParam) &
+    real(c_double), intent(in), dimension(N, nDtParam+1) &
                                             ::  alph, beta, gamm, rho
     real(c_double), intent(in), dimension(N, nDt+1)     ::  u
     
@@ -200,7 +200,7 @@ subroutine c_kdvLanczos(N, Ntrc, L, dt, nDt, nDtParam, u, Nev, V, sv, &
     real(c_double), intent(out), dimension(Nev)     ::  sv
     
     ! note that in C the indices will be reversed!:
-    real(c_double), intent(in), dimension(N, nDtParam) &
+    real(c_double), intent(in), dimension(N, nDtParam+1) &
                                             ::  alph, beta, gamm, rho
     real(c_double), intent(out), dimension(Nev, N)   ::  V
     real(c_double), intent(in), dimension(N, nDt+1)     ::  u
@@ -224,7 +224,7 @@ subroutine c_testGradient(N, Ntrc, L, dt, nDt, nDtParam, maxPower, &
     real(c_double), intent(in), dimension(N)    ::  p
     
     ! note that in C the indices will be reversed!:
-    real(c_double), intent(in), dimension(N, nDtParam) &
+    real(c_double), intent(in), dimension(N, nDtParam+1) &
                                         ::  alph, beta, gamm, rho, forc
     call NLTestGradient(N, Ntrc, L, dt, nDt, nDtParam, maxPower, &
                             p, transpose(alph), transpose(beta), &

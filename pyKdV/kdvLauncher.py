@@ -25,7 +25,7 @@ class kdvLauncher(Launcher):
     #----| Init |------------------------------------------
     #------------------------------------------------------
 
-    def __init__(self, param, maxA, dt=None, dtMod=1.):
+    def __init__(self, param, maxA, dt=None):
 
         if not (isinstance(param, Param)):
             raise self.kdvLauncherError(
@@ -36,11 +36,10 @@ class kdvLauncher(Launcher):
         self.isTimeDependant=self.param.isTimeDependant
         
         self.maxA=maxA
-        self.dtMod=dtMod
         if dt==None:
-            self.dt=self.dtStable(self.maxA, self.dtMod)
+            self.dt=self.dtStable(self.maxA)
         else:
-            self.dt=self.dtMod*dt
+            self.dt=dt
 
         self.propagator=self.__kdvProp_Fortran
 
@@ -74,7 +73,6 @@ class kdvLauncher(Launcher):
 
             maxA    :   expected maximum amplitude <float>
         """
-    
         return dtStable(self.grid, self.param, maxA, dtMod=dtMod)
 
     #------------------------------------------------------

@@ -79,7 +79,7 @@ def gauss(x, x0, sig):
     return np.exp(-((x-x0)**2)/(2*sig**2))
 
 
-def dtStable(grid, param, maxA, dtMod=1.):
+def dtStable(grid, param, maxA, dtMod=0.7):
     """
     Stable time incremement
 
@@ -104,4 +104,4 @@ def dtStable(grid, param, maxA, dtMod=1.):
                    +maxAbsRho**2)
 
     dt=1./denom
-    return dt
+    return dtMod*dt

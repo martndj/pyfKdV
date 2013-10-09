@@ -88,7 +88,7 @@ class Trajectory(object):
 
     #-------------------------------------------------------
     
-    def zeros(self, nDt):
+    def zeros(self, nDt, dt=0.):
         """
         Trajectory initialization
             (memory allocation)
@@ -98,7 +98,7 @@ class Trajectory(object):
             nDt :   time steps <int>
         """
         self.__allocate(nDt)
-        self.dt=None
+        self.dt=dt
         self.ic=np.zeros(self.grid.N)
         self.isInitialised=True
     
@@ -350,7 +350,7 @@ class Trajectory(object):
             denom=(np.max(np.abs(self.__data)))
             if denom==0.: denom=1.
             ampl=8./denom*\
-                    (self.tInt/nbLines)
+                    (self.tReal/nbLines)
         lines=[]
         for i in xrange(nbLines):
             j=i*freq

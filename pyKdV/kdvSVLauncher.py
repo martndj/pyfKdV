@@ -112,7 +112,7 @@ if __name__=='__main__':
     def sinus(x,t):
         return 0.1*np.sin(2.*2*np.pi*x/150.)
 
-    param=Param(grid, beta=1., gamma=-1.)#, rho=gaussNeg, forcing=sinus)
+    param=Param(grid, beta=1., gamma=-1., rho=gaussNeg, forcing=sinus)
     ic=soliton(grid.x, 1., beta=1., gamma=-1. )
     
     # NL model integration

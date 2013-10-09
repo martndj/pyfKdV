@@ -9,12 +9,22 @@ class Param(object):
                            - \beta(x)A \partial_x A 
                            - \gamma(x) \partial_x^3 A - \rho(x) A 
 
-        Param(grid, alpha=None, beta=None, gamma=None, 
-                    rho=None, forcing=None)
+        Param(grid, alpha=0., beta=0., gamma=0., rho=0., forcing=0.,
+                nDt=0, dt=0., tInt=0.)
 
-        Parameters can be specified either as constant or function
-        In the later case, function must be of one variable
-        (the space variable 'x')
+        Parameters can be specified either as constant, function
+        or Trajectory object.
+        None will
+        In the function case, function must be of two variables
+        (the space variable 'x' and time variable 'y')
+
+            def func(x,t):
+                ...
+                return <some expression of x and t>
+
+            <@> although both must be in the function declaration
+                it is not necessary for anyone of them to actually
+                be used in the return expression.
 
         <TODO>  parameters defined as array  
 
@@ -23,8 +33,8 @@ class Param(object):
         pass
 
 
-    def __init__(self, grid, forcing=None, alpha=None, beta=None,
-                    gamma=None,  rho=None, nDt=0, dt=0.):
+    def __init__(self, grid, forcing=0., alpha=0., beta=0.,
+                    gamma=0.,  rho=0., nDt=0, dt=0., tInt=0.):
 
         if not (isinstance(grid, PeriodicGrid)):
             raise self.ParamError(
@@ -49,14 +59,24 @@ class Param(object):
         else:
             self.inputAsFunction=False
 
-        if self.inputAsFunction and dt==0. and nDt>0:
-            raise self.ParamError(
-            "if one parameter is <function(x,t)> and nDt>0 => dt>0")
-        self.nDt=nDt
+
+        if nDt>0. or tInt>0.:
+            self.isTimeDependant=True
+        else:
+            self.isTimeDependant=False
+            
+        if self.isTimeDependant:
+            if self.inputAsFunction and dt==0.: 
+                raise self.ParamError("if one parameter is <function(x,t)> and (nDt>0 or tInt>0) => dt>0")
+            if nDt==0.:
+                self.nDt=int(tInt/dt)
+            else:
+                self.nDt=nDt
+        else:
+            self.nDt=nDt
         self.dt=dt
 
         self.__initTraj(forcing, alpha, beta, gamma, rho)
-        self.putDt(self.dt)
     #----------------------------------------------------------------
     #----| Public methods |------------------------------------------
     #----------------------------------------------------------------
@@ -78,8 +98,7 @@ class Param(object):
         return val
     #----------------------------------------------------------------
 
-    def putDt(self, dt):
-        self.dt=dt
+    def __incrmTReal(self, dt):
         self.tReal=self.dt*self.nDt
         self.alpha.incrmTReal(finished=True, tReal=self.tReal)
         self.beta.incrmTReal(finished=True, tReal=self.tReal)
@@ -107,6 +126,7 @@ class Param(object):
 
                     if p.nDt>self.nDt:
                         self.nDt=p.nDt
+                        self.isTimeDependant=True
 
         self.forcing=self.__setTraj(forcing)
         self.alpha=self.__setTraj(alpha)
@@ -114,11 +134,8 @@ class Param(object):
         self.gamma=self.__setTraj(gamma)
         self.rho=self.__setTraj(rho)
         
-        if self.nDt>0:
-            self.isTimeDependant=True
-        else:   
-            self.isTimeDependant=False
         self.shape=(5, self.nDt ,self.grid.N)
+        self.__incrmTReal(self.dt)
     #----------------------------------------------------------------
 
     def __setTraj(self, param):
@@ -130,51 +147,53 @@ class Param(object):
                 newdata[0:params[i].nDt+1,:]=data
                 newdata[params[i].nDt+1:, :]=data[params[i].nDt+1, :]
                 traj=Trajectory(self.grid)
-                traj.zeros(self.nDt)
+                traj.zeros(self.nDt, self.dt)
                 traj.putData(newdata)
                  
             if param.nDt==self.nDt:
                 traj=param
     
-        elif param==None:
-            traj=Trajectory(self.grid)
-            traj.zeros(self.nDt)
-            traj.putData(np.zeros(shape=(self.nDt+1, self.grid.N)))
-
         elif isinstance(param, (int, float)):
             traj=Trajectory(self.grid)
-            traj.zeros(self.nDt)
+            traj.zeros(self.nDt, self.dt)
             traj.putData(np.ones(shape=(self.nDt+1, self.grid.N))\
                             *param)
 
         elif callable(param):
             data=self.__matricize(param)
             traj=Trajectory(self.grid)
-            traj.zeros(self.nDt)
+            traj.zeros(self.nDt, self.dt)
             traj.putData(data)
 
         else:
             raise self.ParamError(
-                    "<None|float|function(x,t)|Trajectory>")
+                    "<float|function(x,t)|Trajectory>")
         
         return traj
             
     #----------------------------------------------------------------
 
-    def __getitem__(self,i):
+    def __getitem__(self,i, j=None, k=None):
         if i==0:
-            return self.forcing
+            param=self.forcing
         elif i==1:
-            return self.alpha
+            param=self.alpha
         elif i==2:
-            return self.beta
+            param=self.beta
         elif i==3:
-            return self.gamma
+            param=self.gamma
         elif i==4:
-            return self.rho
+            param=self.rho
         else:
             raise IndexError('[0:forcing(x,t), 1:alpha(x,t),'+
                             '2:beta(x,t), 3:gamma(x,t), 4:rho(x,t)]')
+        if j<>None:
+            if k<>None:
+                return (param.getData())[j][k]
+            else:
+                return (param.getData())[j]
+        else:
+            return param
 
     
     #----------------------------------------------------------------
@@ -197,26 +216,19 @@ if __name__=='__main__':
     
     grid=PeriodicGrid(142, 5.)
     
-    def func1(x,t):
-        return  -1.
-    
-    def func2(x,t):
-        return 0.
     
     def func3(x,t):
         return np.sin(x)
 
     def funcTimeDependant(x, t):
         return np.sin(x-t)*np.cos(t)
-    nDtParam=100
-    dt=0.1
 
-    p=Param(grid, funcTimeDependant, func2, func1, func1, func3,
-                nDt=nDtParam, dt=dt)
+    p=Param(grid, funcTimeDependant, 0., -1., -1., func3,
+                tInt=10., dt=0.05)
     if p.isTimeDependant:
         p[0].waterfall()
     else:
-        plt.plot(grid.x, p[0].getData()[0,:])
+        plt.plot(grid.x, p[0][0])
     
     plt.show() 
 

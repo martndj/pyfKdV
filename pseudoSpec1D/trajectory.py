@@ -365,7 +365,7 @@ class Trajectory(object):
         axe.add_collection(col, autolim=True)
         axe.autoscale_view()
         axe.set_xlabel(r'$x$')
-        axe.set_ylabel(r'$\tau$')
+        axe.set_ylabel(r'$t$')
         axe.set_xlim(xlim)
         
         if title!=None:
@@ -377,20 +377,20 @@ class Trajectory(object):
     
     #-------------------------------------------------------
 
-    def plotA(self, title=None, axe=None, **kwargs):
+    def plotA(self, title=None, axe=None, linestyle='b'):
         """
         Amplitude evolution plot
 
-                Trajectory.plotA(title=None, axe=None, **kwargs)
+                Trajectory.plotA(title=None, axe=None, linestyle)
 
-                title   :   title <str>
-                axe     :   subplot object <Axes | GridSpec>
-                kwargs  :   matplotlib extra arguments <dict>
+                title       :   title <str>
+                axe         :   subplot object <Axes | GridSpec>
+                linestyle   :   <str>
         """
         axe=self._checkAxe(axe)
 
         self.norm(ret=False)
-        axe.plot(self.time, self.A, kwargs)
+        axe.plot(self.time, self.A, linestyle)
         
         if title!=None:
             axe.set_title(title)
@@ -399,22 +399,22 @@ class Trajectory(object):
 
     #-------------------------------------------------------
 
-    def plotA2(self, title=None, axe=None, **kwargs):
+    def plotA2(self, title=None, axe=None, linestyle='b'):
         """
         Square Amplitude evolution plot
 
-                Trajectory.plotA(title=None, axe=None, **kwargs)
+                Trajectory.plotA(title=None, axe=None, linestyle)
 
-                title   :   title <str>
-                axe     :   subplot object <Axes | GridSpec>
-                kwargs  :   matplotlib extra arguments <dict>
+                title       :   title <str>
+                axe         :   subplot object <Axes | GridSpec>
+                linestyle   :   <str>
         """
 
         axe=self._checkAxe(axe)
 
         self.norm2(ret=False)
-        axe.plot(self.time, self.A2, **kwargs)
-        
+        axe.plot(self.time, self.A2, linestyle, **kwargs)
+ 
         if title!=None:
             axe.set_title(title)
 
@@ -431,6 +431,11 @@ class Trajectory(object):
 
         if axe==None:
             axe=plt.subplot(111)
+        if isinstance(axe, int):
+            if len(str(axe))<>3:
+                raise ValueError(
+                    "Single argument to subplot must be a 3-digit integer")
+            axe=plt.subplot(axe)
         elif not (isinstance(axe,(Axes, GridSpec))):
             raise self.TrajectoryPlotError(
                 "axe < matplotlib.axes.Axes | matplotlib.gridspec.GridSpec >")

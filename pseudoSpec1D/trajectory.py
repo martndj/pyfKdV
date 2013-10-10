@@ -389,7 +389,7 @@ class Trajectory(object):
         """
         axe=self._checkAxe(axe)
 
-        self.normA(ret=False)
+        self.norm(ret=False)
         axe.plot(self.time, self.A, kwargs)
         
         if title!=None:
@@ -412,7 +412,7 @@ class Trajectory(object):
 
         axe=self._checkAxe(axe)
 
-        self.normA2(ret=False)
+        self.norm2(ret=False)
         axe.plot(self.time, self.A2, **kwargs)
         
         if title!=None:

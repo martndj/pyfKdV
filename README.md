@@ -127,8 +127,7 @@ Configuring and launching an integration
         ic=baseLF+soliton
             
         #----| Integration |--------------------------
-        maxA=5.
-        launcher=kdv.kdvLauncher(param, maxA, dt=dt)
+        launcher=kdv.kdvLauncher(param, dt=dt)
         print(launcher)
         traj=launcher.integrate(ic, tInt)
         

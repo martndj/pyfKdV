@@ -25,7 +25,7 @@ class kdvLauncher(Launcher):
     #----| Init |------------------------------------------
     #------------------------------------------------------
 
-    def __init__(self, param, maxA, dt=None):
+    def __init__(self, param, dt=None, maxA=3.):
 
         if not (isinstance(param, Param)):
             raise self.kdvLauncherError(

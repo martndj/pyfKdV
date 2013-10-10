@@ -78,6 +78,14 @@ def gauss(x, x0, sig):
     """
     return np.exp(-((x-x0)**2)/(2*sig**2))
 
+def bumpSchwartz(x):
+    """
+    L. Schwartz infinitly differentiable distribution
+    """
+    if np.abs(x)>1.:
+        return 0.
+    else:
+        return np.exp(-1./(1.-x**2))
 
 def dtStable(grid, param, maxA, dtMod=0.7):
     """

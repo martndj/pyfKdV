@@ -80,10 +80,27 @@ class Trajectory(object):
                   "ic <numpy.ndarray>")
         if ic.ndim <> 1 or ic.size <> self.grid.N:
             raise self.TrajectoryError("ic.shape<>(grid.N,)")
-        self.__allocate(nDt, dt)
+        self.__allocate(nDt)
+        self.dt=dt
+        self.tInt=self.nDt*self.dt
         self.ic=ic
         self.isInitialised=True
 
+    #-------------------------------------------------------
+    
+    def zeros(self, nDt, dt=0.):
+        """
+        Trajectory initialization
+            (memory allocation)
+
+            Trajectory.zeros(nDt)
+
+            nDt :   time steps <int>
+        """
+        self.__allocate(nDt)
+        self.dt=dt
+        self.ic=np.zeros(self.grid.N)
+        self.isInitialised=True
     
     #-------------------------------------------------------
     
@@ -147,6 +164,8 @@ class Trajectory(object):
         """
         if not self.isInitialised :
             raise self.TrajectoryError("Trajectory not initialised")
+        if not isinstance(data, np.ndarray):
+            raise self.TrajectoryError("data <numpy.ndarray>")
         if (data.shape<>(self.nDt+1, self.grid.N)):
             raise self.TrajectoryError("Incompatible data affectation")
         self.__data=data
@@ -171,6 +190,15 @@ class Trajectory(object):
         return self.__data[self.whereTimeIdx(time)]
 
 
+    #-------------------------------------------------------
+    
+    def max(self):
+        return self.getData().max()
+
+
+    def min(self):
+        return self.getData().min()
+
 
     #------------------------------------------------------
     #----| Private methods |-------------------------------
@@ -181,13 +209,9 @@ class Trajectory(object):
 
     #-------------------------------------------------------
 
-    def __allocate(self, nDt, dt):
+    def __allocate(self, nDt):
         self.nDt=nDt
-        self.dt=dt
-        self.tInt=self.nDt*self.dt
-        
         self.__data=np.zeros(shape=(self.nDt+1,self.grid.N))
-        self.ic=np.zeros(self.grid.N)
 
 
 
@@ -235,7 +259,8 @@ class Trajectory(object):
                   self.grid.L==traj2.grid.L)
             raise self.TrajectoryError("Incompatible grids")
 
-        trajSub=putData(self.__data-traj2.__data,self.dt)
+        trajSub=self.copy()
+        trajSub.putData(self.__data-traj2.__data)
         return trajSub
 
     #-------------------------------------------------------
@@ -255,8 +280,9 @@ class Trajectory(object):
                   self.grid.L==traj2.grid.L)
             raise self.TrajectoryError("Incompatible grids")
 
-        trajSub=putData(self.__data+traj2.__data,self.dt)
-        return trajSub
+        trajAdd=self.copy()
+        trajAdd.putData(self.__data+traj2.__data)
+        return trajAdd
 
     #-------------------------------------------------------
 
@@ -321,8 +347,10 @@ class Trajectory(object):
         if offset==None:
             offset=self.tInt/nbLines
         if ampl==None:
-            ampl=8./(np.max(np.abs(self.__data)))*\
-                    (self.tInt/nbLines)
+            denom=(np.max(np.abs(self.__data)))
+            if denom==0.: denom=1.
+            ampl=8./denom*\
+                    (self.tReal/nbLines)
         lines=[]
         for i in xrange(nbLines):
             j=i*freq

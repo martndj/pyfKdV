@@ -1,4 +1,4 @@
-__version__='1.0' 
+__version__='2.0' 
 __author__='Martin Deshaies-Jacques'
 
 __copyright__='Copyright 2013, Martin Deshaies-Jacques'

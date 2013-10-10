@@ -101,17 +101,25 @@ Configuring and launching an integration
         import matplotlib.pyplot as plt 
         
         #----| Grid configuration |-------------------
-        Ntrc=200
-        grid=kdv.PeriodicGrid(Ntrc,300.)
+        Ntrc=150
+        L=300.
+        grid=kdv.PeriodicGrid(Ntrc,L)
         
+        tInt=40.
+        dt=0.015
         #----| KdV parameters arguments |-------------
-        def rhoProfile(x):
+        def rhoProfile(x,t):
             x0=-10.
             sig=30.
             amp=0.01
             return -amp*kdv.gauss(x,x0,sig)+2.*amp*kdv.gauss(x,x0+30,sig/3.)
                 
-        param=kdv.Param(grid, beta=1., gamma=-1, rho=rhoProfile)
+        def forcTime(x, t):
+            return 0.1*np.sin(6.*x/L)*np.cos(t/10.)
+        
+        param=kdv.Param(grid, beta=1., gamma=-1, rho=rhoProfile,
+                forcing=forcTime, tInt=tInt, dt=dt)
+        print(param)
             
         #----| Initial condition |--------------------
         baseLF=kdv.rndSpecVec(grid, 15, amp=1.3)
@@ -119,9 +127,7 @@ Configuring and launching an integration
         ic=baseLF+soliton
             
         #----| Integration |--------------------------
-        maxA=5.
-        tInt=30.
-        launcher=kdv.kdvLauncher(param, maxA)
+        launcher=kdv.kdvLauncher(param, dt=dt)
         print(launcher)
         traj=launcher.integrate(ic, tInt)
         
@@ -137,35 +143,26 @@ Configuring and launching an integration
         fNLPert=launcher.integrate(ic+pert, tInt).final-traj.final
         
         
-        #----| Gradient test |------------------------
-        tlmLauncher.gradTest(ic)
-        
         #----| Plotting the result |------------------
         plt.figure(figsize=(12.,12.))
-        subplt1=plt.subplot(411)
-        subplt2=plt.subplot(412)
-        subplt3=plt.subplot(413)
-        subplt4=plt.subplot(414)
+        subplt1=plt.subplot(311)
+        subplt2=plt.subplot(312)
+        subplt3=plt.subplot(313)
         
         traj.waterfall(axe=subplt1)
         subplt1.legend([r"$x(t)$"], loc="best")
         
-        for i in xrange(4):
-            subplt2.plot(grid.x, param[i])
-        subplt2.plot(grid.x, param[4]*100.)
-        subplt2.legend([r"$f$", r"$\alpha$", r"$\beta$", r"$\gamma$", r"$\rho\times100$"], loc='best')
-        subplt2.set_ylim(param.min()*1.1, param.max()*1.1)
         
-        subplt3.plot(grid.x, pert, 'k:')
-        subplt3.plot(grid.x, fLinearPert, 'g')
-        subplt3.plot(grid.x, fNLPert, 'b')
-        subplt3.legend(["$\delta x$", "$\mathbf{L}\delta x$", 
+        subplt2.plot(grid.x, pert, 'k:')
+        subplt2.plot(grid.x, fLinearPert, 'g')
+        subplt2.plot(grid.x, fNLPert, 'b')
+        subplt2.legend(["$\delta x$", "$\mathbf{L}\delta x$", 
                         "$\mathcal{M}(x+\delta x)-\mathcal{M}(x)$"],
                         loc='best')
         
         
-        traj.fftTraj().waterfall(axe=subplt4, color='r')
-        subplt4.legend([ "$N_{trc}="+str(Ntrc)+"$", r"$\mathcal{F}[x(t)]$"], loc="best")
+        traj.fftTraj().waterfall(axe=subplt3, color='r')
+        subplt3.legend([ "$N_{trc}="+str(Ntrc)+"$", r"$\mathcal{F}[x(t)]$"], loc="best")
         
         plt.show()
 

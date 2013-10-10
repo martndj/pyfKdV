@@ -2,6 +2,7 @@ import numpy as np
 
 from pseudoSpec1D import *
 from kdvParam import *
+from kdvMisc import dtStable
 
 import fKdV
 
@@ -24,7 +25,7 @@ class kdvLauncher(Launcher):
     #----| Init |------------------------------------------
     #------------------------------------------------------
 
-    def __init__(self, param, maxA, dtMod=0.7):
+    def __init__(self, param, dt=None, maxA=3.):
 
         if not (isinstance(param, Param)):
             raise self.kdvLauncherError(
@@ -32,10 +33,13 @@ class kdvLauncher(Launcher):
 
         self.grid=param.grid
         self.param=param
+        self.isTimeDependant=self.param.isTimeDependant
         
-        self.dtMod=dtMod
-        self.dt=self.dtMod*self.dtStable(maxA)
         self.maxA=maxA
+        if dt==None:
+            self.dt=self.dtStable(self.maxA)
+        else:
+            self.dt=dt
 
         self.propagator=self.__kdvProp_Fortran
 
@@ -61,7 +65,7 @@ class kdvLauncher(Launcher):
 
     #------------------------------------------------------
 
-    def dtStable(self, maxA):
+    def dtStable(self, maxA, dtMod=0.7):
         """
         Stable time incremement
 
@@ -69,19 +73,12 @@ class kdvLauncher(Launcher):
 
             maxA    :   expected maximum amplitude <float>
         """
-    
-        maxK=2.0*np.pi*self.grid.Ntrc/self.grid.L
-        denom=np.zeros(shape=self.grid.N)
-        denom=np.sqrt((self.param[3]*maxK**3-self.param[1]*maxK
-                            -self.param[2]*maxA*maxK)**2
-                       +self.param[4]**2)
-
-        dt=1./denom.max()
-        return dt
+        return dtStable(self.grid, self.param, maxA, dtMod=dtMod)
 
     #------------------------------------------------------
     #----| Private methods |-------------------------------
     #------------------------------------------------------
+
 
     def __kdvProp_Fortran(self, ic, traj):
         
@@ -90,10 +87,19 @@ class kdvLauncher(Launcher):
         param=self.param
         tReal=0.
 
+        # to be corrected
+        if (not (param.nDt==0 and param.dt==0.)
+            and (self.dt <> param.dt)):
+            raise self.kdvLauncherError(
+                    "incompatible parameter time increment (%f, %f)"%(
+                                                        self.dt, param.dt))
+        
         trajData=fKdV.fKdVPropagator(
                     grid.N, grid.Ntrc, grid.L, self.dt, self.nDt,
-                    ic, param[1], param[2], param[3], param[4],
-                    param[0]
+                    param.nDt,
+                    ic, param[1].getData(), param[2].getData(),
+                    param[3].getData(), param[4].getData(),
+                    param[0].getData()
                     )
 
         tReal=traj.nDt*traj.dt
@@ -102,30 +108,41 @@ class kdvLauncher(Launcher):
 
         return traj
 
-
 #====================================================================
 #--------------------------------------------------------------------
 #====================================================================
 
 if __name__=='__main__':
     
-    from kdvMisc import gauss, soliton
+    from kdvMisc import gauss, soliton, dtStable
     grid=PeriodicGrid(150,300.)
     tInt=50.
     maxA=2.
     
-    def gaussNeg(x):
+    def gaussNeg(x,t):
         x0=0.
         sig=5.
         return -0.1*gauss(x, x0, sig) 
-    def sinus(x):
+    def sinus(x,t):
         return 0.1*np.sin(2.*2*np.pi*x/150.)
 
-    param=Param(grid, beta=1., gamma=-1., rho=gaussNeg, forcing=sinus)
+    def funcTimeDependant(x, t):
+        return 0.1*np.sin(x/50.)*np.cos(t/10.)
+
+    dt=dtStable(grid, Param(grid, beta=1.,gamma=-1., rho=0.1),
+                    maxA, dtMod=0.7)
+    nDtParam=int(tInt/dt)
+
+
+    param=Param(grid, beta=1., gamma=-1., rho=gaussNeg,
+                forcing=funcTimeDependant, 
+                nDt=nDtParam, dt=dt)
+    paramStatic=Param(grid, beta=1., gamma=-1.)
+
     ic=soliton(grid.x, 1., beta=1., gamma=-1. )
 
     # NL model integration
-    launcher=kdvLauncher(param, maxA)
+    launcher=kdvLauncher(param, maxA, dt=dt)
     
     traj=launcher.integrate(ic, tInt)
     axe=traj.waterfall()

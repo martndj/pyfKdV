@@ -6,20 +6,21 @@ implicit none
 contains
 !====================================================================
 
+function kdvTLMPropagator(N, Ntrc, L, dt, nDt, nDtParam, tReal, &
+                                u, p0, &
+                                alph, beta, gamm, rho, pTraj) &
+                                result(pf)
 
-function kdvTLMPropagator(N, Ntrc, L, dt, nDt, tReal, u, p0, &
-                            alph, beta, gamm, rho, pTraj) &
-                            result(pf)
-
-    intent(in)              ::  N, Ntrc, L, dt, nDt, u, p0, &
+    intent(in)              ::  N, Ntrc, L, dt, nDt, nDtParam, u, p0, &
                                 alph, beta, gamm, rho
     optional                ::  pTraj
 
     double precision        ::  L, dt, tReal
-    integer                 ::  N, Ntrc, nDt, j
+    integer                 ::  N, Ntrc, nDt, nDtParam, j
     
-    double precision, dimension(N)          ::  alph, beta, gamm, rho, &
-                                                p0, pf
+    double precision, dimension(N)          ::  p0, pf
+    double precision, dimension(nDtParam+1, N)&
+                                            ::  alph, beta, gamm, rho 
 
     double precision, dimension(3, N)       ::  pBuff
     double precision, dimension(nDt+1, N)   ::  u, pTraj
@@ -35,7 +36,8 @@ function kdvTLMPropagator(N, Ntrc, L, dt, nDt, tReal, u, p0, &
 
     !premier pas avec Euler-avant
     ! E1
-    pBuff=opE1(N, Ntrc, L, dt, u(1,:), pBuff, alph, beta, gamm, rho)
+    pBuff=opE1(N, Ntrc, L, dt, u(1,:), pBuff, alph(1,:), beta(1,:),&
+                gamm(1,:), rho(1,:))
     if (present(pTraj)) pTraj(2,:)=pBuff(2,:)
     tReal=tReal+dt
 
@@ -43,8 +45,15 @@ function kdvTLMPropagator(N, Ntrc, L, dt, nDt, tReal, u, p0, &
     ! Qj , j=2, nDt
     if (nDt.ne.1) then
     do j=2,nDt
-        ! Pj
-        pBuff=opPn(N, Ntrc, L, dt, u(j,:), pBuff, alph, beta, gamm, rho)
+        if (j.le.nDtParam+1) then
+            ! Pj
+            pBuff=opPn(N, Ntrc, L, dt, u(j,:), pBuff, &
+                        alph(j,:), beta(j,:), gamm(j,:), rho(j,:))
+        else
+            pBuff=opPn(N, Ntrc, L, dt, u(j,:), pBuff, &
+                        alph(nDtParam+1,:), beta(nDtParam+1,:), &
+                        gamm(nDtParam+1,:), rho(nDtParam+1,:))
+        end if
         ! S
         pBuff=opS(N, pBuff)
         if (present(pTraj)) pTraj(j+1,:)=pBuff(3,:)
@@ -66,19 +75,21 @@ end function kdvTLMPropagator
 
 !-------------------------------------------------------------------!
 
-function kdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, tReal, u, pf, &
-                            alph, beta, gamm, rho, aTraj) &
-                            result(adj)
+function kdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, nDtParam, tReal,&
+                                u, pf, &
+                                alph, beta, gamm, rho, aTraj) &
+                                result(adj)
 
-    intent(in)              ::  N, Ntrc, L, dt, nDt, u, pf, &
+    intent(in)              ::  N, Ntrc, L, dt, nDt, nDtParam, u, pf, &
                                 alph, beta, gamm, rho
     optional                ::  aTraj
 
     double precision        ::  L, dt, tReal
-    integer                 ::  N, Ntrc, nDt, j
+    integer                 ::  N, Ntrc, nDt, nDtParam, j
     
-    double precision, dimension(N)          ::  alph, beta, gamm, rho, &
-                                                pf, adj
+    double precision, dimension(N)          ::  pf, adj
+    double precision, dimension(nDtParam+1, N)&
+                                            ::  alph, beta, gamm, rho 
 
     double precision, dimension(3, N)       ::  aBuff
     double precision, dimension(nDt+1, N)   ::  u, aTraj
@@ -107,15 +118,23 @@ function kdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, tReal, u, pf, &
         tReal=tReal+dt
         ! S*
         aBuff=opSAdj(N, aBuff)
-        ! Pj*
-        aBuff=opPnAdj(N, Ntrc, L, dt, u(j,:), aBuff, alph, beta, gamm, rho)
+        if (j.le.nDtParam+1) then
+            ! Pj*
+            aBuff=opPnAdj(N, Ntrc, L, dt, u(j,:), aBuff,&
+                            alph(j,:), beta(j,:), gamm(j,:), rho(j,:))
+        else
+            aBuff=opPnAdj(N, Ntrc, L, dt, u(j,:), aBuff,&
+                            alph(nDtParam+1,:), beta(nDtParam+1,:),&
+                            gamm(nDtParam+1,:), rho(nDtParam+1,:))
+        end if
     end do
     end if
 
     ! E1*              
     if (present(aTraj)) aTraj(2,:)=aBuff(2,:)
     tReal=tReal+dt
-    aBuff=opE1Adj(N, Ntrc, L, dt, u(1,:), aBuff, alph, beta, gamm, rho)
+    aBuff=opE1Adj(N, Ntrc, L, dt, u(1,:), aBuff, alph(1,:), beta(1,:),&
+                    gamm(1,:), rho(1,:))
     ! I*
     adj=aBuff(1,:)
     ! F* : Filtration *
@@ -127,25 +146,28 @@ end function kdvTLMPropagatorAdj
 !-------------------------------------------------------------------!
 
 
-function kdvTLMSingularOp(N, Ntrc, L, dt, nDt, tReal, u, x, &
-                            alph, beta, gamm, rho) &
-                            result(y)
+function kdvTLMSingularOp(N, Ntrc, L, dt, nDt, nDtParam, tReal,&
+                                u, x, &
+                                alph, beta, gamm, rho) &
+                                result(y)
 
-    intent(in)              ::  N, Ntrc, L, dt, nDt, u, x, &
+    intent(in)              ::  N, Ntrc, L, dt, nDt, nDtParam, u, x, &
                                 alph, beta, gamm, rho
 
     double precision        ::  L, dt, tReal
-    integer                 ::  N, Ntrc, nDt
+    integer                 ::  N, Ntrc, nDt, nDtParam
     
-    double precision, dimension(N)          ::  alph, beta, gamm, rho, &
-                                                x, y
+    double precision, dimension(nDtParam+1, N)&
+                                            ::  alph, beta, gamm, rho 
+    double precision, dimension(N)          ::  x, y
     double precision, dimension(nDt+1, N)   ::  u
 
-    y=kdvTLMPropagator(N, Ntrc, L, dt, nDt, tReal, u, x, &
+    y=kdvTLMPropagator(N, Ntrc, L, dt, nDt, nDtParam, tReal, u, x, &
                             alph, beta, gamm, rho)
-    y=kdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, tReal, u, y, &
-                        alph, beta, gamm, rho)
+    y=kdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, nDtParam, tReal,&
+                                u, y, alph, beta, gamm, rho)
 end function kdvTLMSingularOp
+
 
 !----| Linear differential operators and adjoint |------------------!
 !-------------------------------------------------------------------!

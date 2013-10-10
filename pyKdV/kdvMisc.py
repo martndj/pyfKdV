@@ -79,3 +79,29 @@ def gauss(x, x0, sig):
     return np.exp(-((x-x0)**2)/(2*sig**2))
 
 
+def dtStable(grid, param, maxA, dtMod=0.7):
+    """
+    Stable time incremement
+
+        dtStable(grid, param, maxA)
+
+        grid    :   <Grid>
+        maxA    :   expected maximum amplitude <float>
+        param   :   KdV parameters <Param>
+    """
+
+    minRho=param[4].min()
+    maxRho=param[4].max()
+    if np.abs(minRho)>np.abs(maxRho):
+        maxAbsRho=np.abs(minRho)
+    else:
+        maxAbsRho=np.abs(maxRho)
+
+    maxK=2.0*np.pi*grid.Ntrc/grid.L
+    denom=np.zeros(shape=grid.N)
+    denom=np.sqrt((param[3].max()*maxK**3-param[1].min()*maxK
+                        -param[2].min()*maxA*maxK)**2
+                   +maxAbsRho**2)
+
+    dt=1./denom
+    return dtMod*dt

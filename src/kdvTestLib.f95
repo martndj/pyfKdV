@@ -423,30 +423,33 @@ end function testKdvTLMPseudoSpecAdj
 !-------------------------------------------------------------------!
 
 
-function testKdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, pAmp, diff,&
-                                    u, x, y, alph, beta, gamm, rho)
+function testKdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, nDtParam, pAmp,&
+                                    diff, u, x, y, &
+                                    alph, beta, gamm, rho)
 
-    intent(in)                      ::  N, Ntrc, L, dt, nDt, pAmp, &
-                                        u, x, y, alph, beta, gamm, rho
+    intent(in)                      ::  N, Ntrc, L, dt, nDt, nDtParam, &
+                                        pAmp, u, x, y, &
+                                        alph, beta, gamm, rho
     intent(out)                     ::  diff
 
-    integer                         ::  N, Ntrc, nDt, j, k
+    integer                         ::  N, Ntrc, nDt, nDtParam, j, k
     
-    double precision, dimension(N)  ::  alph, beta, gamm, rho, &
-                                        x, y, Ly, LAdj_x
+    double precision, dimension(N)  ::  x, y, Ly, LAdj_x
     double precision                ::  L, diff, pAmp, dt, tReal, tRealAdj
     logical                         ::  testKdvTLMPropagatorAdj
     
-    double precision, dimension(nDt+1, N)  ::  u
+    double precision, dimension(nDtParam+1, N)&
+                                            ::  alph, beta, gamm, rho
+    double precision, dimension(nDt+1, N)   ::  u
 
     double precision, parameter     :: tolerance=1D-14
 
     tReal=0D0
     tRealAdj=0D0
 
-    Ly=kdvTLMPropagator(N, Ntrc, L, dt, nDt, tReal,&
+    Ly=kdvTLMPropagator(N, Ntrc, L, dt, nDt, nDtParam, tReal,&
                         u, y, alph, beta, gamm, rho)
-    LAdj_x=kdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, tRealAdj, &
+    LAdj_x=kdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, nDtParam, tRealAdj,&
                         u, x, alph, beta, gamm, rho)
     ! tReal coherence
     if (tRealAdj.ne.tReal) then 
@@ -466,7 +469,7 @@ end function testKdvTLMPropagatorAdj
 !-------------------------------------------------------------------!
 !-------------------------------------------------------------------!
 
-subroutine testGradient(N, Ntrc, L, dt, nDt, maxPower, &
+subroutine testGradient(N, Ntrc, L, dt, nDt, nDtParam, maxPower, &
                         u, x, alph, beta, gamm, rho)
     !
     !   J(x-eps\grad J)-J(x)
@@ -476,28 +479,30 @@ subroutine testGradient(N, Ntrc, L, dt, nDt, maxPower, &
     !   <!> doit être valable jusqu'à la 
     !       *moitié* de la précision du type
     !------------------------------------------------------
-    intent(in)                      ::  N, Ntrc, L, dt, nDt, &
+    intent(in)                      ::  N, Ntrc, L, dt, nDt, nDtParam, &
                                         maxPower, &
                                         u, x, alph, beta, gamm, rho
 
-    integer                         ::  N, Ntrc, nDt, maxPower, j, k, pow
+    integer                         ::  N, Ntrc, nDt, nDtParam, &
+                                        maxPower, j, k, pow
     
-    double precision, dimension(N)  ::  alph, beta, gamm, rho, &
-                                        x, grad
+    double precision, dimension(N)  ::  x, grad
     double precision                ::  L, res, pAmp, dt, &
                                         tRealFct, tRealGrad, &
                                         eps, Jeps, J0
     
-    double precision, dimension(nDt+1, N)  ::  u
+    double precision, dimension(nDtParam+1, N)&
+                                            ::  alph, beta, gamm, rho
+    double precision, dimension(nDt+1, N)   ::  u
 
     double precision, parameter     :: tolerance=1D-14
     !logical                         ::  test, testGradient
 
 
-    J0=fctCout(N, Ntrc, L, dt, nDt, tRealFct, u, x, &
+    J0=fctCout(N, Ntrc, L, dt, nDt, nDtParam, tRealFct, u, x, &
                         alph, beta, gamm, rho )
 
-    grad=gradFC(N, Ntrc, L, dt, nDt, tRealGrad, u, x, &
+    grad=gradFC(N, Ntrc, L, dt, nDt, nDtParam, tRealGrad, u, x, &
                         alph, beta, gamm, rho )
 
 
@@ -510,58 +515,56 @@ subroutine testGradient(N, Ntrc, L, dt, nDt, maxPower, &
     
     do pow=-1,maxPower, -1
         eps=1D1**pow
-        Jeps=fctCout(N, Ntrc, L, dt, nDt, tRealFct, u, x-eps*grad, &
-                        alph, beta, gamm, rho )
+        Jeps=fctCout(N, Ntrc, L, dt, nDt, nDtParam, tRealFct,&
+                        u, x-eps*grad, alph, beta, gamm, rho )
 
         res=((J0-Jeps)/(eps*scalar_product(grad,grad)))
 
-        !test=dabs(1D0-res).lt.eps
-        !if ((pow>=-7) .and. (.not. test)) then
-        !    testGradient=.false.
-        !end if
         
         if (pow.eq.-8) then
             print*,"--------------| half type precision |-----------------"
         end if
-        !print"(A I3  E23.15  F20.15 F20.15 A L1)",&
-        !     "10^",pow, Jeps, res, 1D0-res, " ",test
         print"(A I3  E23.15  F20.15)",&
              "10^",pow, Jeps, res
     end do
     contains
     !------------------------------------------------------
-    function fctCout(N, Ntrc, L, dt, nDt, tReal, u, x, &
+    function fctCout(N, Ntrc, L, dt, nDt, nDtParam, tReal, u, x, &
                         alph, beta, gamm, rho )
 
-        intent(in)                      ::  N, Ntrc, L, dt, nDt, u, x, &
+        intent(in)                      ::  N, Ntrc, L, dt, nDt, &
+                                            nDtParam, u, x, &
                                             alph, beta, gamm, rho
-        integer                         ::  N, Ntrc, nDt
+        integer                         ::  N, Ntrc, nDt, nDtParam
     
-        double precision, dimension(N)  ::  alph, beta, gamm, rho, &
-                                            x, Lx
+        double precision, dimension(N)  ::  x, Lx
         double precision                ::  fctCout, dt, L, tReal
+        double precision, dimension(nDtParam+1, N)&
+                                            ::  alph, beta, gamm, rho
         double precision, dimension(nDt+1,N)    ::  u
         
-        Lx=kdvTLMPropagator(N, Ntrc, L, dt, nDt, tReal,&
+        Lx=kdvTLMPropagator(N, Ntrc, L, dt, nDt, nDtParam, tReal,&
                             u, x, alph, beta, gamm, rho)
         
         fctCout=scalar_product(Lx,Lx)/2D0
     end function fctCout
 
-    function gradFC(N, Ntrc, L, dt, nDt, tReal, u, x, &
+    function gradFC(N, Ntrc, L, dt, nDt, nDtParam, tReal, u, x, &
                         alph, beta, gamm, rho )
-        intent(in)                      ::  N, Ntrc, L, dt, nDt, u, x, &
+        intent(in)                      ::  N, Ntrc, L, dt, nDt,&
+                                            nDtParam, u, x, &
                                             alph, beta, gamm, rho
-        integer                         ::  N, Ntrc, nDt
+        integer                         ::  N, Ntrc, nDt, nDtParam
     
-        double precision, dimension(N)  ::  alph, beta, gamm, rho, &
-                                            x, gradFC
+        double precision, dimension(N)  ::  x, gradFC
         double precision                ::  dt, L, tReal
+        double precision, dimension(nDtParam+1, N)&
+                                            ::  alph, beta, gamm, rho
         double precision, dimension(nDt+1,N)    ::  u
 
 
-        gradFC=kdvTLMSingularOp(N, Ntrc, L, dt, nDt, tReal, u, x, &
-                                alph, beta, gamm, rho) 
+        gradFC=kdvTLMSingularOp(N, Ntrc, L, dt, nDt, nDtParam, tReal,&
+                                u, x, alph, beta, gamm, rho) 
     end function gradFC
 
 end subroutine testGradient
@@ -569,7 +572,7 @@ end subroutine testGradient
 !-------------------------------------------------------------------!
 !-------------------------------------------------------------------!
 
-subroutine NLTestGradient(N, Ntrc, L, dt, nDt, maxPower, &
+subroutine NLTestGradient(N, Ntrc, L, dt, nDt, nDtParam, maxPower, &
                             x, alph, beta, gamm, rho, forc)
     !
     !   J(x-eps\grad J)-J(x)
@@ -580,27 +583,29 @@ subroutine NLTestGradient(N, Ntrc, L, dt, nDt, maxPower, &
     !   gradJ(x)=L*M(x)
     !------------------------------------------------------
     intent(in)                      ::  N, Ntrc, L, dt, nDt, &
-                                        maxPower, &
+                                        nDtParam, maxPower, &
                                         x, alph, beta, gamm, rho, forc
 
-    integer                         ::  N, Ntrc, nDt, maxPower, j, k, pow
+    integer                         ::  N, Ntrc, nDt, nDtParam, &
+                                        maxPower, j, k, pow
     
-    double precision, dimension(N)  ::  alph, beta, gamm, rho, forc, &
-                                        x, grad
+    double precision, dimension(N)  ::  x, grad
     double precision                ::  L, res, pAmp, dt, &
                                         tRealFct, tRealGrad, &
                                         eps, Jeps, J0, grad2
     
+    double precision, dimension(nDtParam+1, N) &
+                                        ::  alph, beta, gamm, rho, forc
     double precision, dimension(nDt+1, N)  ::  u
 
     double precision, parameter     :: tolerance=1D-14
     !logical                         ::  test, testGradient
 
 
-    J0=fctCout(N, Ntrc, L, dt, nDt, tRealFct, u, x, &
+    J0=fctCout(N, Ntrc, L, dt, nDt, nDtParam, tRealFct, u, x, &
                         alph, beta, gamm, rho, forc )
 
-    grad=gradFC(N, Ntrc, L, dt, nDt, tRealGrad, u, &
+    grad=gradFC(N, Ntrc, L, dt, nDt, nDtParam, tRealGrad, u, &
                         alph, beta, gamm, rho )
     grad2=scalar_product(grad,grad)
 
@@ -614,176 +619,61 @@ subroutine NLTestGradient(N, Ntrc, L, dt, nDt, maxPower, &
     
     do pow=-1,maxPower, -1
         eps=1.0D1**pow
-        Jeps=fctCout(N, Ntrc, L, dt, nDt, tRealFct, u, x-eps*grad, &
-                        alph, beta, gamm, rho, forc)
+        Jeps=fctCout(N, Ntrc, L, dt, nDt, nDtParam, tRealFct,&
+                        u, x-eps*grad, alph, beta, gamm, rho, forc)
 
         res=((J0-Jeps)/(eps*grad2))
 
-        !test=dabs(1D0-res).lt.eps
-        !if ((pow>=-7) .and. (.not. test)) then
-        !    testGradient=.false.
-        !end if
-        
         if (pow.eq.-8) then
             print*,"--------------| half type precision |-----------------"
         end if
-        !print"(A I3  E23.15  F20.15 F20.15 A L1)",&
-        !     "10^",pow, Jeps, res, 1D0-res, " ",test
         print"(A I3  D23.15  D23.15)",&
              "10^",pow, Jeps, res
     end do
     contains
     !------------------------------------------------------
-    function fctCout(N, Ntrc, L, dt, nDt, tReal, u, x, &
+    function fctCout(N, Ntrc, L, dt, nDt, nDtParam, tReal, u, x, &
                         alph, beta, gamm, rho, forc)
 
-        intent(in)                      ::  N, Ntrc, L, dt, nDt, x, &
+        intent(in)                      ::  N, Ntrc, L, dt, nDt, &
+                                            nDtParam, x, &
                                             alph, beta, gamm, rho, forc
         intent(out)                     ::  u
-        integer                         ::  N, Ntrc, nDt
+        integer                         ::  N, Ntrc, nDt, nDtParam
     
-        double precision, dimension(N)  ::  alph, beta, gamm, rho, forc,&
-                                            x, Mx
+        double precision, dimension(N)  ::  x, Mx
         double precision                ::  fctCout, dt, L, tReal
+
+        double precision, dimension(nDtParam+1, N)&
+                                        ::  alph, beta, gamm, rho, forc
         double precision, dimension(nDt+1,N)    ::  u
         
-        u=kdvPropagator(N, Ntrc, L, dt, nDt, tReal,&
+        u=kdvPropagator(N, Ntrc, L, dt, nDt, nDtParam, tReal,&
                             x, alph, beta, gamm, rho, forc)
         Mx=u(nDt+1, :)
         fctCout=scalar_product(Mx,Mx)/2.0D0
     end function fctCout
 
-    function gradFC(N, Ntrc, L, dt, nDt, tReal, u, &
+    function gradFC(N, Ntrc, L, dt, nDt, nDtParam, tReal, u, &
                         alph, beta, gamm, rho )
-        intent(in)                      ::  N, Ntrc, L, dt, nDt, u, &
+        intent(in)                      ::  N, Ntrc, L, dt, nDt, &
+                                            nDtParam, u, &
                                             alph, beta, gamm, rho
-        integer                         ::  N, Ntrc, nDt
+        integer                         ::  N, Ntrc, nDt, nDtParam
     
-        double precision, dimension(N)  ::  alph, beta, gamm, rho, &
-                                            x, gradFC
+        double precision, dimension(N)  ::  x, gradFC
         double precision                ::  dt, L, tReal
+
+        double precision, dimension(nDtParam+1, N)&
+                                        ::  alph, beta, gamm, rho
         double precision, dimension(nDt+1,N)    ::  u
 
         x=u(nDt+1, :)
-        gradFC=kdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, tReal, u, x, & 
-                                     alph, beta, gamm, rho) 
+        gradFC=kdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, nDtParam, &
+                                    tReal, u, x, alph, beta, gamm, rho) 
     end function gradFC
 
 end subroutine NLTestGradient
-
-
-!-------------------------------------------------------------------!
-
-subroutine LTStepTestGradient(N, Ntrc, L, dt, maxPower, &
-                            xSeed, nSpinUp, alph, beta, gamm, rho, forc)
-    !
-    !   J(x-eps\grad J)-J(x)
-    !   --------------------  -1 < O(eps) ?
-    !     eps||\grad J||^2
-    !
-    !   J(x)=1/2||M(x)||^2
-    !   gradJ(x)=L*M(x)
-    !------------------------------------------------------
-    intent(in)                      ::  N, Ntrc, L, dt, nSpinUp, &
-                                        maxPower, &
-                                        xSeed, alph, beta, gamm, rho, forc
-
-    integer                         ::  N, Ntrc,  maxPower, j, k, pow, &
-                                        nSpinUp
-    
-    double precision, dimension(N)  ::  alph, beta, gamm, rho, forc, &
-                                        xSeed 
-    double precision                ::  L, res, pAmp, dt, &
-                                        tRealFct, tRealGrad, &
-                                        eps, Jeps, J0
-    
-    double precision, dimension(3, N)           ::  xBuff, grad
-    double precision, dimension(nSpinUp+1, N)   ::  spinUp
-    double precision, dimension(N)       ::  u
-
-    double precision, parameter     :: tolerance=1D-14
-    !logical                         ::  test, testGradient
-
-    spinUp=kdvPropagator(N, Ntrc, L, dt, nSpinUp, tRealFct,&
-                            xSeed, alph, beta, gamm, rho, forc)
-    xBuff(1,:)=spinUp(nSpinUp,:)
-    xBuff(2,:)=spinUp(nSpinUp+1,:)
-    xBuff(3,:)=0.0D0
-
-    J0=fctCout(N, Ntrc, L, dt, tRealFct, u, xBuff, &
-                        alph, beta, gamm, rho, forc)
-
-    grad=gradFC(N, Ntrc, L, dt, tRealGrad, u, &
-                        alph, beta, gamm, rho, forc)
-
-
-    print"(A E23.15)", "  J(x):         ",J0 
-    print"(A E23.15)", "  |gradJ(x)|^2: ", scalarNVec(grad,grad, 3, N)
-
-    print*,"------------------------------------------------------"
-    
-    print"(A 5X A 18X A 13X A 20X)", "eps","J(x-eps.gradJ)","res"
-    
-    do pow=-1,maxPower, -1
-        eps=1.0D1**pow
-        Jeps=fctCout(N, Ntrc, L, dt, tRealFct, u, xBuff-eps*grad, &
-                        alph, beta, gamm, rho, forc)
-
-        res=((J0-Jeps)/(eps*scalarNVec(grad,grad, 3, N)))
-
-        
-        if (pow.eq.-8) then
-            print*,"--------------| half type precision |-----------------"
-        end if
-        print"(A I3  D23.15  D23.15)",&
-             "10^",pow, Jeps, res
-    end do
-    contains
-    !------------------------------------------------------
-    function fctCout(N, Ntrc, L, dt, tReal, u, xBuff, &
-                        alph, beta, gamm, rho, forc)
-
-        intent(in)                      ::  N, Ntrc, L, dt,  &
-                                            alph, beta, gamm, rho, forc
-        intent(out)                     ::  u
-        integer                         ::  N, Ntrc
-    
-        double precision, dimension(N)  ::  alph, beta, gamm, rho, forc
-        double precision                ::  fctCout, dt, L, tReal
-        double precision, dimension(3, N)       ::  xBuff
-        double precision, dimension(N)   ::  u
-        
-
-        u=leapfrogTrapezStep(N, Ntrc, L, xBuff(2,:), xBuff(1,:), dt, &
-                                alph, beta, gamm, rho, forc)
-
-        fctCout=scalar_product(u,u)/2.0D0
-    end function fctCout
-
-    function gradFC(N, Ntrc, L, dt, tReal, u, &
-                        alph, beta, gamm, rho, forc)
-
-        intent(in)                      ::  N, Ntrc, L, dt, u, &
-                                            alph, beta, gamm, rho, forc
-        integer                         ::  N, Ntrc
-    
-        double precision, dimension(N)  ::  alph, beta, gamm, rho, forc
-        double precision                ::  fctCout, dt, L, tReal
-
-        double precision, dimension(3, N)       ::  aBuff, gradFC
-        double precision, dimension(N)   ::  u
-        ! R*
-        aBuff(3,:)=u
-        aBuff(2,:)=0.0D0
-        aBuff(1,:)=0.0D0
-
-        aBuff=opPnAdj(N, Ntrc, L, dt, u, aBuff, &
-                            alph, beta, gamm, rho)
-
-        gradFC=aBuff
-    end function gradFC
-
-end subroutine LTStepTestGradient
 
 
 end module kdvTLMTest

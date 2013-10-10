@@ -29,8 +29,9 @@ class kdvTLMLauncher(TLMLauncher):
         if not(isinstance(param, Param)):
             raise self.kdvTLMLauncherError("param <Param>")
 
-        self.param=param
         self.grid=param.grid
+        self.param=param
+        self.isTimeDependant=self.param.isTimeDependant
 
         self.isInitialized=False 
         if not traj==None: self.initialize(traj)
@@ -43,6 +44,8 @@ class kdvTLMLauncher(TLMLauncher):
 
         self.propagator=self.__kdvTLMProp_Fortran
         self.propagatorAdj=self.__kdvTLMProp_Fortran_Adj
+        self.propagatorSing=self.__kdvTLMSingularOp_Fortran
+        self.propagatorGradTest=self.__kdvTLMGradTest_Fortran
     
     #------------------------------------------------------
     #----| Public methods |--------------------------------
@@ -103,7 +106,7 @@ class kdvTLMLauncher(TLMLauncher):
             specFilt(pert, self.grid)
         super(kdvTLMLauncher, self)._timeValidation(tInt, t0)
 
-        return self.__kdvTLMSingularOp_Fortran(pert)
+        return self.propagatorSing(pert)
 
     #----| Diagnostics |------------------------------------
     #-------------------------------------------------------
@@ -112,7 +115,8 @@ class kdvTLMLauncher(TLMLauncher):
         """
         Gradient test
 
-            Check consistency between the TLM adjoint and the
+            Check consisten__kdvTLMGradTest_Fortran
+ucy between the TLM adjoint and the
             nonlinear model.
 
             J(x)    =0.5|M(x)|^2
@@ -138,41 +142,29 @@ class kdvTLMLauncher(TLMLauncher):
             raise self.kdvTLMLauncherError("ic.shape = (launcher.grid.N,)")
         super(kdvTLMLauncher, self)._timeValidation(tInt, t0)
 
-        grid=self.grid
-        param=self.param
-        fKdV.fKdVTestGradient(grid.N, grid.Ntrc, grid.L, 
-                self.dt, self.nDt, maxPow, ic,
-                param[1], param[2], param[3], param[4], param[0])
+        self.propagatorGradTest(ic, maxPow)
+
 
     #------------------------------------------------------
     #----| Private methods          |----------------------
     #----| Propagator (and adjoint) |-----------------------
     #------------------------------------------------------
 
-    def __kdvTLMProp_Fortran(self, pert, fullOutput=False):
+
+    def __kdvTLMProp_Fortran(self, pert):
 
         # Local variables names
         grid=self.grid
         param=self.param
 
-        if self.fullPertTraj:
-            self.pertTraj.putData(fKdV.fKdVTLMPropagator(
-                grid.N, grid.Ntrc, grid.L, self.dt, self.nDt, pert, 
+        fPert=fKdV.fKdVTLMPropagator(
+                grid.N, grid.Ntrc, grid.L, self.dt, self.nDt, param.nDt,
+                pert, 
                 self.refTraj.getData()[self.nDt0:self.nDt0+self.nDt+1],
-                param[1], param[2], param[3], param[4],
-                fullTraj=True))
+                param[1].getData(), param[2].getData(), param[3].getData(),
+                param[4].getData(), fullTraj=False)
 
-            tReal=self.nDt*self.dt
-            self.pertTraj.incrmTReal(finished=True, tReal=tReal)
-            fPert=self.pertTraj[self.nDt]
-        else:
-            fPert=fKdV.fKdVTLMPropagator(
-                grid.N, grid.Ntrc, grid.L, self.dt, self.nDt, pert, 
-                self.refTraj.getData()[self.nDt0:self.nDt0+self.nDt+1],
-                param[1], param[2], param[3], param[4], 
-                fullTraj=False)
-
-            tReal=self.nDt*self.dt
+        tReal=self.nDt*self.dt
 
         self.incrmTReal(finished=True, tReal=tReal)
         return fPert
@@ -187,10 +179,11 @@ class kdvTLMLauncher(TLMLauncher):
         param=self.param
 
         aPert=fKdV.fKdVTLMPropagatorAdj(
-                grid.N, grid.Ntrc, grid.L, self.dt, self.nDt, pert,
+                grid.N, grid.Ntrc, grid.L, self.dt, self.nDt, param.nDt,
+                pert,
                 self.refTraj.getData()[self.nDt0:self.nDt0+self.nDt+1],
-                param[1], param[2], param[3], param[4], 
-                fullTraj=False)
+                param[1].getData(), param[2].getData(),
+                param[3].getData(), param[4].getData())
 
         tReal=self.nDt*self.dt
 
@@ -206,17 +199,31 @@ class kdvTLMLauncher(TLMLauncher):
         param=self.param
 
         LAdjLx=fKdV.fKdVTLMSingularOp(
-                grid.N, grid.Ntrc, grid.L, self.dt, self.nDt, pert,
+                grid.N, grid.Ntrc, grid.L, self.dt, self.nDt, param.nDt,
+                pert,
                 self.refTraj.getData()[self.nDt0:self.nDt0+selfnDt+1],
-                param[1], param[2], param[3], param[4])
+                param[1].getData(), param[2].getData(), param[3].getData(),
+                param[4].getData())
 
         tReal=2.*self.nDt*self.dt
 
         self.incrmTReal(finished=True, tReal=tReal)
         return LAdjLx
 
+        
+        
+    #------------------------------------------------------
 
-
+    def __kdvTLMGradTest_Fortran(self, ic, maxPow):
+        
+        grid=self.grid
+        param=self.param
+        
+        fKdV.fKdVTestGradient(grid.N, grid.Ntrc, grid.L, 
+                self.dt, self.nDt, param.nDt, maxPow, ic,
+                param[1].getData(), param[2].getData(), 
+                param[3].getData(), param[4].getData(),
+                param[0].getData())
 #--------------------------------------------------------------------
 #====================================================================
 #--------------------------------------------------------------------

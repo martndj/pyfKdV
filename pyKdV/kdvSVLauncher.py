@@ -29,7 +29,7 @@ class kdvSVLauncher(object):
     #----| Init |------------------------------------------
     #------------------------------------------------------
 
-    def __init__(self, traj, param):
+    def __init__(self, param, traj):
 
         if not (isinstance(traj, Trajectory)):
             raise self.kdvSVLauncherError("traj <Trajecotory>")
@@ -116,10 +116,10 @@ if __name__=='__main__':
     ic=soliton(grid.x, 1., beta=1., gamma=-1. )
     
     # NL model integration
-    launcher=kdvLauncher(param, maxA )
+    launcher=kdvLauncher(param, maxA=maxA)
     traj=launcher.integrate(ic, tInt)
     
-    svLauncher=kdvSVLauncher(traj, param)
+    svLauncher=kdvSVLauncher(param, traj)
     sVal=svLauncher.lanczos(Nev, tInt=2.)
     
     print(sVal)

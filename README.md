@@ -170,7 +170,7 @@ Configuring and launching an integration
  2. Singular vector calculation work similarly, but are way longer to obtain:
 
         Nev=2
-        svLauncher=kdv.kdvSVLauncher(traj, param)
+        svLauncher=kdv.kdvSVLauncher(param, traj)
         sVal=svLauncher.lanczos(Nev, tInt=1.)
         print(sVal)
         plt.figure()

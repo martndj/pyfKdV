@@ -377,7 +377,7 @@ class Trajectory(object):
     
     #-------------------------------------------------------
 
-    def plotA(self, title=None, axe=None, linestyle='b'):
+    def plotA(self, title=None, axe=None, linestyle='b', **kwargs):
         """
         Amplitude evolution plot
 
@@ -390,7 +390,7 @@ class Trajectory(object):
         axe=self._checkAxe(axe)
 
         self.norm(ret=False)
-        axe.plot(self.time, self.A, linestyle)
+        axe.plot(self.time, self.A, linestyle, **kwargs)
         
         if title!=None:
             axe.set_title(title)
@@ -399,7 +399,7 @@ class Trajectory(object):
 
     #-------------------------------------------------------
 
-    def plotA2(self, title=None, axe=None, linestyle='b'):
+    def plotA2(self, title=None, axe=None, linestyle='b', **kwargs):
         """
         Square Amplitude evolution plot
 

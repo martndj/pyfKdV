@@ -4,7 +4,7 @@ import copy
 import matplotlib.pyplot as plt
 from matplotlib import collections, axes, gridspec
 from matplotlib.axes import Axes
-from matplotlib.gridspec import GridSpec
+from matplotlib.gridspec import GridSpec, SubplotSpec
 
 from periodicGrid import PeriodicGrid, Grid
 
@@ -337,6 +337,16 @@ class Trajectory(object):
 
         axe=self._checkAxe(axe)
     
+        if not self.isIntegrated or self.nDt==0 :
+            axe.plot(self.grid.x, self[0], color)
+            axe.set_xlim(xlim)
+            axe.set_xlabel(r'$x$')
+            axe.set_ylabel(r'$A$')
+
+            if title!=None:
+                axe.set_title(title)
+            return axe
+
         if self.nDt<nbLines:
             nbLines=self.nDt
 
@@ -436,7 +446,11 @@ class Trajectory(object):
                 raise ValueError(
                     "Single argument to subplot must be a 3-digit integer")
             axe=plt.subplot(axe)
-        elif not (isinstance(axe,(Axes, GridSpec))):
+        elif isinstance(axe,SubplotSpec):
+            axe=plt.subplot(axe)
+        elif isinstance(axe,Axes):
+            pass
+        else:
             raise self.TrajectoryPlotError(
                 "axe < matplotlib.axes.Axes | matplotlib.gridspec.GridSpec >")
         return axe

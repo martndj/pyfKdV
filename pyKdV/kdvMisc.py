@@ -95,7 +95,7 @@ def bumpSchwartz(x):
     if np.abs(x)>1.:
         return 0.
     else:
-        return np.exp(-1./(1.-x**2))
+        return np.exp(1.)*np.exp(-1./(1.-x**2))
 
 #-----------------------------------------------------------
 

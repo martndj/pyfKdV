@@ -158,7 +158,7 @@ class Trajectory(object):
 
     #-------------------------------------------------------
 
-    def putData(self, data):
+    def putData(self, data, tReal=None):
         """
         Trajectory values access method (input)
         """
@@ -170,6 +170,9 @@ class Trajectory(object):
             raise self.TrajectoryError("Incompatible data affectation")
         self.__data=data
         self.shape=data.shape
+
+        if tReal<>None:
+            self.incrmTReal(finished=True, tReal=tReal)
 
     #-------------------------------------------------------
 
@@ -501,7 +504,7 @@ class SpectralTrajectory(Trajectory):
         else:
             self.Ntrc=Ntrc
 
-    def waterfall(self, xlim=None, nbLines=50, title=None, 
+    def waterfall(self, xlim=None, ylim=None, nbLines=50, title=None, 
                   offset=None, ampl=None, color='b', axe=None):
         """
         Make a normalized waterfall plot of the Spectral Trajectory
@@ -518,9 +521,9 @@ class SpectralTrajectory(Trajectory):
             @TODO: a scale
         """
         axe=self._checkAxe(axe)
-        super(SpectralTrajectory, self).waterfall(xlim, nbLines, title,
-                                                    offset, ampl, color,
-                                                    axe)
+        super(SpectralTrajectory, self).waterfall(xlim, ylim, nbLines,
+                                                    title, offset, ampl,
+                                                    color, axe)
         axe.axvline(x=self.Ntrc, color='k', linewidth=2)
     
 

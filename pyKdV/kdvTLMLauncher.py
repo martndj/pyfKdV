@@ -156,13 +156,28 @@ ucy between the TLM adjoint and the
         # Local variables names
         grid=self.grid
         param=self.param
+        
+        if self.fullPertTraj==True:
+            self.pertTraj.putData(
+                    fKdV.fKdVTLMPropagator(
+                        grid.N, grid.Ntrc, grid.L, self.dt,
+                        self.nDt, param.nDt, pert, 
+                        self.refTraj.getData()[self.nDt0:
+                                                self.nDt0+self.nDt+1],
+                        param[1].getData(), param[2].getData(),
+                        param[3].getData(),param[4].getData(), 
+                        fullTraj=True),
+                    tReal=self.nDt*self.dt)
+             
+            fPert=self.pertTraj.final
 
-        fPert=fKdV.fKdVTLMPropagator(
-                grid.N, grid.Ntrc, grid.L, self.dt, self.nDt, param.nDt,
-                pert, 
-                self.refTraj.getData()[self.nDt0:self.nDt0+self.nDt+1],
-                param[1].getData(), param[2].getData(), param[3].getData(),
-                param[4].getData(), fullTraj=False)
+        else:
+            fPert=fKdV.fKdVTLMPropagator(
+                    grid.N, grid.Ntrc, grid.L, self.dt, self.nDt, param.nDt,
+                    pert, 
+                    self.refTraj.getData()[self.nDt0:self.nDt0+self.nDt+1],
+                    param[1].getData(), param[2].getData(),
+                    param[3].getData(),param[4].getData(), fullTraj=False)
 
         tReal=self.nDt*self.dt
 

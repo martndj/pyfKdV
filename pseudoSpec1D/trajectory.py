@@ -318,7 +318,7 @@ class Trajectory(object):
     
     #-------------------------------------------------------
     
-    def waterfall(self, xlim=None, nbLines=50, title=None, 
+    def waterfall(self, xlim=None, ylim=None, nbLines=50, title=None, 
                   offset=None, ampl=None, color='b', axe=None):
         """
         Make a normalized waterfall plot of the Trajectory
@@ -347,25 +347,42 @@ class Trajectory(object):
                 axe.set_title(title)
             return axe
 
-        if self.nDt<nbLines:
-            nbLines=self.nDt
+        if ylim==None:
+            tInt=self.tInt
+            nDt=self.nDt
+            data=self.__data
+            time=self.time
+        elif isinstance(ylim, tuple):
+            tInt=ylim[1]-ylim[0]
+            lIdx=self.whereTimeIdx(ylim[0])
+            hIdx=self.whereTimeIdx(ylim[1])
+            if len(ylim)<>2 or hIdx<lIdx:
+                raise self.TrajectoryPlotError("ylim=(tMin,tMax)")
+            nDt=hIdx-lIdx
+            data=self.__data[lIdx:hIdx]
+            time=self.time[lIdx:hIdx]
+        else:
+                raise self.TrajectoryPlotError("ylim=(tMin,tMax)")
 
-        freq=int((self.nDt+1.)/nbLines)
+        if nDt<nbLines:
+            nbLines=nDt
+
+        freq=int((nDt+1.)/nbLines)
         if freq==1:
-            nbLines=self.nDt
+            nbLines=nDt
 
         if offset==None:
-            offset=self.tInt/nbLines
+            offset=tInt/nbLines
         if ampl==None:
-            denom=(np.max(np.abs(self.__data)))
+            denom=(np.max(np.abs(data)))
             if denom==0.: denom=1.
             ampl=8./denom*\
-                    (self.tReal/nbLines)
+                    (tInt/nbLines)
         lines=[]
         for i in xrange(nbLines):
             j=i*freq
-            curve=list(zip(self.grid.x, ampl*self.__data[j]
-                           +self.time[j]-i*offset))
+            curve=list(zip(self.grid.x, ampl*data[j]
+                           +time[j]-i*offset))
             lines.append(curve)
 
     

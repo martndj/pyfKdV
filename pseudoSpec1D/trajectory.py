@@ -123,10 +123,10 @@ class Trajectory(object):
         """
         if not self.isIntegrated:
             raise self.TrajectoryError("Trajectory not integrated")
-
-        self.A2=np.zeros(self.nDt+1)
-        for i in xrange(self.nDt+1):
-            self.A2[i]=self.__SquareNorm(self.__data[i])
+        if self.A2==None:
+            self.A2=np.zeros(self.nDt+1)
+            for i in xrange(self.nDt+1):
+                self.A2[i]=self.__SquareNorm(self.__data[i])
         if ret:
             return self.A2
 
@@ -138,13 +138,11 @@ class Trajectory(object):
         """
         if not self.isIntegrated:
             raise self.TrajectoryError("Trajectory not integrated")
-
-        self.A=np.zeros(self.nDt+1)
-        if not (self.A2==None):
+        if self.A==None:
+            self.A=np.zeros(self.nDt+1)
+            if (self.A2==None):
+                self.norm2(ret=False)
             self.A=np.sqrt(self.A2)
-        else:
-            for i in xrange(self.nDt+1):
-                self.A[i]=np.sqrt(self.__SquareNorm(self.__data[i]))
         if ret:
             return self.A
 
@@ -202,6 +200,16 @@ class Trajectory(object):
     def min(self):
         return self.getData().min()
 
+    #-------------------------------------------------------
+
+    def concatenate():
+        """
+        <TODO>
+        Concatenate two trajectories which are consecutive
+
+        Trajectories must share spacial and temporal caracteristics
+        """
+        pass
 
     #------------------------------------------------------
     #----| Private methods |-------------------------------

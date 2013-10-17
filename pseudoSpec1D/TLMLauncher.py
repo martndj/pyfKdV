@@ -41,7 +41,7 @@ class TLMLauncher(object):
             raise self.TLMLauncherError("grid <PeriodicGrid>")
         self.grid=grid
 
-        self.isInitialized=False 
+        self.isReferenced=False 
         if not traj==None: self.initialize(traj)
 
         # Status Attributes
@@ -56,7 +56,7 @@ class TLMLauncher(object):
     #----| Public methods |--------------------------------
     #------------------------------------------------------
     
-    def initialize(self, traj):
+    def reference(self, traj):
         """
         Initialize the TLM by associating a reference trajectory
             (mandatory before integration)
@@ -71,8 +71,13 @@ class TLMLauncher(object):
         if not (traj.grid==self.grid):
             raise PeriodicGridError("traj.grid <> grid")
         self.refTraj=traj
-        self.isInitialized=True 
+        self.isReferenced=True 
     
+    def initialize(self, traj):
+        """
+        Alias of reference (for retro-compatibility)
+        """
+        return self.reference(traj)
     #------------------------------------------------------
     
     def incrmTReal(self, finished=False, tReal=None):
@@ -97,7 +102,7 @@ class TLMLauncher(object):
             t0      :   initial time <float>
         """
         
-        if not self.isInitialized:
+        if not self.isReferenced:
             raise self.TLMLauncherError(
                         "Not initialized with a reference trajectory")
         if not isinstance(pert, np.ndarray):
@@ -186,7 +191,7 @@ class TLMLauncher(object):
     def __str__(self):
         output="####| TLMLauncher |####################################\n"
         output+=self.grid.__str__()
-        if not self.isInitialized:
+        if not self.isReferenced:
             output+="\n  not initialized with a reference trajectory"
         else:
             output+="\n  reference trajectory:\n"

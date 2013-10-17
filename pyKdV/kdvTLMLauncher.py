@@ -33,7 +33,7 @@ class kdvTLMLauncher(TLMLauncher):
         self.param=param
         self.isTimeDependant=self.param.isTimeDependant
 
-        self.isInitialized=False 
+        self.isReferenced=False 
         if not traj==None: self.initialize(traj)
 
 
@@ -133,7 +133,7 @@ ucy between the TLM adjoint and the
 
 
         """
-        if not self.isInitialized:
+        if not self.isReferenced:
             raise self.kdvTLMLauncherError(
                         "Not initialized with a reference trajectory")
         if not isinstance(ic, np.ndarray):

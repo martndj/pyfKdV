@@ -110,18 +110,20 @@ def dtStable(grid, param, maxA, dtMod=0.7):
         param   :   KdV parameters <Param>
     """
 
-    minRho=param[4].min()
-    maxRho=param[4].max()
-    if np.abs(minRho)>np.abs(maxRho):
-        maxAbsRho=np.abs(minRho)
-    else:
-        maxAbsRho=np.abs(maxRho)
 
     maxK=2.0*np.pi*grid.Ntrc/grid.L
-    denom=np.zeros(shape=grid.N)
-    denom=np.sqrt((param[3].max()*maxK**3-param[1].min()*maxK
-                        -param[2].min()*maxA*maxK)**2
-                   +maxAbsRho**2)
 
-    dt=1./denom
+    dt=None 
+    discr=np.zeros(shape=grid.N)
+    for t in xrange(param.nDt+1):
+        rhoPos=np.zeros(shape=grid.N)
+        for i in xrange(grid.N):
+            if param.rho[t][i] > 0. :
+                rhoPos[i]=param.rho[t][i]
+        discr=(param.gamma[t]*maxK**2-np.abs(param.alpha[t])
+                -np.abs(param.beta[t])*maxA)*maxK
+        dtTmp=1./np.max(np.sqrt(discr**2+rhoPos**2))
+        if dt==None or dtTmp<dt:
+            dt=dtTmp
+
     return dtMod*dt

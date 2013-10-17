@@ -45,6 +45,7 @@ class Trajectory(object):
         # Status Attributes
         self.isIntegrated=False
         self.isInitialised=False
+        self.isConcatenated=False
 
         # Data attributes
         self.__data=None
@@ -202,14 +203,36 @@ class Trajectory(object):
 
     #-------------------------------------------------------
 
-    def concatenate():
+    def concatenate(self, traj):
         """
         <TODO>
         Concatenate two trajectories which are consecutive
 
         Trajectories must share spacial and temporal caracteristics
         """
-        pass
+        if not isinstance(traj, Trajectory):
+            raise TrajectoryError("traj <Trajectory>")
+        if traj.dt<>self.dt:
+            raise TrajectoryError(
+                "incompatible time increments: %f, %f"%(self.dt, traj.dt))
+        if traj.grid<>self.grid:
+            raise TrajectoryError("incompatible grid")
+            
+        trajComp=Trajectory(self.grid)
+        trajComp.initialize(self.ic, self.nDt+traj.nDt,self.dt)
+        data=np.empty(shape=(trajComp.nDt+1, self.grid.N))
+        for t in xrange(self.nDt+1):
+            data[t]=self.__data[t]
+        trajData=traj.getData()
+        for i in xrange(1,traj.nDt+1):
+            t=i+self.nDt
+            data[t]=trajData[i]
+
+        trajComp.putData(data)
+        trajComp.incrmTReal(finished=True, tReal=trajComp.nDt*trajComp.dt)
+        trajComp.isConcatenated=True
+        return trajComp
+        
 
     #------------------------------------------------------
     #----| Private methods |-------------------------------

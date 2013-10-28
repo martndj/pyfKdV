@@ -200,6 +200,9 @@ class Trajectory(object):
 
     def min(self):
         return self.getData().min()
+    
+    def abs(self):
+        return np.abs(self.getData())
 
     #-------------------------------------------------------
 

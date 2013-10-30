@@ -46,6 +46,7 @@ class Trajectory(object):
         self.isIntegrated=False
         self.isInitialised=False
         self.isConcatenated=False
+        self.isTrimmed=False
 
         # Data attributes
         self.__data=None
@@ -105,12 +106,12 @@ class Trajectory(object):
     
     #-------------------------------------------------------
     
-    def incrmTReal(self, finished=False, tReal=None):
+    def incrmTReal(self, finished=False, tReal=None, t0=0.):
         if tReal<>None:
             self.tReal=tReal
         if finished:
             self.isIntegrated=True
-            self.time=np.linspace(0.,self.tReal, self.nDt+1)
+            self.time=np.linspace(t0,self.tReal, self.nDt+1)
             self.final=self.__data[self.nDt]
 
         else:
@@ -214,12 +215,12 @@ class Trajectory(object):
         Trajectories must share spacial and temporal caracteristics
         """
         if not isinstance(traj, Trajectory):
-            raise TrajectoryError("traj <Trajectory>")
+            raise self.TrajectoryError("traj <Trajectory>")
         if traj.dt<>self.dt:
-            raise TrajectoryError(
+            raise self.TrajectoryError(
                 "incompatible time increments: %f, %f"%(self.dt, traj.dt))
-        if traj.grid<>self.grid:
-            raise TrajectoryError("incompatible grid")
+        if not traj.grid==self.grid:
+            raise self.TrajectoryError("incompatible grid")
             
         trajComp=Trajectory(self.grid)
         trajComp.initialize(self.ic, self.nDt+traj.nDt,self.dt)
@@ -234,7 +235,29 @@ class Trajectory(object):
         trajComp.putData(data)
         trajComp.incrmTReal(finished=True, tReal=trajComp.nDt*trajComp.dt)
         trajComp.isConcatenated=True
+        trajComp.isTrimmed=self.isTrimmed
         return trajComp
+        
+    #-------------------------------------------------------
+
+    def trim(self, freq):
+
+
+        if not isinstance(freq, int):
+            raise self.TrajectoryError("freq <int>")
+        if freq<1 or freq>self.nDt:
+            raise self.TrajectoryError("1 =< freq < self.nDt")
+
+        nDtTrim=(self.nDt+1)/freq-1
+        trajTrim=Trajectory(self.grid)
+        trajTrim.initialize(self.ic, nDtTrim+1,self.dt*freq)
+        trajTrim[0]=self.ic
+        for i in xrange(trajTrim.nDt):
+            trajTrim[i+1]=self.__data[i*freq]
+        trajTrim.incrmTReal(finished=True, tReal=trajTrim.nDt*trajTrim.dt)
+        trajTrim.isTrimmed=True
+        trajTrim.isConcatenated=self.isConcatenated
+        return trajTrim
         
 
     #------------------------------------------------------
@@ -261,6 +284,10 @@ class Trajectory(object):
         output+="\n| nDt=%d"%self.nDt
         output+="\n| dt=%-23.15E"%self.dt
         output+="\n| tReal=%-23.15E"%self.tReal
+        if self.isConcatenated:
+            output+="\n is concatenated"
+        if self.isTrimmed:
+            output+="\n is trimmed"
         output+="\n===================================================\n"
         return output
 
@@ -372,12 +399,17 @@ class Trajectory(object):
             @TODO: a scale
         """
 
+        if isinstance(self, SpectralTrajectory):
+            xlabel="$k$"
+        else:
+            xlabel="$x$"
+
         axe=self._checkAxe(axe)
     
         if not self.isIntegrated or self.nDt==0 :
             axe.plot(self.grid.x, self[0], color)
             axe.set_xlim(xlim)
-            axe.set_xlabel(r'$x$')
+            axe.set_xlabel(xlabel)
             axe.set_ylabel(r'$A$')
 
             if title!=None:
@@ -428,7 +460,7 @@ class Trajectory(object):
     
         axe.add_collection(col, autolim=True)
         axe.autoscale_view()
-        axe.set_xlabel(r'$x$')
+        axe.set_xlabel(xlabel)
         axe.set_ylabel(r'$t$')
         axe.set_xlim(xlim)
         
@@ -455,6 +487,8 @@ class Trajectory(object):
 
         self.norm(ret=False)
         axe.plot(self.time, self.A, linestyle, **kwargs)
+        axe.set_xlabel("$t$")
+        axe.set_ylabel(r"$\int\ dx A$")
         
         if title!=None:
             axe.set_title(title)
@@ -478,6 +512,8 @@ class Trajectory(object):
 
         self.norm2(ret=False)
         axe.plot(self.time, self.A2, linestyle, **kwargs)
+        axe.set_xlabel("$t$")
+        axe.set_ylabel(r"$\int\ dx A^2$")
  
         if title!=None:
             axe.set_title(title)

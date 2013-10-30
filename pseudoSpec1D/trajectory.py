@@ -417,12 +417,12 @@ class Trajectory(object):
             return axe
 
         if ylim==None:
-            tInt=self.tInt
+            tReal=self.tReal
             nDt=self.nDt
             data=self.__data
             time=self.time
         elif isinstance(ylim, tuple):
-            tInt=ylim[1]-ylim[0]
+            tReal=ylim[1]-ylim[0]
             lIdx=self.whereTimeIdx(ylim[0])
             hIdx=self.whereTimeIdx(ylim[1])
             if len(ylim)<>2 or hIdx<lIdx:
@@ -441,12 +441,12 @@ class Trajectory(object):
             nbLines=nDt
 
         if offset==None:
-            offset=tInt/nbLines
+            offset=tReal/nbLines
         if ampl==None:
             denom=(np.max(np.abs(data)))
             if denom==0.: denom=1.
             ampl=8./denom*\
-                    (tInt/nbLines)
+                    (tReal/nbLines)
         lines=[]
         for i in xrange(nbLines):
             j=i*freq

@@ -70,7 +70,7 @@ def cSoliton(amp=1., alpha=0., beta=1., gamma=-1.):
                 :   KdV parameters (constants) <float>
 
     """
-    return np.abs(beta)/3.*beta*gamma/(np.abs(beta*gamma))*amp
+    return np.abs(beta)/3.*beta*gamma/(np.abs(beta*gamma))*amp+alpha
 
 #-----------------------------------------------------------
 

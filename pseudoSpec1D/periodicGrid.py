@@ -21,6 +21,9 @@ class PeriodicGrid(Grid):
     class PeriodicGridError(Exception):
         pass
     
+    #-------------------------------------------------------
+    #----| Init |-------------------------------------------
+    #-------------------------------------------------------
     def __init__(self, Ntrc, L, aliasing=3):
         if  not(type(Ntrc) is int) or not(isinstance(L, (float,int))):
             raise self.PeriodicGridError("PeriodicGrid(Ntrc <int>| L <float>)")
@@ -41,6 +44,21 @@ class PeriodicGrid(Grid):
 
         self.x=np.linspace(-self.L/2.,self.L/2-self.dx,self.N)
     
+    #-------------------------------------------------------
+    #----| Public methods |---------------------------------
+    #-------------------------------------------------------
+
+    def mod(self, x):
+        if x>self.max():
+            diff=np.abs(self.max()-x)
+            return self.x.min()+np.mod(diff, self.L)
+        elif x<self.min():
+            diff=np.abs(self.min()-x)
+            return self.max()-np.mod(diff, self.L)
+        else:
+            pass
+        return x
+
     #-------------------------------------------------------
     #----| Private methods |--------------------------------
     #-------------------------------------------------------

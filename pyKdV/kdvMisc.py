@@ -72,6 +72,9 @@ def cSoliton(amp=1., alpha=0., beta=1., gamma=-1.):
     """
     return np.abs(beta)/3.*beta*gamma/(np.abs(beta*gamma))*amp+alpha
 
+def ampSolStat(alpha=0., beta=1., gamma=-1.):
+    return -3.*alpha/np.abs(beta)*beta*gamma/(np.abs(beta*gamma))
+
 #-----------------------------------------------------------
 
 def gauss(x, x0, sig):

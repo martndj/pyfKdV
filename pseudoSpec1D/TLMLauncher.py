@@ -123,7 +123,7 @@ class TLMLauncher(object):
         else:
             self.fullPertTraj=False
 
-        fPert=self.propagator(pert)
+        fPert=self.propagator(pert, t0=t0)
 
         if fPert.dtype<>'float64':
             raise LauncherError('Potential loss of precision')
@@ -167,14 +167,16 @@ class TLMLauncher(object):
     def _timeValidation(self, tInt, t0):
 
         # Time attributes
-        if tInt==None : tInt=self.refTraj.tInt
+        if tInt==None : tInt=self.refTraj.tInt-t0
         if t0<0.:
             raise self.TLMLauncherError("t0>=0.")
-        if t0+tInt>self.refTraj.tInt:
-            raise self.TLMLauncherError("t0+tInt<=self.refTraj.tInt")
+        elif t0<self.refTraj.t0:    
+            raise self.TLMLauncherError("t0>=self.refTraj.t0")
+        if t0+tInt>self.refTraj.tReal:
+            raise self.TLMLauncherError("t0+tInt<=self.refTraj.tReal")
         self.dt=self.refTraj.dt
         self.tIntIn=tInt
-        self.nDt0=int(t0/self.dt)
+        self.nDt0=int((t0-self.refTraj.t0)/self.dt)
         self.nDt=int((tInt)/self.dt)
         # real times from step integers
         self.tInt=self.nDt*self.dt

@@ -40,7 +40,7 @@ class Launcher(object):
     #----| Public methods |--------------------------------
     #------------------------------------------------------
 
-    def integrate(self, ic, tInt, filtNtrc=True):
+    def integrate(self, ic, tInt, filtNtrc=True, t0=0.):
         """
         Call to the model propagator
 
@@ -72,7 +72,7 @@ class Launcher(object):
         traj.initialize(ic, self.nDt, self.dt)
 
         # calling the propagator
-        traj=self.propagator(ic, traj)
+        traj=self.propagator(ic, traj, t0=t0)
         if traj.getData().dtype<>'float64':
             raise LauncherError('Potential loss of precision')
 

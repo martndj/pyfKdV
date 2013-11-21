@@ -51,40 +51,6 @@ class kdvTLMLauncher(TLMLauncher):
     #----| Public methods |--------------------------------
     #------------------------------------------------------
 
-    def integrate(self, pert, tInt=None, t0=0., fullPertTraj=False,
-                    filtNtrc=False):
-        """
-        Call to the KdV TLM propagator
-
-            kdvTLMLauncher.integrate(pert, tInt, filtNtrc=True)
-
-            pert    :   initial perturbation <numpy.ndarray>
-            tInt    :   integration time <float>
-            t0      :   initial time <float>
-        """
-    
-        # the Fortran propagator filter implicitly
-        return super(kdvTLMLauncher, self).integrate(pert, tInt, t0,
-                                                        fullPertTraj,
-                                                        filtNtrc)
-
-    #-------------------------------------------------------
-
-    def adjoint(self, pert, tInt=None, t0=0., filtNtrc=False):         
-        """
-        Call to the KdV TLM Adjoint retro-propagator
-
-            kdvTLMLauncher.integrate(pert, tInt, filtNtrc=True)
-
-            pert    :   initial perturbation <numpy.ndarray>
-            tInt    :   integration time <float>
-            t0      :   initial time <float>
-        """
-
-        return super(kdvTLMLauncher, self).adjoint(pert, tInt, t0,
-                                                        filtNtrc)
-        
-    #-------------------------------------------------------
 
     def singularOp(self, pert, tInt=None, t0=0., filtNtrc=True):
         """
@@ -151,7 +117,7 @@ ucy between the TLM adjoint and the
     #------------------------------------------------------
 
 
-    def __kdvTLMProp_Fortran(self, pert):
+    def __kdvTLMProp_Fortran(self, pert, t0=0.):
 
         # Local variables names
         grid=self.grid
@@ -166,9 +132,9 @@ ucy between the TLM adjoint and the
                                                 self.nDt0+self.nDt+1],
                         param[1].getData(), param[2].getData(),
                         param[3].getData(),param[4].getData(), 
-                        fullTraj=True),
-                    tReal=self.nDt*self.dt)
-             
+                        fullTraj=True))
+            self.pertTraj.incrmTReal(finished=True, 
+                                    tReal=self.nDt*self.dt+t0, t0=t0)
             fPert=self.pertTraj.final
 
         else:
@@ -179,9 +145,9 @@ ucy between the TLM adjoint and the
                     param[1].getData(), param[2].getData(),
                     param[3].getData(),param[4].getData(), fullTraj=False)
 
-        tReal=self.nDt*self.dt
+        tReal=self.nDt*self.dt+t0
 
-        self.incrmTReal(finished=True, tReal=tReal)
+        self.incrmTReal(finished=True, tReal=tReal, t0=t0)
         return fPert
 
 

@@ -113,6 +113,7 @@ class Trajectory(object):
             self.isIntegrated=True
             self.time=np.linspace(t0,self.tReal, self.nDt+1)
             self.final=self.__data[self.nDt]
+            self.t0=t0
 
         else:
             self.tReal+=self.dt

@@ -48,7 +48,7 @@ class kdvLauncher(Launcher):
     #----| Public methods |--------------------------------
     #------------------------------------------------------
 
-    def integrate(self, ic, tInt, filtNtrc=False):
+    def integrate(self, ic, tInt, filtNtrc=False, t0=0.):
         """
         Call to the model propagator
 
@@ -61,7 +61,7 @@ class kdvLauncher(Launcher):
     
         # the Fortran propagator filter implicitly
         return super(kdvLauncher, self).integrate(ic, tInt,
-                                                filtNtrc)
+                                                filtNtrc=filtNtrc, t0=t0)
 
     #------------------------------------------------------
 
@@ -80,7 +80,7 @@ class kdvLauncher(Launcher):
     #------------------------------------------------------
 
 
-    def __kdvProp_Fortran(self, ic, traj):
+    def __kdvProp_Fortran(self, ic, traj, t0=0.):
         
         # Local variables names
         grid=self.grid
@@ -104,7 +104,7 @@ class kdvLauncher(Launcher):
 
         tReal=traj.nDt*traj.dt
         traj.putData(trajData)
-        traj.incrmTReal(finished=True, tReal=tReal)
+        traj.incrmTReal(finished=True, tReal=tReal+t0, t0=t0)
 
         return traj
 

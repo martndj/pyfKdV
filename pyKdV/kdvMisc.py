@@ -94,6 +94,8 @@ def gauss(x, x0, sig):
 def bumpSchwartz(x):
     """
     L. Schwartz infinitly differentiable distribution
+
+    <todo> vectorize it? (if isinstance(x, np.ndarray : return...)
     """
     if np.abs(x)>1.:
         return 0.

@@ -185,7 +185,7 @@ class TLMLauncher(object):
             self.tInt=self.nDt*self.dt
         self.nDtFinal=self.nDt0+self.nDt
         self.t0=self.nDt0*self.dt
-        self.tFinal=self.nDtFinal*self.dt
+        self.tFinal=self.nDtFinal*self.dt+t0
 
     #----| Classical overloads |----------------------------
     #-------------------------------------------------------

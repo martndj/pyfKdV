@@ -474,20 +474,19 @@ class Trajectory(object):
     
     #-------------------------------------------------------
 
-    def plotA(self, title=None, axe=None, linestyle='b', **kwargs):
+    def plotA(self, title=None, axe=None,  **kwargs):
         """
         Amplitude evolution plot
 
-                Trajectory.plotA(title=None, axe=None, linestyle)
+                Trajectory.plotA(title=None, axe=None)
 
                 title       :   title <str>
                 axe         :   subplot object <Axes | GridSpec>
-                linestyle   :   <str>
         """
         axe=self._checkAxe(axe)
 
         self.norm(ret=False)
-        axe.plot(self.time, self.A, linestyle, **kwargs)
+        axe.plot(self.time, self.A, **kwargs)
         axe.set_xlabel("$t$")
         axe.set_ylabel(r"$\int\ dx A$")
         
@@ -498,21 +497,20 @@ class Trajectory(object):
 
     #-------------------------------------------------------
 
-    def plotA2(self, title=None, axe=None, linestyle='b', **kwargs):
+    def plotA2(self, title=None, axe=None,  **kwargs):
         """
         Square Amplitude evolution plot
 
-                Trajectory.plotA(title=None, axe=None, linestyle)
+                Trajectory.plotA(title=None, axe=None, **kwargs )
 
                 title       :   title <str>
                 axe         :   subplot object <Axes | GridSpec>
-                linestyle   :   <str>
         """
 
         axe=self._checkAxe(axe)
 
         self.norm2(ret=False)
-        axe.plot(self.time, self.A2, linestyle, **kwargs)
+        axe.plot(self.time, self.A2, **kwargs)
         axe.set_xlabel("$t$")
         axe.set_ylabel(r"$\int\ dx A^2$")
  

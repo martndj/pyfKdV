@@ -1,4 +1,7 @@
 import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.axes import Axes
+from matplotlib.gridspec import GridSpec, SubplotSpec
 
 class Grid(object):
     """
@@ -101,6 +104,14 @@ class Grid(object):
 
     def zeros(self):
         return np.zeros(self.N)
+    
+    #-------------------------------------------------------
+
+    def plot(self, field,  axe=None, **kwargs):
+        axe=self._checkAxe(axe)
+        axe.plot(self.x, field,  **kwargs)
+        return axe
+
 
     #-------------------------------------------------------
     #----| Private methods |--------------------------------
@@ -114,6 +125,24 @@ class Grid(object):
             self.x=np.linspace(0.,self.L-self.dx,self.N)
             
 
+    #-------------------------------------------------------
+
+    def _checkAxe(self, axe):
+        if axe==None:
+            axe=plt.subplot(111)
+        if isinstance(axe, int):
+            if len(str(axe))<>3:
+                raise ValueError(
+                    "Single argument to subplot must be a 3-digit integer")
+            axe=plt.subplot(axe)
+        elif isinstance(axe,SubplotSpec):
+            axe=plt.subplot(axe)
+        elif isinstance(axe,Axes):
+            pass
+        else:
+            raise self.GridError(
+            "axe < matplotlib.axes.Axes | matplotlib.gridspec.GridSpec >")
+        return axe
 
     #-------------------------------------------------------
     #----| Classical overloads |----------------------------

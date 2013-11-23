@@ -96,6 +96,12 @@ class Grid(object):
 
     def norm(self, field, metric=None):
         return np.sqrt(self.squareNorm(field, metric=metric))
+    
+    #-------------------------------------------------------
+
+    def zeros(self):
+        return np.zeros(self.N)
+
     #-------------------------------------------------------
     #----| Private methods |--------------------------------
     #-------------------------------------------------------

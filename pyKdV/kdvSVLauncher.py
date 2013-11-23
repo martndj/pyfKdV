@@ -36,10 +36,11 @@ class kdvSVLauncher(object):
         if not traj.isIntegrated:
             raise self.kdvSVLauncherError("traj not integrated")
 
-        self.traj=traj
+        self.refTraj=traj
         
         self.grid=param.grid
         self.param=param
+        self.isCalculated=False
 
 
     #------------------------------------------------------
@@ -57,21 +58,21 @@ class kdvSVLauncher(object):
             time is taken.
         """
         if tInt==None:
-            self.tInt=self.traj.tInt
+            self.tInt=self.refTraj.tInt
         elif isinstance(tInt, (int, float)):
-            if tInt<=self.traj.tInt:
+            if tInt<=self.refTraj.tInt:
                 self.tInt=tInt
             else:
                 raise self.kdvSVLauncherError("tInt > traj.tInt")
         else:
             raise self.kdvSVLauncherError("tInt <None|int|float>")
 
-        self.nDt=int(self.tInt/self.traj.dt)
+        self.nDt=int(self.tInt/self.refTraj.dt)
 
         self.Nev=Nev
         grid=self.grid
         param=self.param
-        traj=self.traj
+        traj=self.refTraj
 
 
         sVal, sVec=fKdV.fKdVLanczos(grid.N, grid.Ntrc, grid.L,
@@ -84,7 +85,24 @@ class kdvSVLauncher(object):
 
         self.sVal=sVal
         self.sVec=sVec
+        self.isCalculated=True
         return self.sVal
+
+    #----| Classical overloads |----------------------------
+    #-------------------------------------------------------
+
+    def __str__(self):
+        output="####| svLauncher |#####################################\n"
+        output+="\n  parametrisation:\n"
+        output+=self.param.__str__()
+        output+="\n  reference trajectory:\n"
+        output+=self.refTraj.__str__()
+        if self.isCalculated:
+            output+="\n %d SV obtained:\n"
+            output+=str(self.sVal)
+        output+=(
+            "\n#######################################################\n")
+        return output
 
     #-------------------------------------------------------
 

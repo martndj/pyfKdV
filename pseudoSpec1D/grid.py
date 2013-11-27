@@ -86,14 +86,16 @@ class Grid(object):
 
         if metric==None:
             return np.dot(field,field)*self.dx
-        else:
-            if not isinstance(metric, np.ndarray):
-                raise self.GridError("metric <numpy.ndarray>")
+        elif isinstance(metric, (float, int)):
+            return np.dot(field, field)*metric*self.dx
+        elif isinstance(metric, np.ndarray):
             if ((not (metric.ndim==1 or metric.ndim==2))
                     or metric.shape[-1]<>self.N):
-                raise self.GridError("metric icompatible dimensions")
-                
+                raise self.GridError("metric icompatible dimensions") 
             return np.dot(field, np.dot(metric, field))*self.dx
+
+        else:
+                raise self.GridError("metric <numpy.ndarray>")
     
     #-------------------------------------------------------
 

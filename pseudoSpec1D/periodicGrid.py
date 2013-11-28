@@ -40,10 +40,9 @@ class PeriodicGrid(Grid):
             self.aliasing=aliasing
 
         self.__setGridPoints()
-        self.dx=self.L/(self.N)
 
-        self.x=np.linspace(-self.L/2.,self.L/2-self.dx,self.N)
-    
+        self.centered=True
+
     #-------------------------------------------------------
     #----| Public methods |---------------------------------
     #-------------------------------------------------------
@@ -68,6 +67,8 @@ class PeriodicGrid(Grid):
         if not self.N%2:
             raise self.PeriodicGridError(
                 "N must be odd (add/substract 1 to Ntrc)")
+        self.dx=self.L/(self.N)
+        self.x=np.linspace(-self.L/2.,self.L/2-self.dx,self.N)
 
 
     #-------------------------------------------------------

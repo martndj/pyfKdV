@@ -1,4 +1,5 @@
 import numpy as np
+import random as rnd
 import copy
 
 import matplotlib.pyplot as plt
@@ -120,32 +121,30 @@ class Trajectory(object):
 
     #-------------------------------------------------------
 
-    def norm2(self, ret=True):
+    def norm2(self, ret=True, metric=None):
         """
         Euclidian Square norm evolution
         """
         if not self.isIntegrated:
             raise self.TrajectoryError("Trajectory not integrated")
-        if self.A2==None:
-            self.A2=np.zeros(self.nDt+1)
-            for i in xrange(self.nDt+1):
-                self.A2[i]=self.__SquareNorm(self.__data[i])
+        self.A2=np.zeros(self.nDt+1)
+        for i in xrange(self.nDt+1):
+            self.A2[i]=self.__SquareNorm(self.__data[i], metric=metric)
         if ret:
             return self.A2
 
     #-------------------------------------------------------
 
-    def norm(self, ret=True):
+    def norm(self, ret=True, metric=None):
         """
         Euclidian Norm evolution
         """
         if not self.isIntegrated:
             raise self.TrajectoryError("Trajectory not integrated")
-        if self.A==None:
-            self.A=np.zeros(self.nDt+1)
-            if (self.A2==None):
-                self.norm2(ret=False)
-            self.A=np.sqrt(self.A2)
+        self.A=np.zeros(self.nDt+1)
+        if (self.A2==None):
+            self.norm2(ret=False, metric=metric)
+        self.A=np.sqrt(self.A2)
         if ret:
             return self.A
 
@@ -262,11 +261,36 @@ class Trajectory(object):
         
 
     #------------------------------------------------------
+
+    def degrad(self, mu, sigma, seed=None):
+        '''
+        Gaussian noise trajectory degradation
+    
+        degrad(u,mu,sigma,seed=...)
+    
+        mu      :  noise mean (gaussian mean)
+        sigma   :  noise variance
+        '''
+        if not isinstance(self, Trajectory):
+            raise TypeError("self <Trajectory>")
+        rnd.seed(seed)
+        ic_degrad=degrad(self.ic, mu, sigma, seed=seed)
+        degrad=Trajectory(self.grid)
+        degrad.initialize(ic_degrad, self.nDt, self.dt)
+        degrad[0]=ic_degrad
+        for i in xrange(1,self.nDt+1):
+            for j in xrange(self.grid.N):
+                degrad[i][j]=self[i][j]+rnd.gauss(mu, sigma)
+        degrad.incrmTReal(finished=True, tReal=self.tReal)
+        return degrad
+
+
+    #------------------------------------------------------
     #----| Private methods |-------------------------------
     #------------------------------------------------------
 
-    def __SquareNorm(self, z):
-        return self.grid.squareNorm(z)
+    def __SquareNorm(self, z, metric=None):
+        return self.grid.squareNorm(z, metric=metric)
 
     #-------------------------------------------------------
 
@@ -474,7 +498,7 @@ class Trajectory(object):
     
     #-------------------------------------------------------
 
-    def plotA(self, title=None, axe=None,  **kwargs):
+    def plotA(self, title=None, axe=None,  metric=None, **kwargs):
         """
         Amplitude evolution plot
 
@@ -485,10 +509,10 @@ class Trajectory(object):
         """
         axe=self._checkAxe(axe)
 
-        self.norm(ret=False)
+        self.norm(ret=False, metric=metric)
         axe.plot(self.time, self.A, **kwargs)
         axe.set_xlabel("$t$")
-        axe.set_ylabel(r"$\int\ dx A$")
+        axe.set_ylabel(r"$\Vert A\Vert$")
         
         if title!=None:
             axe.set_title(title)
@@ -497,7 +521,7 @@ class Trajectory(object):
 
     #-------------------------------------------------------
 
-    def plotA2(self, title=None, axe=None,  **kwargs):
+    def plotA2(self, title=None, axe=None, metric=None,  **kwargs):
         """
         Square Amplitude evolution plot
 
@@ -509,10 +533,10 @@ class Trajectory(object):
 
         axe=self._checkAxe(axe)
 
-        self.norm2(ret=False)
+        self.norm2(ret=False, metric=metric)
         axe.plot(self.time, self.A2, **kwargs)
         axe.set_xlabel("$t$")
-        axe.set_ylabel(r"$\int\ dx A^2$")
+        axe.set_ylabel(r"$\Vert A\Vert^2$")
  
         if title!=None:
             axe.set_title(title)

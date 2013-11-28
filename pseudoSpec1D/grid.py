@@ -86,6 +86,8 @@ class Grid(object):
 
         if metric==None:
             return np.dot(field,field)*self.dx
+        elif metric==np.infty:
+            return np.abs(field).max()**2
         elif isinstance(metric, (float, int)):
             return np.dot(field, field)*metric*self.dx
         elif isinstance(metric, np.ndarray):

@@ -106,6 +106,19 @@ class Trajectory(object):
         self.isInitialised=True
     
     #-------------------------------------------------------
+ 
+    def null(self, nDt, dt):
+        """ 
+        Nul trajectory
+
+        """
+
+        self.initialize(np.zeros(self.grid.N), nDt, dt)
+        self[0]=self.ic
+        self.putData(np.zeros(shape=(self.nDt+1, self.grid.N)))
+        self.incrmTReal(finished=True, tReal=self.tInt)
+    
+    #-------------------------------------------------------
     
     def incrmTReal(self, finished=False, tReal=None, t0=0.):
         if tReal<>None:
@@ -258,7 +271,24 @@ class Trajectory(object):
         trajTrim.isTrimmed=True
         trajTrim.isConcatenated=self.isConcatenated
         return trajTrim
-        
+    
+    #-------------------------------------------------------
+    
+    def cut(self, t0,tf):
+
+        if t0<self.time.min() or tf>self.time.max():
+            raise self.TrajectoryError(
+                "t0>self.time.min(), tf<self.time.max()")
+
+        idx0=self.whereTimeIdx(t0)
+        idxF=self.whereTimeIdx(tf)
+        cutNDt=idxF-idx0
+        cutTraj=Trajectory(self.grid)
+        cutTraj.initialize(self[idx0], cutNDt+1, self.dt)
+        for i in xrange(cutTraj.nDt+1):
+            cutTraj[i]=self.__data[idx0+i]
+        cutTraj.incrmTReal(finished=True, tReal=tf, t0=t0)
+        return cutTraj
 
     #------------------------------------------------------
 

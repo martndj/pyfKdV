@@ -147,7 +147,7 @@ ucy between the TLM adjoint and the
 
         tReal=self.nDt*self.dt+t0
 
-        self.incrmTReal(finished=True, tReal=tReal, t0=t0)
+        self.incrmTReal(finished=True, tReal=tReal)
         return fPert
 
 

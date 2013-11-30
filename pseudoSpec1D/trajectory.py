@@ -304,7 +304,10 @@ class Trajectory(object):
         if not isinstance(self, Trajectory):
             raise TypeError("self <Trajectory>")
         rnd.seed(seed)
-        ic_degrad=degrad(self.ic, mu, sigma, seed=seed)
+        ic_degrad=self.ic.copy()
+        for i in xrange(self.grid.N):
+            ic_degrad[i]=self.ic[i]+rnd.gauss(mu, sigma)
+        
         degrad=Trajectory(self.grid)
         degrad.initialize(ic_degrad, self.nDt, self.dt)
         degrad[0]=ic_degrad

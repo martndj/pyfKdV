@@ -24,7 +24,7 @@ class PeriodicGrid(Grid):
     #-------------------------------------------------------
     #----| Init |-------------------------------------------
     #-------------------------------------------------------
-    def __init__(self, Ntrc, L, aliasing=3):
+    def __init__(self, Ntrc, L=360., aliasing=3):
         if  not(type(Ntrc) is int) or not(isinstance(L, (float,int))):
             raise self.PeriodicGridError("PeriodicGrid(Ntrc <int>| L <float>)")
         

@@ -1,5 +1,6 @@
 import numpy as np
 import random as rnd
+from periodicGrid import PeriodicGrid
 #-----------------------------------------------------------
 
 def rndSpecVec(g, Ntrc=None, Nmin=0, amp=1., seed=0.848241945):

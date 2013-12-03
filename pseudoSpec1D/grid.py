@@ -61,20 +61,23 @@ class Grid(object):
             else:
                 return np.min(whereVec)
 
-        if isinstance(pos, np.ndarray):
-            if pos.ndim<>1:
-                raise self.GridError("pos.ndim=1")
+        if isinstance(pos, (list, np.ndarray)):
+            if isinstance(pos, np.ndarray):
+                if pos.ndim<>1:
+                    raise self.GridError("pos.ndim=1")
             N=len(pos)
             idx=np.empty(N, dtype=int)
             for i in xrange(N):
                 idx[i]=findIdx(pos[i])
         elif isinstance(pos, (float, int)):
             idx=np.empty(1, dtype=int)
-            idx[0]=findIdx(posValue)
+            idx[0]=findIdx(pos)
         else:
-            raise self.GridError("pos <numpy.ndarray>")
+            raise self.GridError("pos <list|numpy.ndarray|float>")
         return idx 
 
+    def where(self, pos):
+        return self.pos2Idx(pos)
 
     #-------------------------------------------------------
 

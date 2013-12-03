@@ -4,7 +4,7 @@ import numpy as np
 from pseudoSpec1D import PeriodicGrid
 #-----------------------------------------------------------
 
-def grid2Sphere(v, grid, m, lon_0=-107, jetLat=50., amplMax=5.):
+def grid2Sphere(grid, v, m, lon_0=-107, jetLat=50., amplMax=5.):
     nLons=grid.N
     lons = np.linspace(-180.+lon_0, 180+lon_0, nLons)
     lats = np.ones(nLons)*jetLat +v*amplMax
@@ -13,7 +13,7 @@ def grid2Sphere(v, grid, m, lon_0=-107, jetLat=50., amplMax=5.):
 
     
 
-def ortho(v, grid,  
+def ortho(grid, v,  
         lon_0=-107, lat_0=50, resDpi=200, projection='ortho', 
         resolution='l', jetLat=45., amplMax=5., coord=True, **kwargs):
 
@@ -23,7 +23,7 @@ def ortho(v, grid,
     m = Basemap(projection=projection,lon_0=lon_0,lat_0=lat_0,
                 resolution=resolution)
 
-    x,y=grid2Sphere(v, grid, m, lon_0=lon_0, jetLat=45., amplMax=amplMax)
+    x,y=grid2Sphere(grid, v, m, lon_0=lon_0, jetLat=45., amplMax=amplMax)
 
     m.plot(x,y, **kwargs)
     if coord:
@@ -33,14 +33,15 @@ def ortho(v, grid,
 
 
 
-def overCanada(v, grid, amplMax=5., **kwargs):
+def overCanada(grid, v, amplMax=5., **kwargs):
     m = Basemap(width=12000000,height=9000000,projection='lcc',
             resolution='c',lat_1=45.,lat_2=55,lat_0=50,lon_0=-107.)
 
     if not isinstance(grid, PeriodicGrid):
         raise TypeError()
 
-    x,y=grid2Sphere(v, grid, m, lon_0=-107, jetLat=45., amplMax=amplMax)
+    x,y=grid2Sphere(grid, v, m, lon_0=-107, jetLat=45., amplMax=amplMax)
 
     m.plot(x, y, **kwargs)
+    m.drawcoastlines()
     return m

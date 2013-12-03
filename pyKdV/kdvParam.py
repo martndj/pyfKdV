@@ -169,6 +169,7 @@ class Param(object):
             raise self.ParamError(
                     "<float|function(x,t)|Trajectory>")
         
+        traj.ic=traj[0]
         return traj
             
     #----------------------------------------------------------------

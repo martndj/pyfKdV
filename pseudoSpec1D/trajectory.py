@@ -655,6 +655,7 @@ class SpectralTrajectory(Trajectory):
         if xlim[1]>self.Ntrc: 
             axe.axvline(x=self.Ntrc, color='k', linewidth=2)
     
+        return axe
 
 
 #--------------------------------------------------------------------

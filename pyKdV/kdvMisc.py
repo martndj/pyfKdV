@@ -4,7 +4,7 @@ from pseudoSpec1D import PeriodicGrid, specFilt
 
 #-----------------------------------------------------------
 
-def soliton(x, x0, amp=1., alpha=0., beta=1., gamma=-1.):
+def soliton(x, x0=0., amp=1., alpha=0., beta=1., gamma=-1.):
     """ 
     Eigen solution of the non augmented KdV system (rho==0)
         

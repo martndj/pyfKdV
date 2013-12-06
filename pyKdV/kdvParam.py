@@ -33,8 +33,8 @@ class Param(object):
         pass
 
 
-    def __init__(self, grid, forcing=0., alpha=0., beta=0.,
-                    gamma=0.,  rho=0., nDt=0, dt=0., tInt=0.):
+    def __init__(self, grid, forcing=0., alpha=0., beta=1.,
+                    gamma=-1.,  rho=0., nDt=0, dt=0., tInt=0.):
 
         if not (isinstance(grid, PeriodicGrid)):
             raise self.ParamError(

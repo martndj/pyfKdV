@@ -647,10 +647,13 @@ class SpectralTrajectory(Trajectory):
             @TODO: a scale
         """
         axe=self._checkAxe(axe)
+        if xlim==None:
+            xlim=(0,self.Ntrc)
         super(SpectralTrajectory, self).waterfall(xlim, ylim, nbLines,
                                                     title, offset, ampl,
                                                     color, axe)
-        axe.axvline(x=self.Ntrc, color='k', linewidth=2)
+        if xlim[1]>self.Ntrc: 
+            axe.axvline(x=self.Ntrc, color='k', linewidth=2)
     
 
 

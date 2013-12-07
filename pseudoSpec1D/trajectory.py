@@ -280,6 +280,8 @@ class Trajectory(object):
             raise self.TrajectoryError(
                 "t0>self.time.min(), tf<self.time.max()")
 
+        t0=float(t0)
+        tf=float(tf)
         idx0=self.whereTimeIdx(t0)
         idxF=self.whereTimeIdx(tf)
         cutNDt=idxF-idx0

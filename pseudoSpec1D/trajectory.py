@@ -332,6 +332,7 @@ class Trajectory(object):
     def __allocate(self, nDt):
         self.nDt=nDt
         self.__data=np.zeros(shape=(self.nDt+1,self.grid.N))
+        self.shape=self.__data.shape
 
 
 

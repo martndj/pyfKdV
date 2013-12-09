@@ -13,3 +13,4 @@ from trajectory import *
 from Launcher import *
 from TLMLauncher import *
 from psMisc import *
+from animTraj import animTraj

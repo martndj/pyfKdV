@@ -127,17 +127,17 @@ class Param(object):
                         self.nDt=p.nDt
                         self.isTimeDependant=True
 
-        self.forcing=self.__setTraj(forcing)
-        self.alpha=self.__setTraj(alpha)
-        self.beta=self.__setTraj(beta)
-        self.gamma=self.__setTraj(gamma)
-        self.rho=self.__setTraj(rho)
+        self.forcing=self._setTraj(forcing)
+        self.alpha=self._setTraj(alpha)
+        self.beta=self._setTraj(beta)
+        self.gamma=self._setTraj(gamma)
+        self.rho=self._setTraj(rho)
         
         self.shape=(5, self.nDt ,self.grid.N)
         self.__incrmTReal(self.dt)
     #----------------------------------------------------------------
 
-    def __setTraj(self, param):
+    def _setTraj(self, param):
 
         if isinstance(param, Trajectory):
             if param.nDt<self.nDt:
@@ -159,7 +159,7 @@ class Param(object):
                             *param)
 
         elif callable(param):
-            data=self.__matricize(param)
+            data=self._matricize(param)
             traj=Trajectory(self.grid)
             traj.zeros(self.nDt, self.dt)
             traj.putData(data)
@@ -190,7 +190,7 @@ class Param(object):
             
     #----------------------------------------------------------------
 
-    def __matricize(self, funcXT):
+    def _matricize(self, funcXT):
         time=np.linspace(0., self.nDt*self.dt, self.nDt+1)
         matrix=np.empty(shape=(self.nDt+1, self.grid.N))
         for i in xrange(self.grid.N):

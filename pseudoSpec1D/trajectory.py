@@ -319,6 +319,17 @@ class Trajectory(object):
         degrad.incrmTReal(finished=True, tReal=self.tReal)
         return degrad
 
+    #------------------------------------------------------
+
+    def delX(self):
+
+        delXTraj=Trajectory(self.grid)
+        delXTraj.initialize(self.grid.zeros(), self.nDt, self.dt)
+        for t in xrange(self.nDt+1):
+            delXTraj[t]=np.gradient(self[t])/self.grid.dx
+        delXTraj.incrmTReal(finished=True, tReal=self.tReal)
+        return delXTraj
+
 
     #------------------------------------------------------
     #----| Private methods |-------------------------------

@@ -2,7 +2,7 @@ import numpy as np
 from pseudoSpec1D import *
 
 class Param(object):
-    r"""
+    """
      Augmented KdV differential system parameters
 
         \partial_t A(x,t)= forcing(x) - \alpha(x) A 
@@ -26,7 +26,6 @@ class Param(object):
                 it is not necessary for anyone of them to actually
                 be used in the return expression.
 
-        <TODO>  parameters defined as array  
 
     """
     class ParamError(Exception):
@@ -165,9 +164,26 @@ class Param(object):
             traj.zeros(self.nDt, self.dt)
             traj.putData(data)
 
+        elif isinstance(param, np.ndarray):
+            if param.shape[-1] <> self.grid.N:
+                raise self.ParamError("param.shape[-1]=self.grid.N")
+                
+            if param.ndim==1:
+                data=np.outer(np.ones(self.nDt+1), param)
+            elif param.ndim==2:
+                if param.shape[0] <> self.nDt+1:
+                    raise self.ParamError("param.shape[0]=self.nDt+1")
+                data=param
+            else:   
+                raise self.ParamError("param.ndim in [1,2]")
+            traj=Trajectory(self.grid)
+            traj.zeros(self.nDt, self.dt)
+            traj.putData(data)
+                
+
         else:
             raise self.ParamError(
-                    "<float|function(x,t)|Trajectory>")
+                    "<float|function(x,t)|numpy.ndarray|Trajectory>")
         
         traj.ic=traj[0]
         return traj

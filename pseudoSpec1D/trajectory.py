@@ -321,12 +321,12 @@ class Trajectory(object):
 
     #------------------------------------------------------
 
-    def delX(self):
+    def gradient(self):
 
         delXTraj=Trajectory(self.grid)
         delXTraj.initialize(self.grid.zeros(), self.nDt, self.dt)
         for t in xrange(self.nDt+1):
-            delXTraj[t]=np.gradient(self[t])/self.grid.dx
+            delXTraj[t]=self.grid.gradient(self[t])
         delXTraj.incrmTReal(finished=True, tReal=self.tReal)
         return delXTraj
 

@@ -114,7 +114,6 @@ class Trajectory(object):
         """
 
         self.initialize(np.zeros(self.grid.N), nDt, dt)
-        self[0]=self.ic
         self.putData(np.zeros(shape=(self.nDt+1, self.grid.N)))
         self.incrmTReal(finished=True, tReal=self.tInt)
     
@@ -183,6 +182,7 @@ class Trajectory(object):
             raise self.TrajectoryError("Incompatible data affectation")
         self.__data=data
         self.shape=data.shape
+        self.ic=self[0]
 
         if tReal<>None:
             self.incrmTReal(finished=True, tReal=tReal)
@@ -396,7 +396,7 @@ class Trajectory(object):
             raise self.TrajectoryError("Incompatible grids")
 
         trajSub=self.copy()
-        trajSub.putData(self.__data-traj2.__data)
+        trajSub.putData(self.__data-traj2.__data, tReal=self.tReal)
         return trajSub
 
     #-------------------------------------------------------
@@ -417,7 +417,7 @@ class Trajectory(object):
             raise self.TrajectoryError("Incompatible grids")
 
         trajAdd=self.copy()
-        trajAdd.putData(self.__data+traj2.__data)
+        trajAdd.putData(self.__data+traj2.__data, tReal=self.tReal)
         return trajAdd
 
     #-------------------------------------------------------

@@ -123,7 +123,7 @@ class TLMLauncher(object):
         else:
             self.fullPertTraj=False
 
-        fPert=self.propagator(pert, t0=t0)
+        fPert=self.propagator(pert.copy(), t0=t0)
 
         if fPert.dtype<>'float64':
             raise LauncherError('Potential loss of precision')
@@ -154,7 +154,7 @@ class TLMLauncher(object):
             specFilt(pert, self.grid)
         self._timeValidation(tInt, t0)
 
-        adj= self.propagatorAdj(pert)
+        adj= self.propagatorAdj(pert.copy())
         if adj.dtype<>'float64':
             raise LauncherError('Potential loss of precision')
         return adj

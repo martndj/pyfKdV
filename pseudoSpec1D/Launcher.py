@@ -69,10 +69,10 @@ class Launcher(object):
         
         # Initialisation
         traj=Trajectory(self.grid)
-        traj.initialize(ic, self.nDt, self.dt)
+        traj.initialize(ic.copy(), self.nDt, self.dt)
 
         # calling the propagator
-        traj=self.propagator(ic, traj, t0=t0)
+        traj=self.propagator(traj.ic, traj, t0=t0)
         if traj.getData().dtype<>'float64':
             raise LauncherError('Potential loss of precision')
 

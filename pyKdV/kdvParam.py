@@ -186,6 +186,7 @@ class Param(object):
                     "<float|function(x,t)|numpy.ndarray|Trajectory>")
         
         traj.ic=traj[0]
+        traj.incrmTReal(finished=True, tReal=self.dt*self.nDt)
         return traj
             
     #----------------------------------------------------------------

@@ -321,13 +321,15 @@ class Trajectory(object):
 
     #------------------------------------------------------
 
-    def gradient(self):
+    def gradient(self, n=1):
 
         delXTraj=Trajectory(self.grid)
         delXTraj.initialize(self.grid.zeros(), self.nDt, self.dt)
         data=np.empty(shape=self.shape)
         for t in xrange(self.nDt+1):
-            data[t]=self.grid.gradient(self[t])
+            data[t]=self[t]
+            for i in xrange(n):
+                data[t]=self.grid.gradient(data[t])
         delXTraj.putData(data)
         delXTraj.incrmTReal(finished=True, tReal=self.tReal)
         return delXTraj
@@ -337,14 +339,32 @@ class Trajectory(object):
     def delT(self):
 
         if not self.isIntegrated:
-            raise TrajectoryError("Trajectory not integrated") 
+            raise self.TrajectoryError("Trajectory not integrated") 
         delTTraj=Trajectory(self.grid)
-        delTTraj.initialize(self.grid.zeros(), self.nDt, self.dt)
-        data=np.empty(shape=self.shape)
-        data=np.gradient(self.getData(), self.dt)[0]
-        delTTraj.putData(data)
-        delTTraj.incrmTReal(finished=True, tReal=self.tReal)
+        if self.nDt==0:
+            delTTraj.null(self.nDt, self.dt)
+        else:
+            delTTraj.initialize(self.grid.zeros(), self.nDt, self.dt)
+            data=np.empty(shape=self.shape)
+            data=np.gradient(self.getData(), self.dt)[0]
+            delTTraj.putData(data)
+            delTTraj.incrmTReal(finished=True, tReal=self.tReal)
         return delTTraj
+    
+    #------------------------------------------------------
+
+    def pointMult(self, traj, filter=False):
+        
+        prodTraj=Trajectory(self.grid)
+        prodTraj.initialize(self.grid.zeros(), self.nDt, self.dt)
+        data=np.empty(shape=self.shape)
+        for t in xrange(self.nDt+1):
+            data[t]=self[t]*traj[t]
+        if filter:
+            pass
+        prodTraj.putData(data)
+        prodTraj.incrmTReal(finished=True, tReal=self.tReal)
+        return prodTraj
 
 
     #------------------------------------------------------
@@ -361,7 +381,29 @@ class Trajectory(object):
         self.__data=np.zeros(shape=(self.nDt+1,self.grid.N))
         self.shape=self.__data.shape
 
+    #-------------------------------------------------------
 
+    def compatibility(self, traj2):
+        if (not isinstance(traj2, Trajectory)):
+            raise self.TrajectoryError("Operation on Trajectory objects")
+
+        if (self.dt != traj2.dt):
+            #raise self.TrajectoryError("Incompatible time increment")
+            return False
+        if (self.nDt != traj2.nDt):
+            #raise self.TrajectoryError("Incompatible time step number")
+            return False
+        elif (not self.grid == traj2.grid):
+            #print("%d %d"%(self.grid.N,traj2.grid.N))
+            #print("%g %g"%(self.grid.dx,traj2.grid.dx))
+            #print("%g %g"%(self.grid.L,traj2.grid.L))
+            #print(self.grid.N==traj2.grid.N and 
+            #      self.grid.dx==traj2.grid.dx and 
+            #      self.grid.L==traj2.grid.L)
+            #raise self.TrajectoryError("Incompatible grids")
+            return False
+        else:
+            return True
 
     #----| Classical overloads |----------------------------
     #-------------------------------------------------------
@@ -400,16 +442,8 @@ class Trajectory(object):
         if (not isinstance(traj2, Trajectory)):
             raise self.TrajectoryError("Operation on Trajectory objects")
 
-        if (self.dt != traj2.dt):
-            raise self.TrajectoryError("Incompatible time increment")
-        elif (not self.grid == traj2.grid):
-            print("%d %d"%(self.grid.N,traj2.grid.N))
-            print("%g %g"%(self.grid.dx,traj2.grid.dx))
-            print("%g %g"%(self.grid.L,traj2.grid.L))
-            print(self.grid.N==traj2.grid.N and 
-                  self.grid.dx==traj2.grid.dx and 
-                  self.grid.L==traj2.grid.L)
-            raise self.TrajectoryError("Incompatible grids")
+        if (not self.compatibility(traj2)):
+           raise self.TrajectoryError("Incompatible trajectories")
 
         trajSub=self.copy()
         trajSub.putData(self.__data-traj2.__data, tReal=self.tReal)
@@ -421,16 +455,8 @@ class Trajectory(object):
         if (not isinstance(traj2, Trajectory)):
             raise self.TrajectoryError("Operation on Trajectory objects")
 
-        if (self.dt != traj2.dt):
-            raise self.TrajectoryError("Incompatible time increment")
-        elif (not self.grid == traj2.grid):
-            print("%d %d"%(self.grid.N,traj2.grid.N))
-            print("%g %g"%(self.grid.dx,traj2.grid.dx))
-            print("%g %g"%(self.grid.L,traj2.grid.L))
-            print(self.grid.N==traj2.grid.N and 
-                  self.grid.dx==traj2.grid.dx and 
-                  self.grid.L==traj2.grid.L)
-            raise self.TrajectoryError("Incompatible grids")
+        if (not self.compatibility(traj2)):
+           raise self.TrajectoryError("Incompatible trajectories")
 
         trajAdd=self.copy()
         trajAdd.putData(self.__data+traj2.__data, tReal=self.tReal)

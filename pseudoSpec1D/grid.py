@@ -123,7 +123,7 @@ class Grid(object):
     #-------------------------------------------------------
 
     def gradient(self, field):
-        return np.gradient(field)/self.dx
+        return np.gradient(field, self.dx)
     
 
     #-------------------------------------------------------

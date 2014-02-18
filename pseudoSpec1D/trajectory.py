@@ -332,6 +332,20 @@ class Trajectory(object):
         delXTraj.incrmTReal(finished=True, tReal=self.tReal)
         return delXTraj
 
+    #------------------------------------------------------
+
+    def delT(self):
+
+        if not self.isIntegrated:
+            raise TrajectoryError("Trajectory not integrated") 
+        delTTraj=Trajectory(self.grid)
+        delTTraj.initialize(self.grid.zeros(), self.nDt, self.dt)
+        data=np.empty(shape=self.shape)
+        data=np.gradient(self.getData(), self.dt)[0]
+        delTTraj.putData(data)
+        delTTraj.incrmTReal(finished=True, tReal=self.tReal)
+        return delTTraj
+
 
     #------------------------------------------------------
     #----| Private methods |-------------------------------

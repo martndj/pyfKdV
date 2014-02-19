@@ -467,6 +467,7 @@ class Trajectory(object):
     def __mul__(self, scalar):
         trajMult=self.copy()
         trajMult.__data*=scalar
+        trajMult.ic*=scalar
         return trajMult
 
     #-------------------------------------------------------

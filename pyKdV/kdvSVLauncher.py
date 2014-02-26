@@ -70,6 +70,7 @@ class kdvSVLauncher(object):
         self.nDt=int(self.tInt/self.refTraj.dt)
 
         self.nSV=nSV
+        self.Nev=self.nSV # retro compatibility
         grid=self.grid
         param=self.param
         traj=self.refTraj

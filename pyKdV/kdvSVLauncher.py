@@ -16,11 +16,11 @@ class kdvSVLauncher(object):
 
     To launch Lanczos calculation (lenghty process):
 
-        kdvSVLauncher(traj, param).lanczos(Nev)
+        kdvSVLauncher(traj, param).lanczos(nSV)
 
         traj    :   reference trajectory <Trajectory>
         param   :   parametrisation <kdvParam>
-        Nev     :   number of singular vector calculated <int>
+        nSV     :   number of singular vector calculated <int>
     """
     class kdvSVLauncherError(Exception):
         pass
@@ -45,13 +45,13 @@ class kdvSVLauncher(object):
 
     #------------------------------------------------------
 
-    def lanczos(self, Nev, tInt=None):
+    def lanczos(self, nSV, tInt=None):
         """
         Call to the Lanczos procedure to calculate singular vectors 
 
-            kdvSVLauncher.lanczos(Nev, tInt=None)
+            kdvSVLauncher.lanczos(nSV, tInt=None)
 
-            Nev     :   number of dominant singular vectors <int>
+            nSV     :   number of dominant singular vectors <int>
             tInt    :   integration time <float>
             
             if tInt==None, the full reference trajectory integration
@@ -69,7 +69,7 @@ class kdvSVLauncher(object):
 
         self.nDt=int(self.tInt/self.refTraj.dt)
 
-        self.Nev=Nev
+        self.nSV=nSV
         grid=self.grid
         param=self.param
         traj=self.refTraj
@@ -77,7 +77,7 @@ class kdvSVLauncher(object):
 
         sVal, sVec=fKdV.fKdVLanczos(grid.N, grid.Ntrc, grid.L,
                                     traj.dt, self.nDt, param.nDt,
-                                    traj.getData(), self.Nev,
+                                    traj.getData(), self.nSV,
                                     param[1].getData(), 
                                     param[2].getData(),
                                     param[3].getData(), 
@@ -87,6 +87,19 @@ class kdvSVLauncher(object):
         self.sVec=sVec
         self.isCalculated=True
         return self.sVal
+
+    #------------------------------------------------------
+
+    def straightenSV(self):
+
+        if not self.isCalculted:
+            raise self.kdvSVLauncherError("SV must be calculated first!")
+
+        for i in self.nSV:
+            if np.abs(np.min(self.sVec[i]))>np.max(self.sVec[i]):
+                self.sVec[i]=-self.sVec[i]
+            else:
+                pass
 
     #----| Classical overloads |----------------------------
     #-------------------------------------------------------
@@ -107,7 +120,7 @@ class kdvSVLauncher(object):
     #-------------------------------------------------------
 
     #def __getitem__(self, idx):
-    #    if idx[0]>=self.Nev:
+    #    if idx[0]>=self.nSV:
     #        raise IndexError()
 #====================================================================
 #--------------------------------------------------------------------
@@ -121,7 +134,7 @@ if __name__=='__main__':
     grid=PeriodicGrid(150,300.)
     tInt=2.
     maxA=2.
-    Nev=2
+    nSV=2
     
     def gaussNeg(x,t):
         x0=0.
@@ -138,9 +151,9 @@ if __name__=='__main__':
     traj=launcher.integrate(ic, tInt)
     
     svLauncher=kdvSVLauncher(param, traj)
-    sVal=svLauncher.lanczos(Nev, tInt=2.)
+    sVal=svLauncher.lanczos(nSV, tInt=2.)
     
     print(sVal)
-    for i in xrange(Nev):
+    for i in xrange(nSV):
         plt.plot(grid.x,svLauncher.sVec[i])
     plt.show()

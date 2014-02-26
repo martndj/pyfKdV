@@ -45,7 +45,7 @@ class kdvSVLauncher(object):
 
     #------------------------------------------------------
 
-    def lanczos(self, nSV, tInt=None):
+    def lanczos(self, nSV, tInt=None, straighten=True):
         """
         Call to the Lanczos procedure to calculate singular vectors 
 
@@ -87,16 +87,17 @@ class kdvSVLauncher(object):
         self.sVal=sVal
         self.sVec=sVec
         self.isCalculated=True
+        if straighten: self.straightenSV()
         return self.sVal
 
     #------------------------------------------------------
 
     def straightenSV(self):
 
-        if not self.isCalculted:
+        if not self.isCalculated:
             raise self.kdvSVLauncherError("SV must be calculated first!")
 
-        for i in self.nSV:
+        for i in xrange(self.nSV):
             if np.abs(np.min(self.sVec[i]))>np.max(self.sVec[i]):
                 self.sVec[i]=-self.sVec[i]
             else:

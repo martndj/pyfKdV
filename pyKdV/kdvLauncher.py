@@ -94,13 +94,7 @@ class kdvLauncher(Launcher):
                                                         self.dt, param.dt))
 
         # if t0<>0 param must be adjusted before passed to propagator
-        if t0==self.param.t0 :
-            param=self.param
-        elif t0>self.param.t0:
-            if t0>=self.param.tf:
-                param=self.param.final
-            else:
-                param=self.param.cut(t0) 
+        param=self.__t0AdjustParam(self.param, t0=t0)
                 
         else: raise ValueError("t0>=0.")
         
@@ -118,6 +112,21 @@ class kdvLauncher(Launcher):
         traj.incrmTReal(finished=True, tReal=tReal+t0, t0=t0)
 
         return traj
+
+    #------------------------------------------------------
+
+    def __t0AdjustParam(self, param, t0=0., limit=False):
+        
+        if t0==param.t0 :
+            return param
+        elif t0>param.t0:
+            if t0>=param.tf
+                if limit:
+                    raise ValueError()
+                else:
+                    return param.final
+            else:
+                return param.cut(t0) 
 
 #====================================================================
 #--------------------------------------------------------------------

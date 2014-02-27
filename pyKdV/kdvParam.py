@@ -26,14 +26,13 @@ class Param(object):
                 it is not necessary for anyone of them to actually
                 be used in the return expression.
 
-
     """
     class ParamError(Exception):
         pass
 
 
     def __init__(self, grid, forcing=0., alpha=0., beta=1.,
-                    gamma=-1.,  rho=0., nDt=0, dt=0., tInt=0.):
+                    gamma=-1.,  rho=0., nDt=0, dt=0., tInt=0., t0=0.):
 
         if not (isinstance(grid, PeriodicGrid)):
             raise self.ParamError(
@@ -74,8 +73,10 @@ class Param(object):
         else:
             self.nDt=nDt
         self.dt=dt
+        self.t0=t0
 
-        self.__initTraj(forcing, alpha, beta, gamma, rho)
+        self.__initTraj(forcing, alpha, beta, gamma, rho, t0=t0)
+        self.__finalize()
     #----------------------------------------------------------------
     #----| Public methods |------------------------------------------
     #----------------------------------------------------------------
@@ -95,23 +96,60 @@ class Param(object):
             tryVal=np.min(self[i])
             if tryVal<val: val=tryVal
         return val
+
     #----------------------------------------------------------------
 
-    def __incrmTReal(self, dt):
+    def whereTime(self, time):
+        return Param(self.grid, 
+                forcing=self.forcing.whereTime(time),
+                alpha=self.alpha.whereTime(time),
+                beta=self.beta.whereTime(time),
+                gamma=self.gamma.whereTime(time),
+                rho=self.rho.whereTime(time), t0=time)
+
+    #----------------------------------------------------------------
+
+    def cut(self, t0=None, tf=None):
+   
+        return Param(self.grid, 
+                forcing=self.forcing.cut(t0=t0,tf=tf),
+                alpha=self.alpha.cut(t0=t0, tf=tf),
+                beta=self.beta.cut(t0=t0, tf=tf),
+                gamma=self.gamma.cut(t0=t0, tf=tf),
+                rho=self.rho.cut(t0=t0, tf=tf),
+                dt=self.dt, nDt=self.nDt)
+
+    #----------------------------------------------------------------
+
+    def __incrmTReal(self, dt, t0=0.):
         self.tReal=self.dt*self.nDt
-        self.alpha.incrmTReal(finished=True, tReal=self.tReal)
-        self.beta.incrmTReal(finished=True, tReal=self.tReal)
-        self.gamma.incrmTReal(finished=True, tReal=self.tReal)
-        self.rho.incrmTReal(finished=True, tReal=self.tReal)
+        self.alpha.incrmTReal(finished=True, tReal=self.tReal, t0=t0)
+        self.beta.incrmTReal(finished=True, tReal=self.tReal, t0=t0)
+        self.gamma.incrmTReal(finished=True, tReal=self.tReal, t0=t0)
+        self.rho.incrmTReal(finished=True, tReal=self.tReal, t0=t0)
         self.forcing.incrmTReal(finished=True, 
-                                    tReal=self.tReal)
+                                    tReal=self.tReal, t0=t0)
         
+    #----------------------------------------------------------------
+
+    def __finalize(self):
+        self.time=self.forcing.time
+        self.tf=self.time.max()
+        if self.isTimeDependant:
+            self.final=Param(self.grid, 
+                            forcing=self.forcing.final,
+                            alpha=self.alpha.final,
+                            beta=self.beta.final,
+                            gamma=self.gamma.final,
+                            rho=self.rho.final, t0=self.tf)
+               
+
 
     #----------------------------------------------------------------
     #----| Private methods |-----------------------------------------
     #----------------------------------------------------------------
 
-    def __initTraj(self, forcing, alpha, beta, gamma, rho):
+    def __initTraj(self, forcing, alpha, beta, gamma, rho, t0=0.):
         params=(forcing, alpha, beta, gamma, rho)
         if self.inputAsTrajectory:
             for p in params:
@@ -127,24 +165,24 @@ class Param(object):
                         self.nDt=p.nDt
                         self.isTimeDependant=True
 
-        self.forcing=self._setTraj(forcing)
-        self.alpha=self._setTraj(alpha)
-        self.beta=self._setTraj(beta)
-        self.gamma=self._setTraj(gamma)
-        self.rho=self._setTraj(rho)
+        self.forcing=self._setTraj(forcing, t0=t0)
+        self.alpha=self._setTraj(alpha, t0=t0)
+        self.beta=self._setTraj(beta, t0=t0)
+        self.gamma=self._setTraj(gamma, t0=t0)
+        self.rho=self._setTraj(rho, t0=t0)
         
         self.shape=(5, self.nDt ,self.grid.N)
-        self.__incrmTReal(self.dt)
+        self.__incrmTReal(self.dt, t0=t0)
     #----------------------------------------------------------------
 
-    def _setTraj(self, param):
+    def _setTraj(self, param, t0=0.):
 
         if isinstance(param, Trajectory):
             if param.nDt<self.nDt:
-                data=params[i].getData()
+                data=param.getData()
                 newdata=np.empty(shape=(self.nDt+1, self.grid.N))
-                newdata[0:params[i].nDt+1,:]=data
-                newdata[params[i].nDt+1:, :]=data[params[i].nDt+1, :]
+                newdata[0:param.nDt+1,:]=data
+                newdata[param.nDt+1:, :]=data[param.nDt]
                 traj=Trajectory(self.grid)
                 traj.zeros(self.nDt, self.dt)
                 traj.putData(newdata)
@@ -186,7 +224,7 @@ class Param(object):
                     "<float|function(x,t)|numpy.ndarray|Trajectory>")
         
         traj.ic=traj[0]
-        traj.incrmTReal(finished=True, tReal=self.dt*self.nDt)
+        traj.incrmTReal(finished=True, tReal=self.dt*self.nDt, t0=t0)
         return traj
             
     #----------------------------------------------------------------
@@ -248,25 +286,4 @@ class Param(object):
 #==========================================================
 #----------------------------------------------------------
 #==========================================================
-if __name__=='__main__':
-    import matplotlib.pyplot as plt
-    L=300.
-    grid=PeriodicGrid(142, L)
-    
-    
-    def func(x,t):
-        return np.sin(3.*x/L)
-
-    def funcTimeDependant(x, t):
-        return np.sin(2.*x/L-t/2.)*np.cos(t/2.)
-
-    p=Param(grid, funcTimeDependant, 0., -1., -1., func,
-                tInt=10., dt=0.05)
-    if p.isTimeDependant:
-        p[0].waterfall()
-    else:
-        plt.plot(grid.x, p[0][0])
-    
-    plt.show() 
-
-
+#if __name__=='__main__':

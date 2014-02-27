@@ -84,16 +84,27 @@ class kdvLauncher(Launcher):
         
         # Local variables names
         grid=self.grid
-        param=self.param
         tReal=0.
 
-        # to be corrected
-        if (not (param.nDt==0 and param.dt==0.)
-            and (self.dt <> param.dt)):
+        # to be corrected (?: what is the problem?)
+        if (not (self.param.nDt==0 and self.param.dt==0.)
+            and (self.dt <> self.param.dt)):
             raise self.kdvLauncherError(
                     "incompatible parameter time increment (%f, %f)"%(
                                                         self.dt, param.dt))
+
+        # if t0<>0 param must be adjusted before passed to propagator
+        if t0==self.param.t0 :
+            param=self.param
+        elif t0>self.param.t0:
+            if t0>=self.param.tf:
+                param=self.param.final
+            else:
+                param=self.param.cut(t0) 
+                
+        else: raise ValueError("t0>=0.")
         
+
         trajData=fKdV.fKdVPropagator(
                     grid.N, grid.Ntrc, grid.L, self.dt, self.nDt,
                     param.nDt,

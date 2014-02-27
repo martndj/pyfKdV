@@ -45,29 +45,29 @@ class kdvSVLauncher(object):
 
     #------------------------------------------------------
 
-    def lanczos(self, nSV, tInt=None, straighten=True):
+    def lanczos(self, nSV, tOpt=None, straighten=True):
         """
         Call to the Lanczos procedure to calculate singular vectors 
 
-            kdvSVLauncher.lanczos(nSV, tInt=None)
+            kdvSVLauncher.lanczos(nSV, tOpt=None)
 
             nSV     :   number of dominant singular vectors <int>
-            tInt    :   integration time <float>
+            tOpt    :   optimization (integration) time <float>
             
-            if tInt==None, the full reference trajectory integration
+            if tOpt==None, the full reference trajectory integration
             time is taken.
         """
-        if tInt==None:
-            self.tInt=self.refTraj.tInt
-        elif isinstance(tInt, (int, float)):
-            if tInt<=self.refTraj.tInt:
-                self.tInt=tInt
+        if tOpt==None:
+            self.tOpt=self.refTraj.tReal
+        elif isinstance(tOpt, (int, float)):
+            if tOpt<=self.refTraj.tReal:
+                self.tOpt=tOpt
             else:
-                raise self.kdvSVLauncherError("tInt > traj.tInt")
+                raise self.kdvSVLauncherError("tOpt > traj.tReal")
         else:
-            raise self.kdvSVLauncherError("tInt <None|int|float>")
+            raise self.kdvSVLauncherError("tOpt <None|int|float>")
 
-        self.nDt=int(self.tInt/self.refTraj.dt)
+        self.nDt=int(self.tOpt/self.refTraj.dt)
 
         self.nSV=nSV
         self.Nev=self.nSV # retro compatibility
@@ -128,34 +128,4 @@ class kdvSVLauncher(object):
 #--------------------------------------------------------------------
 #====================================================================
 
-if __name__=='__main__':
-    
-    import matplotlib.pyplot as plt
-    from kdvMisc import gauss, soliton
-    
-    grid=PeriodicGrid(150,300.)
-    tInt=2.
-    maxA=2.
-    nSV=2
-    
-    def gaussNeg(x,t):
-        x0=0.
-        sig=5.
-        return -0.1*gauss(x, x0, sig) 
-    def sinus(x,t):
-        return 0.1*np.sin(2.*2*np.pi*x/150.)
-
-    param=Param(grid, beta=1., gamma=-1., rho=gaussNeg, forcing=sinus)
-    ic=soliton(grid.x, 1., beta=1., gamma=-1. )
-    
-    # NL model integration
-    launcher=kdvLauncher(param, maxA=maxA)
-    traj=launcher.integrate(ic, tInt)
-    
-    svLauncher=kdvSVLauncher(param, traj)
-    sVal=svLauncher.lanczos(nSV, tInt=2.)
-    
-    print(sVal)
-    for i in xrange(nSV):
-        plt.plot(grid.x,svLauncher.sVec[i])
-    plt.show()
+#if __name__=='__main__':

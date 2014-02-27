@@ -38,7 +38,6 @@ class Trajectory(object):
         self.grid=grid
 
         # Time attributes
-        self.tInt=0.
         self.tReal=0.
         self.nDt=0
         self.dt=0.
@@ -85,7 +84,6 @@ class Trajectory(object):
             raise self.TrajectoryError("ic.shape<>(grid.N,)")
         self.__allocate(nDt)
         self.dt=dt
-        self.tInt=self.nDt*self.dt
         self.ic=ic
         self.isInitialised=True
 
@@ -115,7 +113,7 @@ class Trajectory(object):
 
         self.initialize(np.zeros(self.grid.N), nDt, dt)
         self.putData(np.zeros(shape=(self.nDt+1, self.grid.N)))
-        self.incrmTReal(finished=True, tReal=self.tInt)
+        self.incrmTReal(finished=True, tReal=self.nDt*self.dt)
     
     #-------------------------------------------------------
     
@@ -124,9 +122,10 @@ class Trajectory(object):
             self.tReal=tReal
         if finished:
             self.isIntegrated=True
-            self.time=np.linspace(t0,self.tReal, self.nDt+1)
-            self.final=self.__data[self.nDt]
             self.t0=t0
+            self.tf=self.tReal+self.t0
+            self.time=np.linspace(self.t0,self.tf, self.nDt+1)
+            self.final=self.__data[self.nDt]
 
         else:
             self.tReal+=self.dt
@@ -274,22 +273,32 @@ class Trajectory(object):
     
     #-------------------------------------------------------
     
-    def cut(self, t0,tf):
+    def cut(self, t0=None, tf=None):
 
         if t0<self.time.min() or tf>self.time.max():
             raise self.TrajectoryError(
                 "t0>self.time.min(), tf<self.time.max()")
 
-        t0=float(t0)
-        tf=float(tf)
-        idx0=self.whereTimeIdx(t0)
-        idxF=self.whereTimeIdx(tf)
-        cutNDt=idxF-idx0
+        if t0==None:
+            idx0=0
+        elif t0<self.tReal:
+            t0=float(t0)
+            idx0=self.whereTimeIdx(t0)
+        else: raise ValueError()
+        if tf==None or tf==self.tReal:
+            idxF=self.nDt
+        elif tf<self.tReal:
+            tf=float(tf)
+            idxF=self.whereTimeIdx(tf)
+            if idxF>self.nDt: idxF=self.nDt
+        else: raise ValueError()
+
+        cutNDt=idxF-idx0-1
         cutTraj=Trajectory(self.grid)
         cutTraj.initialize(self[idx0], cutNDt+1, self.dt)
         for i in xrange(cutTraj.nDt+1):
             cutTraj[i]=self.__data[idx0+i]
-        cutTraj.incrmTReal(finished=True, tReal=tf, t0=t0)
+        cutTraj.incrmTReal(finished=True, tReal=cutNDt*self.dt, t0=t0)
         return cutTraj
 
     #------------------------------------------------------

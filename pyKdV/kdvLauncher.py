@@ -84,7 +84,6 @@ class kdvLauncher(Launcher):
         
         # Local variables names
         grid=self.grid
-        tReal=0.
 
         # to be corrected (?: what is the problem?)
         if (not (self.param.nDt==0 and self.param.dt==0.)
@@ -108,7 +107,7 @@ class kdvLauncher(Launcher):
 
         tReal=traj.nDt*traj.dt
         traj.putData(trajData)
-        traj.incrmTReal(finished=True, tReal=tReal+t0, t0=t0)
+        traj.incrmTReal(finished=True, tReal=tReal, t0=t0)
 
         return traj
 

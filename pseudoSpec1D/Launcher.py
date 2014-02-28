@@ -60,12 +60,12 @@ class Launcher(object):
         if filtNtrc:
             specFilt(ic, self.grid)
 
-        self.tIntIn=tInt
-        self.nDt=int(self.tIntIn/self.dt)
-        self.tInt=self.nDt*self.dt
-        if self.tInt<self.tIntIn:
+        self.nDt=int(tInt/self.dt)
+        
+        if self.nDt*self.dt < tInt :
             self.nDt+=1
-            self.tInt=self.nDt*self.dt
+
+        self.tInt=self.nDt*self.dt
         
         # Initialisation
         traj=Trajectory(self.grid)

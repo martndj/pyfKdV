@@ -121,7 +121,7 @@ ucy between the TLM adjoint and the
 
         # Local variables names
         grid=self.grid
-        param=self.param
+        param=self.__t0AdjustParam(self.param, t0=t0)
         
         if self.fullPertTraj==True:
             self.pertTraj.putData(
@@ -153,11 +153,11 @@ ucy between the TLM adjoint and the
 
     #------------------------------------------------------
 
-    def __kdvTLMProp_Fortran_Adj(self, pert):
+    def __kdvTLMProp_Fortran_Adj(self, pert, t0=0.):
 
         # Local variables names
         grid=self.grid
-        param=self.param
+        param=self.__t0AdjustParam(self.param, t0=t0)
 
         aPert=fKdV.fKdVTLMPropagatorAdj(
                 grid.N, grid.Ntrc, grid.L, self.dt, self.nDt, param.nDt,
@@ -173,11 +173,11 @@ ucy between the TLM adjoint and the
 
     #------------------------------------------------------
 
-    def __kdvTLMSingularOp_Fortran(self, pert):
+    def __kdvTLMSingularOp_Fortran(self, pert, t0=0.):
 
         # Local variables names
         grid=self.grid
-        param=self.param
+        param=self.__t0AdjustParam(self.param, t0=t0)
 
         LAdjLx=fKdV.fKdVTLMSingularOp(
                 grid.N, grid.Ntrc, grid.L, self.dt, self.nDt, param.nDt,
@@ -195,16 +195,35 @@ ucy between the TLM adjoint and the
         
     #------------------------------------------------------
 
-    def __kdvTLMGradTest_Fortran(self, ic, maxPow):
+    def __kdvTLMGradTest_Fortran(self, ic, maxPow, t0=0.):
         
         grid=self.grid
-        param=self.param
+        param=self.__t0AdjustParam(self.param, t0=t0)
         
         fKdV.fKdVTestGradient(grid.N, grid.Ntrc, grid.L, 
                 self.dt, self.nDt, param.nDt, maxPow, ic,
                 param[1].getData(), param[2].getData(), 
                 param[3].getData(), param[4].getData(),
                 param[0].getData())
+
+    #------------------------------------------------------
+
+    def __t0AdjustParam(self, param, t0=0., limit=False):
+        
+        if param.isTimeDependant:
+            if t0==param.t0 :
+                return param
+            elif t0>param.t0:
+                if t0>=param.tf:
+                    if limit:
+                        raise ValueError()
+                    else:
+                        return param.final
+                else:
+                    return param.cut(t0) 
+        else:
+            return param
+
 #--------------------------------------------------------------------
 #====================================================================
 #--------------------------------------------------------------------

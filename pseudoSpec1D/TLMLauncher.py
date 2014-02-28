@@ -167,7 +167,7 @@ class TLMLauncher(object):
     def _timeValidation(self, tInt, t0):
 
         # Time attributes
-        if tInt==None : tInt=self.refTraj.tInt-t0
+        if tInt==None : tInt=self.refTraj.tReal
         if t0<0.:
             raise self.TLMLauncherError("t0>=0.")
         elif t0<self.refTraj.t0:    

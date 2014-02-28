@@ -45,7 +45,7 @@ class kdvSVLauncher(object):
 
     #------------------------------------------------------
 
-    def lanczos(self, nSV, tOpt=None, straighten=True):
+    def lanczos(self, nSV, tOpt=None, t0=0., straighten=True):
         """
         Call to the Lanczos procedure to calculate singular vectors 
 
@@ -57,23 +57,29 @@ class kdvSVLauncher(object):
             if tOpt==None, the full reference trajectory integration
             time is taken.
         """
+        if t0>self.refTraj.t0:
+            traj=self.refTraj.cut(t0)
+        else:
+            traj=self.refTraj
+
         if tOpt==None:
-            self.tOpt=self.refTraj.tReal
+            self.tOpt=traj.tReal
         elif isinstance(tOpt, (int, float)):
-            if tOpt<=self.refTraj.tReal:
+            if tOpt<=traj.tReal:
                 self.tOpt=tOpt
             else:
                 raise self.kdvSVLauncherError("tOpt > traj.tReal")
         else:
             raise self.kdvSVLauncherError("tOpt <None|int|float>")
 
+
         self.nDt=int(self.tOpt/self.refTraj.dt)
 
         self.nSV=nSV
         self.Nev=self.nSV # retro compatibility
         grid=self.grid
-        param=self.param
-        traj=self.refTraj
+        param=self.__t0AdjustParam(self.param, t0=t0)
+
 
 
         sVal, sVec=fKdV.fKdVLanczos(grid.N, grid.Ntrc, grid.L,
@@ -102,6 +108,26 @@ class kdvSVLauncher(object):
                 self.sVec[i]=-self.sVec[i]
             else:
                 pass
+
+    #------------------------------------------------------
+    #----| Private methods |--------------------------------
+    #-------------------------------------------------------
+
+    def __t0AdjustParam(self, param, t0=0., limit=False):
+        
+        if param.isTimeDependant:
+            if t0==param.t0 :
+                return param
+            elif t0>param.t0:
+                if t0>=param.tf:
+                    if limit:
+                        raise ValueError()
+                    else:
+                        return param.final
+                else:
+                    return param.cut(t0) 
+        else:
+            return param
 
     #----| Classical overloads |----------------------------
     #-------------------------------------------------------

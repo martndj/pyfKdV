@@ -96,7 +96,6 @@ class kdvLauncher(Launcher):
         # if t0<>0 param must be adjusted before passed to propagator
         param=self.__t0AdjustParam(self.param, t0=t0)
                 
-        else: raise ValueError("t0>=0.")
         
 
         trajData=fKdV.fKdVPropagator(
@@ -117,16 +116,19 @@ class kdvLauncher(Launcher):
 
     def __t0AdjustParam(self, param, t0=0., limit=False):
         
-        if t0==param.t0 :
-            return param
-        elif t0>param.t0:
-            if t0>=param.tf
-                if limit:
-                    raise ValueError()
+        if param.isTimeDependant:
+            if t0==param.t0 :
+                return param
+            elif t0>param.t0:
+                if t0>=param.tf:
+                    if limit:
+                        raise ValueError()
+                    else:
+                        return param.final
                 else:
-                    return param.final
-            else:
-                return param.cut(t0) 
+                    return param.cut(t0) 
+        else:
+            return param
 
 #====================================================================
 #--------------------------------------------------------------------

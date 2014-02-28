@@ -94,7 +94,7 @@ class kdvSVLauncher(object):
         self.sVec=sVec
         self.isCalculated=True
         if straighten: self.straightenSV()
-        return self.sVal
+        return self.sVal, self.sVec
 
     #------------------------------------------------------
 

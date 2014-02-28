@@ -298,7 +298,7 @@ class Trajectory(object):
         cutTraj.initialize(self[idx0], cutNDt+1, self.dt)
         for i in xrange(cutTraj.nDt+1):
             cutTraj[i]=self.__data[idx0+i]
-        cutTraj.incrmTReal(finished=True, tReal=cutNDt*self.dt, t0=t0)
+        cutTraj.incrmTReal(finished=True, tReal=(cutNDt+1)*self.dt, t0=t0)
         return cutTraj
 
     #------------------------------------------------------

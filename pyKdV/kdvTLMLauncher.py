@@ -134,7 +134,7 @@ ucy between the TLM adjoint and the
                         param[3].getData(),param[4].getData(), 
                         fullTraj=True))
             self.pertTraj.incrmTReal(finished=True, 
-                                    tReal=self.nDt*self.dt+t0, t0=t0)
+                                    tReal=self.nDt*self.dt, t0=t0)
             fPert=self.pertTraj.final
 
         else:
@@ -145,7 +145,7 @@ ucy between the TLM adjoint and the
                     param[1].getData(), param[2].getData(),
                     param[3].getData(),param[4].getData(), fullTraj=False)
 
-        tReal=self.nDt*self.dt+t0
+        tReal=self.nDt*self.dt
 
         self.incrmTReal(finished=True, tReal=tReal)
         return fPert

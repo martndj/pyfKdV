@@ -169,7 +169,7 @@ class Trajectory(object):
 
     #-------------------------------------------------------
 
-    def putData(self, data, tReal=None):
+    def putData(self, data, tReal=None, t0=0.):
         """
         Trajectory values access method (input)
         """
@@ -184,7 +184,7 @@ class Trajectory(object):
         self.ic=self[0]
 
         if tReal<>None:
-            self.incrmTReal(finished=True, tReal=tReal)
+            self.incrmTReal(finished=True, tReal=tReal, t0=t0)
 
     #-------------------------------------------------------
 
@@ -266,7 +266,8 @@ class Trajectory(object):
         trajTrim[0]=self.ic
         for i in xrange(trajTrim.nDt):
             trajTrim[i+1]=self.__data[i*freq]
-        trajTrim.incrmTReal(finished=True, tReal=trajTrim.nDt*trajTrim.dt)
+        trajTrim.incrmTReal(finished=True, tReal=trajTrim.nDt*trajTrim.dt,
+                            t0=self.t0)
         trajTrim.isTrimmed=True
         trajTrim.isConcatenated=self.isConcatenated
         return trajTrim
@@ -325,7 +326,7 @@ class Trajectory(object):
         for i in xrange(1,self.nDt+1):
             for j in xrange(self.grid.N):
                 degrad[i][j]=self[i][j]+rnd.gauss(mu, sigma)
-        degrad.incrmTReal(finished=True, tReal=self.tReal)
+        degrad.incrmTReal(finished=True, tReal=self.tReal, t0=self.t0)
         return degrad
 
     #------------------------------------------------------
@@ -340,7 +341,7 @@ class Trajectory(object):
             for i in xrange(n):
                 data[t]=self.grid.gradient(data[t])
         delXTraj.putData(data)
-        delXTraj.incrmTReal(finished=True, tReal=self.tReal)
+        delXTraj.incrmTReal(finished=True, tReal=self.tReal, t0=self.t0)
         return delXTraj
 
     #------------------------------------------------------
@@ -357,13 +358,13 @@ class Trajectory(object):
             data=np.empty(shape=self.shape)
             data=np.gradient(self.getData(), self.dt)[0]
             delTTraj.putData(data)
-            delTTraj.incrmTReal(finished=True, tReal=self.tReal)
+            delTTraj.incrmTReal(finished=True, tReal=self.tReal, t0=self.t0)
         return delTTraj
     
     #------------------------------------------------------
 
     def pointMult(self, traj, filter=False):
-        
+        # add coherency check (nDt, t0, ...)
         prodTraj=Trajectory(self.grid)
         prodTraj.initialize(self.grid.zeros(), self.nDt, self.dt)
         data=np.empty(shape=self.shape)
@@ -402,7 +403,9 @@ class Trajectory(object):
         if (self.nDt != traj2.nDt):
             #raise self.TrajectoryError("Incompatible time step number")
             return False
-        elif (not self.grid == traj2.grid):
+        if (self.t0 != traj2.t0):
+            return False
+        if (not self.grid == traj2.grid):
             #print("%d %d"%(self.grid.N,traj2.grid.N))
             #print("%g %g"%(self.grid.dx,traj2.grid.dx))
             #print("%g %g"%(self.grid.L,traj2.grid.L))
@@ -411,8 +414,7 @@ class Trajectory(object):
             #      self.grid.L==traj2.grid.L)
             #raise self.TrajectoryError("Incompatible grids")
             return False
-        else:
-            return True
+        return True
 
     #----| Classical overloads |----------------------------
     #-------------------------------------------------------
@@ -423,6 +425,7 @@ class Trajectory(object):
         output+="\n| nDt=%d"%self.nDt
         output+="\n| dt=%-23.15E"%self.dt
         output+="\n| tReal=%-23.15E"%self.tReal
+        output+="\n| t0=%-23.15E"%self.t0
         if self.isConcatenated:
             output+="\n is concatenated"
         if self.isTrimmed:
@@ -455,7 +458,8 @@ class Trajectory(object):
            raise self.TrajectoryError("Incompatible trajectories")
 
         trajSub=self.copy()
-        trajSub.putData(self.__data-traj2.__data, tReal=self.tReal)
+        trajSub.putData(self.__data-traj2.__data, tReal=self.tReal,
+                        t0=self.t0)
         return trajSub
 
     #-------------------------------------------------------
@@ -468,7 +472,8 @@ class Trajectory(object):
            raise self.TrajectoryError("Incompatible trajectories")
 
         trajAdd=self.copy()
-        trajAdd.putData(self.__data+traj2.__data, tReal=self.tReal)
+        trajAdd.putData(self.__data+traj2.__data, tReal=self.tReal,
+                            t0=self.t0)
         return trajAdd
 
     #-------------------------------------------------------
@@ -501,7 +506,7 @@ class Trajectory(object):
         fftTraj=SpectralTrajectory(k, Ntrc=self.grid.Ntrc)
         fftTraj.initialize(data[0],self.nDt, self.dt)
         fftTraj.putData(data)
-        fftTraj.incrmTReal(finished=True, tReal=self.tReal)
+        fftTraj.incrmTReal(finished=True, tReal=self.tReal, t0=self.t0)
         return fftTraj
     
     #-------------------------------------------------------

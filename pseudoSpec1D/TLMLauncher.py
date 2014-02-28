@@ -175,17 +175,14 @@ class TLMLauncher(object):
         if t0+tInt>self.refTraj.tReal:
             raise self.TLMLauncherError("t0+tInt<=self.refTraj.tReal")
         self.dt=self.refTraj.dt
-        self.tIntIn=tInt
         self.nDt0=int((t0-self.refTraj.t0)/self.dt)
         self.nDt=int((tInt)/self.dt)
         # real times from step integers
-        self.tInt=self.nDt*self.dt
-        if self.tInt<self.tIntIn:
+        if self.nDt*self.dt<tInt:
             self.nDt+=1
-            self.tInt=self.nDt*self.dt
         self.nDtFinal=self.nDt0+self.nDt
         self.t0=self.nDt0*self.dt
-        self.tFinal=self.nDtFinal*self.dt+t0
+        self.tf=self.nDtFinal*self.dt+t0
 
     #----| Classical overloads |----------------------------
     #-------------------------------------------------------

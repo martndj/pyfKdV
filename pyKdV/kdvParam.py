@@ -165,17 +165,17 @@ class Param(object):
                         self.nDt=p.nDt
                         self.isTimeDependant=True
 
-        self.forcing=self._setTraj(forcing, t0=t0)
-        self.alpha=self._setTraj(alpha, t0=t0)
-        self.beta=self._setTraj(beta, t0=t0)
-        self.gamma=self._setTraj(gamma, t0=t0)
-        self.rho=self._setTraj(rho, t0=t0)
+        self.forcing=self._setTraj(forcing, t0=t0, label=r'$f$')
+        self.alpha=self._setTraj(alpha, t0=t0, label=r'$\alpha$')
+        self.beta=self._setTraj(beta, t0=t0, label=r'$\beta$')
+        self.gamma=self._setTraj(gamma, t0=t0, label=r'$\gamma$')
+        self.rho=self._setTraj(rho, t0=t0, label=r'$\rho$')
         
         self.shape=(5, self.nDt ,self.grid.N)
         self.__incrmTReal(self.dt, t0=t0)
     #----------------------------------------------------------------
 
-    def _setTraj(self, param, t0=0.):
+    def _setTraj(self, param, t0=0., label=None):
 
         if isinstance(param, Trajectory):
             if param.nDt<self.nDt:
@@ -225,6 +225,7 @@ class Param(object):
         
         traj.ic=traj[0]
         traj.incrmTReal(finished=True, tReal=self.dt*self.nDt, t0=t0)
+        if label<>None:traj.setLabel(label)
         return traj
             
     #----------------------------------------------------------------

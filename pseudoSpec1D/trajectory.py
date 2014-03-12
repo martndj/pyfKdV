@@ -27,7 +27,7 @@ class Trajectory(object):
     #------------------------------------------------------
 
 
-    def __init__(self, grid):
+    def __init__(self, grid, label=None):
         """
         Empty Trajectory instance constructor
         """
@@ -55,11 +55,17 @@ class Trajectory(object):
         self.A2=None
         self.time=None
 
+        self.label=label
+
     #------------------------------------------------------
     #----| general public methods |------------------------
     #------------------------------------------------------
 
+    def setLabel(self, label):
+        self.label=label
     
+    #-------------------------------------------------------
+
     def copy(self):
         return copy.deepcopy(self)
 

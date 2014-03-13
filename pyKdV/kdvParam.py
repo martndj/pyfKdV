@@ -143,6 +143,7 @@ class Param(object):
                             gamma=self.gamma.final,
                             rho=self.rho.final, t0=self.tf)
                
+        self.fluxR=self.alpha.gradient()-self.rho
 
 
     #----------------------------------------------------------------

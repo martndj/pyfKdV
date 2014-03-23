@@ -172,8 +172,8 @@ class TLMLauncher(object):
             raise self.TLMLauncherError("t0>=0.")
         elif t0<self.refTraj.t0:    
             raise self.TLMLauncherError("t0>=self.refTraj.t0")
-        if t0+tInt>self.refTraj.tReal:
-            raise self.TLMLauncherError("t0+tInt<=self.refTraj.tReal")
+        if t0+tInt>self.refTraj.t0+self.refTraj.tReal:
+            raise self.TLMLauncherError("%.2f %.2f %.2f"%(t0,tInt,self.refTraj.tReal))
         self.dt=self.refTraj.dt
         self.nDt0=int((t0-self.refTraj.t0)/self.dt)
         self.nDt=int((tInt)/self.dt)

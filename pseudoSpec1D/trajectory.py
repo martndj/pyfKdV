@@ -282,12 +282,10 @@ class Trajectory(object):
     
     def cut(self, t0=None, tf=None):
 
-        if t0<self.time.min() or tf>self.time.max():
-            raise self.TrajectoryError(
-                "t0>self.time.min(), tf<self.time.max()")
 
         if t0==None:
             idx0=0
+            t0=self.t0
         elif t0<self.tReal:
             t0=float(t0)
             idx0=self.whereTimeIdx(t0)

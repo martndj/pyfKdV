@@ -32,10 +32,10 @@ nDt=50
 nDtParam=0
 
 NtrcParam=30
-paramCte=.True.
+paramCte=.False.
 rhoZero=.False.
 rhoCte=.False.
-forcZero=.True.
+forcZero=.False.
 
 allocate(alph(nDtParam+1,N), beta(nDtParam+1,N), gamm(nDtParam+1,N), &
             rho(nDtParam+1,N), forc(nDtParam+1,N))

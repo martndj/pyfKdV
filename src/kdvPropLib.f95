@@ -70,6 +70,8 @@ function eulerStep(N, Ntrc, L, preState, dt, alph, beta, gamm, rho, forc)
                                          alph, beta, gamm)&
                 +dt*forc &
                 -dt*rho*preState 
+    ! prevent aliasing from multiplication (localised parameters)
+    call specFilt(eulerStep, N, Ntrc)
 end function eulerStep
 
 !--------------------------------------------------------------------!
@@ -88,6 +90,8 @@ function leapfrogTrapezStep(N, Ntrc, L, pre, pre2,  dt, &
                             kdvPseudoSpec(N, Ntrc, L, pre,&
                                           alph, beta, gamm)&
                         +(2.0D0*dt/(1.0D0+dt*rho))*forc
+    ! prevent aliasing from multiplication (localised parameters)
+    call specFilt(leapfrogTrapezStep, N, Ntrc)
 end function leapfrogTrapezStep
 
 !--------------------------------------------------------------------!
@@ -133,7 +137,7 @@ function kdvPseudoSpec(N, Ntrc, L, u, alph, beta, gamm, forc)
     end if
     
     ! prevent aliasing from multiplication (localised parameters)
-    call specFilt(kdvPseudoSpec, N, Ntrc)
+    !call specFilt(kdvPseudoSpec, N, Ntrc)
 
 end function kdvPseudoSpec
 

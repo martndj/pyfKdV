@@ -3,18 +3,19 @@ import random as rnd
 from periodicGrid import PeriodicGrid
 #-----------------------------------------------------------
 
-def rndSpecVec(g, Ntrc=None, Nmin=0, amp=1., seed=0.848241945):
+def rndSpecVec(g, Ntrc=None, Nmin=0, amp=1., sig=1., seed=0.848241945):
     """
     Pseudo random signal genrator
         (resolution independant : will generate the same signal
             independantly of g.Ntrc)
 
-        rndSpecVec(g, Ntrc=None, amp=1., seed=0.848241945)
+        rndSpecVec(g, Ntrc=None, amp=1., sig=1., seed=0.848241945)
 
         g       :   grid <PeriodicGrid>
         Ntrc    :   truncature (high frequency) <int>
         Nmin    :   low frequency truncatrue <int>
         amp     :   amplitude <float>
+        sig     :   standard deviation <float>
         seed    :   random generator seed <float>
 
     """
@@ -24,9 +25,9 @@ def rndSpecVec(g, Ntrc=None, Nmin=0, amp=1., seed=0.848241945):
     y=np.zeros(g.N, dtype='complex')
     if Ntrc==None:
         Ntrc=g.Ntrc
-    y[0]=rnd.gauss(0., amp)
+    y[0]=rnd.gauss(0., sig)
     for i in xrange(Nmin+1,Ntrc):
-        y[i]=rnd.gauss(0., 1.)+1j*rnd.gauss(0., 1.)
+        y[i]=rnd.gauss(0., sig)+1j*rnd.gauss(0., sig)
         y[-i]=y[i].conjugate()
     y=np.fft.ifft(y).real
     y=y/np.max(np.abs(y))*amp

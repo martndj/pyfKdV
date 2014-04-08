@@ -286,13 +286,13 @@ class Trajectory(object):
         if t0==None:
             idx0=0
             t0=self.t0
-        elif t0<self.tReal:
+        elif t0<self.tf:
             t0=float(t0)
             idx0=self.whereTimeIdx(t0)
         else: raise ValueError()
-        if tf==None or tf==self.tReal:
+        if tf==None or tf==self.tf:
             idxF=self.nDt
-        elif tf<self.tReal:
+        elif tf<self.tf:
             tf=float(tf)
             idxF=self.whereTimeIdx(tf)
             if idxF>self.nDt: idxF=self.nDt
@@ -312,7 +312,7 @@ class Trajectory(object):
         '''
         Gaussian noise trajectory degradation
     
-        degrad(u,mu,sigma,seed=...)
+        degrad(mu,sigma,seed=...)
     
         mu      :  noise mean (gaussian mean)
         sigma   :  noise variance
@@ -377,7 +377,7 @@ class Trajectory(object):
         if filter:
             pass
         prodTraj.putData(data)
-        prodTraj.incrmTReal(finished=True, tReal=self.tReal)
+        prodTraj.incrmTReal(finished=True, tReal=self.tReal, t0=self.t0)
         return prodTraj
 
 
@@ -430,6 +430,7 @@ class Trajectory(object):
         output+="\n| dt=%-23.15E"%self.dt
         output+="\n| tReal=%-23.15E"%self.tReal
         output+="\n| t0=%-23.15E"%self.t0
+        output+="\n| tf=%-23.15E"%self.tf
         if self.isConcatenated:
             output+="\n is concatenated"
         if self.isTrimmed:
@@ -550,12 +551,12 @@ class Trajectory(object):
             return axe
 
         if ylim==None:
-            tReal=self.tReal
+            tf=self.tf
             nDt=self.nDt
             data=self.__data
             time=self.time
         elif isinstance(ylim, tuple):
-            tReal=ylim[1]-ylim[0]
+            tf=ylim[1]-ylim[0]
             lIdx=self.whereTimeIdx(ylim[0])
             hIdx=self.whereTimeIdx(ylim[1])
             if len(ylim)<>2 or hIdx<lIdx:
@@ -574,12 +575,12 @@ class Trajectory(object):
             nbLines=nDt
 
         if offset==None:
-            offset=tReal/nbLines
+            offset=tf/nbLines
         if ampl==None:
             denom=(np.max(np.abs(data)))
             if denom==0.: denom=1.
             ampl=8./denom*\
-                    (tReal/nbLines)
+                    (tf/nbLines)
         lines=[]
         for i in xrange(nbLines):
             j=i*freq

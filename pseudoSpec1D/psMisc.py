@@ -3,7 +3,7 @@ import random as rnd
 from periodicGrid import PeriodicGrid
 #-----------------------------------------------------------
 
-def rndSpecVec(g, Ntrc=None, Nmin=0, amp=1., sig=1., seed=0.848241945):
+def rndSpecVec(g, Ntrc=None, Nmin=0, amp=1., sig=1., seed=None):
     """
     Pseudo random signal genrator
         (resolution independant : will generate the same signal

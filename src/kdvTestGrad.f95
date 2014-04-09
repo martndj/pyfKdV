@@ -20,7 +20,7 @@ double precision, dimension(:,:), allocatable   ::  alph, beta, gamm,&
                                                     rho, forc
 double precision, dimension(:, :), allocatable  ::  u
 
-NNDt=6
+NNDt=7
 Ntrc=100
 N=3*Ntrc+1
 L=3.D2
@@ -45,7 +45,7 @@ rhoAmp=1.0D-1
 dt=1.0D-2
 
 maxPower=-9
-nDtVec=(/1, 2,10,50,100, 1000/)
+nDtVec=(/1, 2,10,50,100, 1000, 2000/)
 nDtParam=0
 allocate(alph(nDtParam+1,N), beta(nDtParam+1,N), gamm(nDtParam+1,N), &
             rho(nDtParam+1,N), forc(nDtParam+1,N))

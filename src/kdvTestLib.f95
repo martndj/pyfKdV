@@ -521,9 +521,9 @@ subroutine testGradient(N, Ntrc, L, dt, nDt, nDtParam, maxPower, &
         res=((J0-Jeps)/(eps*scalar_product(grad,grad)))
 
         
-        if (pow.eq.-8) then
-            print*,"--------------| half type precision |-----------------"
-        end if
+        !if (pow.eq.-7) then
+        !    print*,"--------------| half type precision |-----------------"
+        !end if
         print"(A I3  E23.15  F20.15)",&
              "10^",pow, Jeps, res
     end do
@@ -624,9 +624,9 @@ subroutine NLTestGradient(N, Ntrc, L, dt, nDt, nDtParam, maxPower, &
 
         res=((J0-Jeps)/(eps*grad2))
 
-        if (pow.eq.-8) then
-            print*,"--------------| half type precision |-----------------"
-        end if
+        !if (pow.eq.-7) then
+        !    print*,"--------------| half type precision |-----------------"
+        !end if
         print"(A I3  D23.15  D23.15)",&
              "10^",pow, Jeps, res
     end do

@@ -1,5 +1,6 @@
 import numpy as np
 from grid import Grid
+import matplotlib.pyplot as plt
 
 class PeriodicGrid(Grid):
     """
@@ -71,6 +72,12 @@ class PeriodicGrid(Grid):
         if trunc:
             axe.axvline(x=self.Ntrc, color='k', linestyle=':')
         return axe
+
+    def plotAll(self, field, **kwargs):
+        ax1=plt.subplot(211)
+        ax2=plt.subplot(212)
+        self.plot(field, axe=ax1, **kwargs)
+        self.plotPSpec(field, axe=ax2, **kwargs)
     #-------------------------------------------------------
     #----| Private methods |--------------------------------
     #-------------------------------------------------------

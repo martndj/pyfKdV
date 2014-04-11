@@ -114,9 +114,10 @@ class Grid(object):
     
     #-------------------------------------------------------
 
-    def plot(self, field,  axe=None, **kwargs):
+    def plot(self, field,  axe=None, xlabel=r'$x$',  **kwargs):
         axe=self._checkAxe(axe)
         axe.plot(self.x, field,  **kwargs)
+        axe.set_xlabel(xlabel)
         return axe
 
 

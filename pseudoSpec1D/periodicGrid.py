@@ -67,17 +67,17 @@ class PeriodicGrid(Grid):
         data=np.zeros(nDemi)
         data=np.abs(np.fft.fft(field)[0:nDemi])
         k=Grid(nDemi,nDemi, centered=False)
-        
-        axe=k.plot(data, axe=axe, **kwargs)
+        axe=k.plot(data, axe=axe, xlabel=r'$k$', **kwargs)
         if trunc:
             axe.axvline(x=self.Ntrc, color='k', linestyle=':')
         return axe
 
-    def plotAll(self, field, **kwargs):
+    def plotAll(self, field, label=None, **kwargs):
         ax1=plt.subplot(211)
         ax2=plt.subplot(212)
         self.plot(field, axe=ax1, **kwargs)
-        self.plotPSpec(field, axe=ax2, **kwargs)
+        self.plotPSpec(field, axe=ax2, label=label, **kwargs)
+        return ax1, ax2
     #-------------------------------------------------------
     #----| Private methods |--------------------------------
     #-------------------------------------------------------

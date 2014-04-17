@@ -61,12 +61,19 @@ class PeriodicGrid(Grid):
 
     #-------------------------------------------------------
 
+    def kGrid(self):
+        nDemi=int(self.N-1)/2
+        k=Grid(nDemi,nDemi, centered=False)
+        return k
+
+
+    #-------------------------------------------------------
+
     def plotPSpec(self, field,  axe=None, trunc=True, **kwargs):
         axe=self._checkAxe(axe)
-        nDemi=int(self.N-1)/2
-        data=np.zeros(nDemi)
-        data=np.abs(np.fft.fft(field)[0:nDemi])
-        k=Grid(nDemi,nDemi, centered=False)
+        k=self.kGrid()
+        data=np.zeros(k.N)
+        data=np.abs(np.fft.fft(field)[0:k.N])
         axe=k.plot(data, axe=axe, xlabel=r'$k$', **kwargs)
         if trunc:
             axe.axvline(x=self.Ntrc, color='k', linestyle=':')

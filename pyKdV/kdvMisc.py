@@ -46,18 +46,17 @@ def ampSolStat(alpha=0., beta=1., gamma=-1.):
 
 #-----------------------------------------------------------
 
-def dtStable(grid, param, maxA, dtMod=0.7):
+def dtStable(param, maxA, dtMod=0.7):
     """
     Stable time incremement
 
         dtStable(grid, param, maxA)
 
-        grid    :   <Grid>
         maxA    :   expected maximum amplitude <float>
         param   :   KdV parameters <Param>
     """
 
-
+    grid=param.grid
     maxK=2.0*np.pi*grid.Ntrc/grid.L
 
     dt=None 

@@ -83,13 +83,13 @@ function leapfrogTrapezStep(N, Ntrc, L, pre, pre2,  dt, &
     integer                         ::  N, Ntrc 
     double precision                ::  L, dt
     double precision, dimension(N)  ::  leapfrogTrapezStep, pre, pre2, &
-                                        alph, beta, gamm, rho, forc
+                                        alph, beta, gamm, rho, forc, denom
 
-    leapfrogTrapezStep=((1.0D0-dt*rho)/(1.0D0+dt*rho))*pre2&
-                        +(2.0D0*dt/(1.0D0+dt*rho))*&
-                            kdvPseudoSpec(N, Ntrc, L, pre,&
+    denom=(1.0D0+dt*rho/2.0D0)
+    leapfrogTrapezStep=((1.0D0-dt*rho/2.0D0)*pre2&
+                        +(2.0D0*dt)*kdvPseudoSpec(N, Ntrc, L, pre,&
                                           alph, beta, gamm)&
-                        +(2.0D0*dt/(1.0D0+dt*rho))*forc
+                        +(2.0D0*dt)*forc)/denom
     ! prevent aliasing from multiplication (localised parameters)
     call specFilt(leapfrogTrapezStep, N, Ntrc)
 end function leapfrogTrapezStep

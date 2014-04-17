@@ -219,17 +219,18 @@ function opPn(N, Ntrc, L, dt, u, pBuff, alph, beta, gamm, rho)
     integer                         ::  N, Ntrc
     double precision                ::  L, dt
 
-    double precision, dimension(N)  ::  alph, beta, gamm, rho, u
+    double precision, dimension(N)  ::  alph, beta, gamm, rho, u, denom
     double precision, dimension(3,N)::  pBuff, opPn
 
+
+    denom=(1.0D0+dt*rho/2.0D0)
 
     ! P
     opPn(1,:)=pBuff(1,:)
     opPn(2,:)=pBuff(2,:)
-    opPn(3,:)=((1.0D0-dt*rho)/(1.0D0+dt*rho))*pBuff(1,:)&
-                +(2.0D0*dt/(1.0D0+dt*rho))*&
-                    kdvTLMPseudoSpec(N, Ntrc, L, u, pBuff(2,:),&
-                        alph, beta, gamm)
+    opPn(3,:)=((1.0D0-dt*rho/2.0D0)*pBuff(1,:)&
+                +(2.0D0*dt)*kdvTLMPseudoSpec(N, Ntrc, L, u, pBuff(2,:),&
+                        alph, beta, gamm))/denom
                    
     ! F
     call specFilt(opPn(3,:), N, Ntrc)
@@ -244,9 +245,11 @@ function opPnAdj(N, Ntrc, L, dt, u, aBuff, alph, beta, gamm, rho)
     integer                         ::  N, Ntrc
     double precision                ::  L, dt
 
-    double precision, dimension(N)  ::  alph, beta, gamm, rho, u
+    double precision, dimension(N)  ::  alph, beta, gamm, rho, u, denom
     double precision, dimension(3,N)::  aBuff, opPnAdj, rhoSAdj
 
+
+    denom=(1.0D0+dt*rho/2.0D0)
 
     ! F*
     call specFilt(aBuff(3,:), N, Ntrc)
@@ -255,9 +258,9 @@ function opPnAdj(N, Ntrc, L, dt, u, aBuff, alph, beta, gamm, rho)
     opPnAdj(3,:)=0.0D0
     opPnAdj(2,:)=aBuff(2,:)+&
                     kdvTLMPseudoSpecAdj(N, Ntrc, L, u, &
-                        (2.0D0*dt/(1.0D0+dt*rho))*aBuff(3,:), &
+                        (2.0D0*dt/denom)*aBuff(3,:), &
                         alph, beta, gamm)
-    opPnAdj(1,:)=aBuff(1,:)+((1.0D0-dt*rho)/(1.0D0+dt*rho))*aBuff(3,:)
+    opPnAdj(1,:)=aBuff(1,:)+((1.0D0-dt*rho/2.0D0)/denom)*aBuff(3,:)
     
 end function opPnAdj
 

@@ -114,7 +114,7 @@ def specDiff_Adj(f, grid, order=1):
     
 #----------------------------------------------------------
 
-def specFilt(f,grid,Ntrc=None):
+def specFilt(f,grid, Ntrc=None, Nlow=0.):
     """ 
     Spectral truncature
         <!> Auto-adjoint
@@ -133,11 +133,12 @@ def specFilt(f,grid,Ntrc=None):
         raise spectralLibError("f.shape=(grid.N)")
     if Ntrc==None:
         Ntrc=grid.Ntrc
+    
     tf=fft.fft(f)
     n=fftOrder(grid)
     for i in xrange(grid.N):
         # truncature
-        if np.abs(n[i])>Ntrc:
+        if np.abs(n[i])>=Ntrc or np.abs(n[i])<Nlow:
             tf[i]=0.
     f=(fft.ifft(tf)).real.copy(order='C')
     return f
@@ -165,6 +166,6 @@ def specTrunc(w, grid, Ntrc=None):
     n=fftOrder(grid)
     for i in xrange(grid.N):
         # truncature
-        if np.abs(n[i])>Ntrc:
+        if np.abs(n[i])>=Ntrc:
             w[i]=0.
     return w

@@ -251,7 +251,8 @@ class Trajectory(object):
             data[t]=trajData[i]
 
         trajComp.putData(data)
-        trajComp.incrmTReal(finished=True, tReal=trajComp.nDt*trajComp.dt)
+        trajComp.incrmTReal(finished=True, tReal=trajComp.nDt*trajComp.dt, 
+                            t0=self.t0)
         trajComp.isConcatenated=True
         trajComp.isTrimmed=self.isTrimmed
         return trajComp

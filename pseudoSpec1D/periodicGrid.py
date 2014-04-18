@@ -73,7 +73,7 @@ class PeriodicGrid(Grid):
         axe=self._checkAxe(axe)
         k=self.kGrid()
         data=np.zeros(k.N)
-        data=np.abs(np.fft.fft(field)[0:k.N])
+        data=np.abs(np.fft.fft(field)[0:k.N]/self.N)
         axe=k.plot(data, axe=axe, xlabel=r'$k$', **kwargs)
         if trunc:
             axe.axvline(x=self.Ntrc, color='k', linestyle=':')

@@ -506,7 +506,7 @@ class Trajectory(object):
         nDemi=int(self.grid.N-1)/2
         data=np.zeros(shape=(self.nDt+1, nDemi))
         for i in xrange(len(self.time)):
-            data[i]=np.abs(np.fft.fft(self[i])[0:nDemi])
+            data[i]=np.abs(np.fft.fft(self[i])[0:nDemi]/self.grid.N)
 
         k=Grid(nDemi,nDemi, centered=False)
         fftTraj=SpectralTrajectory(k, Ntrc=self.grid.Ntrc)

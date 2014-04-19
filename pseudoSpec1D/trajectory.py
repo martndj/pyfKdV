@@ -503,10 +503,12 @@ class Trajectory(object):
         """
         Return the SpectralTrajectory associated
         """
+        if not isinstance(self.grid, PeriodicGrid):
+            raise TypeError()
         nDemi=int(self.grid.N-1)/2
         data=np.zeros(shape=(self.nDt+1, nDemi))
         for i in xrange(len(self.time)):
-            data[i]=np.abs(np.fft.fft(self[i])[0:nDemi]/self.grid.N)
+            data[i]=np.abs(self.grid.fft(self[i]))
 
         k=Grid(nDemi,nDemi, centered=False)
         fftTraj=SpectralTrajectory(k, Ntrc=self.grid.Ntrc)

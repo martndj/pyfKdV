@@ -1,6 +1,8 @@
 import numpy as np
 from grid import Grid
 import matplotlib.pyplot as plt
+from matplotlib.axes import Axes
+from matplotlib.gridspec import GridSpec, SubplotSpec
 
 class PeriodicGrid(Grid):
     """
@@ -84,12 +86,31 @@ class PeriodicGrid(Grid):
             axe.axvline(x=self.Ntrc, color='k', linestyle=':')
         return axe
 
-    def plotAll(self, field, label=None, **kwargs):
-        ax1=plt.subplot(211)
-        ax2=plt.subplot(212)
-        self.plot(field, axe=ax1, **kwargs)
-        self.plotPSpec(field, axe=ax2, label=label, **kwargs)
-        return ax1, ax2
+    def plotAll(self, field, label=None, axeD=None, axeS=None, **kwargs):
+        axeD, axeS=self._check2Axes(axeD, axeS)
+        self.plot(field, axe=axeD, **kwargs)
+        self.plotPSpec(field, axe=axeS, label=label, **kwargs)
+        return axeD, axeS
+
+    def _check2Axes(self, axeD, axeS):
+        if axeD==None:
+            axeD=plt.subplot(211)
+        if axeS==None:
+            axeS=plt.subplot(212)
+
+        for axe in [axeD, axeS]:
+            if isinstance(axe, int):
+                if len(str(axe))<>3:
+                    raise ValueError()
+                axe=plt.subplot(axe)
+            elif isinstance(axe,SubplotSpec):
+                axe=plt.subplot(axe)
+            elif isinstance(axe,Axes):
+                pass
+            else:
+                raise ValueError()
+        return axeD, axeS
+
     #-------------------------------------------------------
     #----| Private methods |--------------------------------
     #-------------------------------------------------------

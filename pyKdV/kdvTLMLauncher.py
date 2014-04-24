@@ -77,12 +77,11 @@ class kdvTLMLauncher(TLMLauncher):
     #----| Diagnostics |------------------------------------
     #-------------------------------------------------------
 
-    def gradTest(self, ic, tInt=None, t0=0., maxPow=-10):
+    def gradTest(self, ic, dt, nDt, t0=0., maxPow=-10):
         """
         Gradient test
 
-            Check consisten__kdvTLMGradTest_Fortran
-ucy between the TLM adjoint and the
+            Check consistency between the TLM adjoint and the
             nonlinear model.
 
             J(x)    =0.5|M(x)|^2
@@ -92,23 +91,20 @@ ucy between the TLM adjoint and the
             kdvTLMLauncher.gradTest(ic, tInt=None, t0=0., maxPow=-10)
 
             ic      :   initial condition of the model <numpy.ndarray>
-            tInt    :   integration time <float>
+            dt      :   integration step <float>
+            nDt     :   number of integration steps <int>
             t0      :   initial time <float>
             maxpower:   smallest power of 10 to test the difference
                         in the cost function
 
 
         """
-        if not self.isReferenced:
-            raise self.kdvTLMLauncherError(
-                        "Not initialized with a reference trajectory")
         if not isinstance(ic, np.ndarray):
             raise self.kdvTLMLauncherError("ic <numpy.ndarray>")
         if ic.ndim <> 1 or ic.size <> self.grid.N:
             raise self.kdvTLMLauncherError("ic.shape = (launcher.grid.N,)")
-        super(kdvTLMLauncher, self)._timeValidation(tInt, t0)
 
-        self.propagatorGradTest(ic, maxPow)
+        self.propagatorGradTest(ic, dt, nDt, maxPow, t0=t0)
 
 
     #------------------------------------------------------
@@ -195,13 +191,14 @@ ucy between the TLM adjoint and the
         
     #------------------------------------------------------
 
-    def __kdvTLMGradTest_Fortran(self, ic, maxPow, t0=0.):
+    def __kdvTLMGradTest_Fortran(self, ic, dt, nDt, maxPow, t0=0.):
         
         grid=self.grid
         param=self.__t0AdjustParam(self.param, t0=t0)
-        
+   
+
         fKdV.fKdVTestGradient(grid.N, grid.Ntrc, grid.L, 
-                self.dt, self.nDt, param.nDt, maxPow, ic,
+                dt, nDt, param.nDt, maxPow, ic,
                 param[1].getData(), param[2].getData(), 
                 param[3].getData(), param[4].getData(),
                 param[0].getData())
@@ -252,7 +249,7 @@ if __name__=='__main__':
     
     #----| Gradient test |------------------------
     L=kdvTLMLauncher(param, traj=u)
-    L.gradTest(u0)
+    L.gradTest(u0, 0.01, 1000)
 
     #----| TLM vs NL model |----------------------
     if tlmVsModel:

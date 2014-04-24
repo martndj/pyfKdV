@@ -225,6 +225,10 @@ function opPn(N, Ntrc, L, dt, u, pBuff, alph, beta, gamm, rho)
 
     denom=(1.0D0+dt*rho)
 
+    ! F1
+    call specFilt(pBuff(1,:), N, Ntrc)
+    call specFilt(pBuff(2,:), N, Ntrc)
+
     ! P
     ! Crank-Nicholson scheme for rho term
     opPn(1,:)=pBuff(1,:)
@@ -235,7 +239,7 @@ function opPn(N, Ntrc, L, dt, u, pBuff, alph, beta, gamm, rho)
                +pBuff(1,:) &
               )/denom
                    
-    ! F
+    ! F2
     call specFilt(opPn(3,:), N, Ntrc)
     
 end function opPn
@@ -254,7 +258,7 @@ function opPnAdj(N, Ntrc, L, dt, u, aBuff, alph, beta, gamm, rho)
 
     denom=(1.0D0+dt*rho)
 
-    ! F*
+    ! F2*
     call specFilt(aBuff(3,:), N, Ntrc)
 
     ! P*
@@ -266,6 +270,10 @@ function opPnAdj(N, Ntrc, L, dt, u, aBuff, alph, beta, gamm, rho)
                   -dt*rho*aBuff(3,:)/denom &
                   +aBuff(2,:)
     opPnAdj(1,:)=aBuff(1,:)+aBuff(3,:)/denom
+    
+    ! F1*
+    call specFilt(opPnAdj(2,:), N, Ntrc)
+    call specFilt(opPnAdj(1,:), N, Ntrc)
     
 end function opPnAdj
 

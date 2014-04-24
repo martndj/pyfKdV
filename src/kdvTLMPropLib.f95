@@ -260,12 +260,12 @@ function opPnAdj(N, Ntrc, L, dt, u, aBuff, alph, beta, gamm, rho)
     ! P*
     ! Crank-Nicholson scheme for rho term
     opPnAdj(3,:)=0.0D0
-    opPnAdj(2,:)=((2.0D0*dt)*kdvTLMPseudoSpecAdj(N, Ntrc, L, u, &
-                        aBuff(3,:), alph, beta, gamm) & 
-                  -dt*rho*aBuff(3,:) &
-                  +aBuff(2,:) &
-                 )/denom
-    opPnAdj(1,:)=aBuff(1,:)+aBuff(3,:)
+    opPnAdj(2,:)=kdvTLMPseudoSpecAdj(N, Ntrc, L, u, &
+                        (2.0D0*dt/denom)*aBuff(3,:),&
+                        alph, beta, gamm) & 
+                  -dt*rho*aBuff(3,:)/denom &
+                  +aBuff(2,:)
+    opPnAdj(1,:)=aBuff(1,:)+aBuff(3,:)/denom
     
 end function opPnAdj
 

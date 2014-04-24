@@ -44,7 +44,7 @@ pAmp=1.0D-1
 rhoAmp=1.0D-1
 dt=1.0D-2
 
-maxPower=-9
+maxPower=-14
 nDtVec=(/1, 2,10,50,100, 500, 750, 850, 1000/)
 nDtParam=0
 allocate(alph(nDtParam+1,N), beta(nDtParam+1,N), gamm(nDtParam+1,N), &

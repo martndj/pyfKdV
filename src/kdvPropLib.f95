@@ -86,10 +86,14 @@ function leapfrogTrapezStep(N, Ntrc, L, pre, pre2,  dt, &
                                         alph, beta, gamm, rho, forc, denom
 
     denom=(1.0D0+dt*rho)
-    leapfrogTrapezStep=((1.0D0-dt*rho)*pre2&
+    
+    ! Crank-Nicholson scheme for rho instead of centered trapezoidal
+    leapfrogTrapezStep=(pre2 &
                         +(2.0D0*dt)*kdvPseudoSpec(N, Ntrc, L, pre,&
                                           alph, beta, gamm)&
-                        +(2.0D0*dt)*forc)/denom
+                        -dt*rho*pre &
+                        +(2.0D0*dt)*forc &
+                        )/denom
     ! prevent aliasing from multiplication (localised parameters)
     call specFilt(leapfrogTrapezStep, N, Ntrc)
 end function leapfrogTrapezStep

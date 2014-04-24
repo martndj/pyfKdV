@@ -226,11 +226,14 @@ function opPn(N, Ntrc, L, dt, u, pBuff, alph, beta, gamm, rho)
     denom=(1.0D0+dt*rho)
 
     ! P
+    ! Crank-Nicholson scheme for rho term
     opPn(1,:)=pBuff(1,:)
     opPn(2,:)=pBuff(2,:)
-    opPn(3,:)=((1.0D0-dt*rho)*pBuff(1,:)&
-                +(2.0D0*dt)*kdvTLMPseudoSpec(N, Ntrc, L, u, pBuff(2,:),&
-                        alph, beta, gamm))/denom
+    opPn(3,:)=((2.0D0*dt)*kdvTLMPseudoSpec(N, Ntrc, L, u, pBuff(2,:),&
+                        alph, beta, gamm) &
+               -dt*rho*pBuff(2,:) &
+               +pBuff(1,:) &
+              )/denom
                    
     ! F
     call specFilt(opPn(3,:), N, Ntrc)
@@ -255,12 +258,14 @@ function opPnAdj(N, Ntrc, L, dt, u, aBuff, alph, beta, gamm, rho)
     call specFilt(aBuff(3,:), N, Ntrc)
 
     ! P*
+    ! Crank-Nicholson scheme for rho term
     opPnAdj(3,:)=0.0D0
-    opPnAdj(2,:)=aBuff(2,:)+&
-                    kdvTLMPseudoSpecAdj(N, Ntrc, L, u, &
-                        (2.0D0*dt/denom)*aBuff(3,:), &
-                        alph, beta, gamm)
-    opPnAdj(1,:)=aBuff(1,:)+((1.0D0-dt*rho)/denom)*aBuff(3,:)
+    opPnAdj(2,:)=((2.0D0*dt)*kdvTLMPseudoSpecAdj(N, Ntrc, L, u, &
+                        aBuff(3,:), alph, beta, gamm) & 
+                  -dt*rho*aBuff(3,:) &
+                  +aBuff(2,:) &
+                 )/denom
+    opPnAdj(1,:)=aBuff(1,:)+aBuff(3,:)
     
 end function opPnAdj
 

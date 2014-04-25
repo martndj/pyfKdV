@@ -87,8 +87,8 @@ function leapfrogTrapezStep(N, Ntrc, L, pre, pre2,  dt, &
 
     denom=(1.0D0+dt*rho)
     
-    call specFilt(pre, N, Ntrc)
-    call specFilt(pre2, N, Ntrc)
+    !call specFilt(pre, N, Ntrc)
+    !call specFilt(pre2, N, Ntrc)
     ! Crank-Nicholson scheme for rho instead of centered trapezoidal
     leapfrogTrapezStep=(pre2 &
                         +(2.0D0*dt)*kdvPseudoSpec(N, Ntrc, L, pre,&

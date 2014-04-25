@@ -143,6 +143,9 @@ class TLMLauncher(object):
             t0      :   initial time <float>
         """
         
+        if not self.isReferenced:
+            raise self.TLMLauncherError(
+                        "Not initialized with a reference trajectory")
         if not isinstance(pert, np.ndarray):
             raise self.TLMLauncherError("pert <numpy.ndarray>")
         if pert.ndim <> 1 or pert.size <> self.grid.N:

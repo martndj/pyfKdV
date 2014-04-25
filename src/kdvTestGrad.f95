@@ -20,7 +20,7 @@ double precision, dimension(:,:), allocatable   ::  alph, beta, gamm,&
                                                     rho, forc
 double precision, dimension(:, :), allocatable  ::  u
 
-NNDt=9
+NNDt=7
 Ntrc=100
 N=3*Ntrc+1
 L=3.D2

@@ -27,16 +27,12 @@ class Param(object):
                 be used in the return expression.
 
     """
-    class ParamError(Exception):
-        pass
-
 
     def __init__(self, grid, forcing=0., alpha=0., beta=1.,
                     gamma=-1.,  rho=0., nDt=0, dt=0., tInt=0., t0=0.):
 
         if not (isinstance(grid, PeriodicGrid)):
-            raise self.ParamError(
-                "grid must be an instance of PeriodicGrid")
+            raise TypeError("grid <PeriodicGrid>")
         self.grid=grid
 
         if (isinstance(forcing,Trajectory) or
@@ -65,7 +61,9 @@ class Param(object):
             
         if self.isTimeDependant:
             if self.inputAsFunction and dt==0.: 
-                raise self.ParamError("if one parameter is <function(x,t)> and (nDt>0 or tInt>0) => dt>0")
+                raise ValueError(
+                "if one parameter is <function(x,t)>"
+                +"and (nDt>0 or tInt>0) => dt>0")
             if nDt==0.:
                 self.nDt=int(tInt/dt)
             else:
@@ -160,7 +158,7 @@ class Param(object):
                         self.dt=p.dt
                     else:
                         if p.dt<>self.dt:
-                            raise ParamError(
+                            raise ValueError(
                         "parameter trajectories must have the same dt")
 
                     if p.nDt>self.nDt:
@@ -206,23 +204,23 @@ class Param(object):
 
         elif isinstance(param, np.ndarray):
             if param.shape[-1] <> self.grid.N:
-                raise self.ParamError("param.shape[-1]=self.grid.N")
+                raise ValueError("param.shape[-1]=self.grid.N")
                 
             if param.ndim==1:
                 data=np.outer(np.ones(self.nDt+1), param)
             elif param.ndim==2:
                 if param.shape[0] <> self.nDt+1:
-                    raise self.ParamError("param.shape[0]=self.nDt+1")
+                    raise ValueError("param.shape[0]=self.nDt+1")
                 data=param
             else:   
-                raise self.ParamError("param.ndim in [1,2]")
+                raise ValueError("param.ndim in [1,2]")
             traj=Trajectory(self.grid)
             traj.zeros(self.nDt, self.dt)
             traj.putData(data)
                 
 
         else:
-            raise self.ParamError(
+            raise TypeError(
                     "<float|function(x,t)|numpy.ndarray|Trajectory>")
         
         traj.ic=traj[0]

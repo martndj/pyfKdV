@@ -21,24 +21,22 @@ class PeriodicGrid(Grid):
                             Dynamics, Springer-Verlag, 1999
     """
     
-    class PeriodicGridError(Exception):
-        pass
     
     #-------------------------------------------------------
     #----| Init |-------------------------------------------
     #-------------------------------------------------------
     def __init__(self, Ntrc, L=360., aliasing=3):
         if  not(type(Ntrc) is int) or not(isinstance(L, (float,int))):
-            raise self.PeriodicGridError("PeriodicGrid(Ntrc <int>| L <float>)")
+            raise TypeError("PeriodicGrid(Ntrc <int>| L <float>)")
         
     
         self.Ntrc=Ntrc
         self.L=L
 
         if not(type(aliasing) is int):
-            raise self.PeriodicGridError("PeriodicGrid(aliasing= <int>)")
+            raise TypeError("PeriodicGrid(aliasing= <int>)")
         if aliasing<1:
-            raise self.PeriodicGridError("aliasing > 1")
+            raise ValueError("aliasing > 1")
         else:
             self.aliasing=aliasing
 
@@ -118,7 +116,7 @@ class PeriodicGrid(Grid):
     def __setGridPoints(self):
         self.N=self.aliasing*self.Ntrc+1
         if not self.N%2:
-            raise self.PeriodicGridError(
+            raise ValueError(
                 "N must be odd (add/substract 1 to Ntrc)")
         self.dx=self.L/(self.N)
         self.x=np.linspace(-self.L/2.,self.L/2-self.dx,self.N)

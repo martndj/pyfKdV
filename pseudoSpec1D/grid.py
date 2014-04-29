@@ -16,12 +16,10 @@ class Grid(object):
                     not centered grid: x in (0., L)
     """
     
-    class GridError(Exception):
-        pass
     
     def __init__(self, N, L, centered=True):
         if  not(type(N) is int) or not(isinstance(L, (float,int))):
-            raise self.GridError("Grid(N <int>| L <float|int>)")
+            raise TypeError("Grid(N <int>| L <float|int>)")
         
     
         self.N=N
@@ -55,7 +53,7 @@ class Grid(object):
         def findIdx(posValue):
             whereVec=np.where(self.x>=posValue)
             if len(whereVec[0])==0 or self.min()>posValue:
-                raise self.GridError(
+                raise ValueError(
                     "Position outside of the grid:\n %f not in [%f,%f]"%(
                                 posValue, self.min(), self.max()))
             else:
@@ -64,7 +62,7 @@ class Grid(object):
         if isinstance(pos, (list, np.ndarray)):
             if isinstance(pos, np.ndarray):
                 if pos.ndim<>1:
-                    raise self.GridError("pos.ndim=1")
+                    raise ValueError("pos.ndim=1")
             N=len(pos)
             idx=np.empty(N, dtype=int)
             for i in xrange(N):
@@ -73,7 +71,7 @@ class Grid(object):
             idx=np.empty(1, dtype=int)
             idx[0]=findIdx(pos)
         else:
-            raise self.GridError("pos <list|numpy.ndarray|float>")
+            raise TypeError("pos <list|numpy.ndarray|float>")
         return idx 
 
     def where(self, pos):
@@ -83,9 +81,9 @@ class Grid(object):
 
     def squareNorm(self, field, metric=None):
         if not isinstance(field, np.ndarray):
-            raise self.GridError("field <numpy.ndarray>")
+            raise TypeError("field <numpy.ndarray>")
         if field.ndim<>1 or field.shape[-1]<>self.N:
-            raise self.GridError("field icompatible dimensions")
+            raise ValueError("field icompatible dimensions")
 
         if metric==None:
             return np.dot(field,field)*self.dx
@@ -96,11 +94,11 @@ class Grid(object):
         elif isinstance(metric, np.ndarray):
             if ((not (metric.ndim==1 or metric.ndim==2))
                     or metric.shape[-1]<>self.N):
-                raise self.GridError("metric icompatible dimensions") 
+                raise ValueError("metric icompatible dimensions") 
             return np.dot(field, np.dot(metric, field))*self.dx
 
         else:
-                raise self.GridError("metric <numpy.ndarray>")
+                raise TypeError("metric <numpy.ndarray>")
     
     #-------------------------------------------------------
 
@@ -154,7 +152,7 @@ class Grid(object):
         elif isinstance(axe,Axes):
             pass
         else:
-            raise self.GridError(
+            raise TypeError(
             "axe < matplotlib.axes.Axes | matplotlib.gridspec.GridSpec >")
         return axe
 

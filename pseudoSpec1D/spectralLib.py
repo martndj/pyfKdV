@@ -2,8 +2,6 @@ import numpy as np
 import numpy.fft as fft
 from periodicGrid import PeriodicGrid 
 
-class spectralLibError(Exception):
-    pass
 #----------------------------------------------------------
 
 def conjT(M):
@@ -38,7 +36,7 @@ def fftOrder(grid):
         grid    :   <PeriodicGrid>
     """
     if not isinstance(grid, PeriodicGrid):
-        raise spectralLibError("grid <PeriodicGrid>")
+        raise TypeError("grid <PeriodicGrid>")
     n=np.zeros(grid.N)
     for i in xrange(grid.N):
         if i <= (grid.N-1)/2:
@@ -59,7 +57,7 @@ def diffMatrixDiag(order, grid):
         grid    :   <PeriodicGrid>
     """
     if not isinstance(grid, PeriodicGrid):
-        raise spectralLibError("grid <PeriodicGrid>")
+        raise TypeError("grid <PeriodicGrid>")
     D=np.zeros(grid.N, dtype=complex)
     n=fftOrder(grid)
     for i in xrange(grid.N):
@@ -81,11 +79,11 @@ def specDiff(f,grid, order=1):
         order   :   order of differentiation <int>
     """
     if not isinstance(grid, PeriodicGrid):
-        raise spectralLibError("grid <PeriodicGrid>")
+        raise TypeError("grid <PeriodicGrid>")
     if not isinstance(f, np.ndarray):
-        raise spectralLibError("f <numpy.ndarray>")
+        raise TypeError("f <numpy.ndarray>")
     if not (f.ndim==1 and len(f)==grid.N):
-        raise spectralLibError("f.shape=(grid.N)")
+        raise TypeError("f.shape=(grid.N)")
     tf=fft.fft(f)
     tfdf=diffMatrixDiag(order, grid)*tf
     df=(fft.ifft(tfdf)).real
@@ -102,11 +100,11 @@ def specDiff_Adj(f, grid, order=1):
         order   :   order of differentiation <int>
     """
     if not isinstance(grid, PeriodicGrid):
-        raise spectralLibError("grid <PeriodicGrid>")
+        raise TypeError("grid <PeriodicGrid>")
     if not isinstance(f, np.ndarray):
-        raise spectralLibError("f <numpy.ndarray>")
+        raise TypeError("f <numpy.ndarray>")
     if not (f.ndim==1 and len(f)==grid.N):
-        raise spectralLibError("f.shape=(grid.N)")
+        raise ValueError("f.shape=(grid.N)")
     tf=fft.fft(f)
     tfdf=(diffMatrixDiag(order, grid)).conjugate()*tf
     df=(fft.ifft(tfdf)).real.copy(order='C')
@@ -126,11 +124,11 @@ def specFilt(f,grid, Ntrc=None, Nlow=0.):
         Ntrc    :   truncature <int>
     """
     if not isinstance(grid, PeriodicGrid):
-        raise spectralLibError("grid <PeriodicGrid>")
+        raise TypeError("grid <PeriodicGrid>")
     if not isinstance(f, np.ndarray):
-        raise spectralLibError("f <numpy.ndarray>")
+        raise TypeError("f <numpy.ndarray>")
     if not (f.ndim==1 and len(f)==grid.N):
-        raise spectralLibError("f.shape=(grid.N)")
+        raise TypeError("f.shape=(grid.N)")
     if Ntrc==None:
         Ntrc=grid.Ntrc
     
@@ -156,11 +154,11 @@ def specTrunc(w, grid, Ntrc=None):
         Ntrc    :   truncature <int>
     """
     if not isinstance(grid, PeriodicGrid):
-        raise spectralLibError("grid <PeriodicGrid>")
+        raise TypeError("grid <PeriodicGrid>")
     if not isinstance(w, np.ndarray):
-        raise spectralLibError("w <numpy.ndarray>")
+        raise TypeError("w <numpy.ndarray>")
     if not (w.ndim==1 and len(w)==grid.N):
-        raise spectralLibError("w.shape=(grid.N)")
+        raise ValueError("w.shape=(grid.N)")
     if Ntrc==None:
         Ntrc=grid.Ntrc
     n=fftOrder(grid)

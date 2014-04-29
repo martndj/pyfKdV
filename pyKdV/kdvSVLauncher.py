@@ -22,8 +22,6 @@ class kdvSVLauncher(object):
         param   :   parametrisation <kdvParam>
         nSV     :   number of singular vector calculated <int>
     """
-    class kdvSVLauncherError(Exception):
-        pass
     
     #------------------------------------------------------
     #----| Init |------------------------------------------
@@ -32,9 +30,9 @@ class kdvSVLauncher(object):
     def __init__(self, param, traj):
 
         if not (isinstance(traj, Trajectory)):
-            raise self.kdvSVLauncherError("traj <Trajecotory>")
+            raise TypeError("traj <Trajecotory>")
         if not traj.isIntegrated:
-            raise self.kdvSVLauncherError("traj not integrated")
+            raise RuntimeError("traj not integrated")
 
         self.refTraj=traj
         
@@ -68,9 +66,9 @@ class kdvSVLauncher(object):
             if tOpt<=traj.tReal:
                 self.tOpt=tOpt
             else:
-                raise self.kdvSVLauncherError("tOpt > traj.tReal")
+                raise ValueError("tOpt > traj.tReal")
         else:
-            raise self.kdvSVLauncherError("tOpt <None|int|float>")
+            raise TypeError("tOpt <None|int|float>")
 
 
         self.nDt=int(self.tOpt/self.refTraj.dt)
@@ -101,7 +99,7 @@ class kdvSVLauncher(object):
     def straightenSV(self):
 
         if not self.isCalculated:
-            raise self.kdvSVLauncherError("SV must be calculated first!")
+            raise RuntimeError("SV must be calculated first!")
 
         for i in xrange(self.nSV):
             if np.abs(np.min(self.sVec[i]))>np.max(self.sVec[i]):

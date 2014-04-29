@@ -19,8 +19,6 @@ class Trajectory(object):
         grid    :   <Grid>
     """
     
-    class TrajectoryError(Exception):
-        pass
 
     #------------------------------------------------------
     #----| Init |------------------------------------------
@@ -33,7 +31,7 @@ class Trajectory(object):
         """
         # Grid
         if not (isinstance(grid, Grid)):
-            raise self.TrajectoryError(
+            raise TypeError(
                   "grid <Grid>")
         self.grid=grid
 
@@ -84,10 +82,10 @@ class Trajectory(object):
             dt  :   time step increment <float>
         """
         if not (isinstance(ic, np.ndarray)):
-            raise self.TrajectoryError(
+            raise TypeError(
                   "ic <numpy.ndarray>")
         if ic.ndim <> 1 or ic.size <> self.grid.N:
-            raise self.TrajectoryError("ic.shape<>(grid.N,)")
+            raise ValueError("ic.shape<>(grid.N,)")
         self.__allocate(nDt)
         self.dt=dt
         self.ic=ic
@@ -143,7 +141,7 @@ class Trajectory(object):
         Euclidian Square norm evolution
         """
         if not self.isIntegrated:
-            raise self.TrajectoryError("Trajectory not integrated")
+            raise RuntimeError("Trajectory not integrated")
         self.A2=np.zeros(self.nDt+1)
         for i in xrange(self.nDt+1):
             self.A2[i]=self.__SquareNorm(self.__data[i], metric=metric)
@@ -157,7 +155,7 @@ class Trajectory(object):
         Euclidian Norm evolution
         """
         if not self.isIntegrated:
-            raise self.TrajectoryError("Trajectory not integrated")
+            raise RuntimeError("Trajectory not integrated")
         self.A=np.zeros(self.nDt+1)
         if (self.A2==None):
             self.norm2(ret=False, metric=metric)
@@ -180,11 +178,11 @@ class Trajectory(object):
         Trajectory values access method (input)
         """
         if not self.isInitialised :
-            raise self.TrajectoryError("Trajectory not initialised")
+            raise RuntimeError("Trajectory not initialised")
         if not isinstance(data, np.ndarray):
-            raise self.TrajectoryError("data <numpy.ndarray>")
+            raise TypeError("data <numpy.ndarray>")
         if (data.shape<>(self.nDt+1, self.grid.N)):
-            raise self.TrajectoryError("Incompatible data affectation")
+            raise ValueError("Incompatible data affectation")
         self.__data=data
         self.shape=data.shape
         self.ic=self[0]
@@ -233,12 +231,12 @@ class Trajectory(object):
         Trajectories must share spacial and temporal caracteristics
         """
         if not isinstance(traj, Trajectory):
-            raise self.TrajectoryError("traj <Trajectory>")
+            raise TypeError("traj <Trajectory>")
         if traj.dt<>self.dt:
-            raise self.TrajectoryError(
+            raise ValueError(
                 "incompatible time increments: %f, %f"%(self.dt, traj.dt))
         if not traj.grid==self.grid:
-            raise self.TrajectoryError("incompatible grid")
+            raise ValueError("incompatible grid")
             
         trajComp=Trajectory(self.grid)
         trajComp.initialize(self.ic, self.nDt+traj.nDt,self.dt)
@@ -263,9 +261,9 @@ class Trajectory(object):
 
 
         if not isinstance(freq, int):
-            raise self.TrajectoryError("freq <int>")
+            raise TypeError("freq <int>")
         if freq<1 or freq>self.nDt:
-            raise self.TrajectoryError("1 =< freq < self.nDt")
+            raise ValueError("1 =< freq < self.nDt")
 
         nDtTrim=(self.nDt+1)/freq-1
         trajTrim=Trajectory(self.grid)
@@ -354,7 +352,7 @@ class Trajectory(object):
     def delT(self):
 
         if not self.isIntegrated:
-            raise self.TrajectoryError("Trajectory not integrated") 
+            raise RuntimeError("Trajectory not integrated") 
         delTTraj=Trajectory(self.grid)
         if self.nDt==0:
             delTTraj.null(self.nDt, self.dt)
@@ -400,24 +398,15 @@ class Trajectory(object):
 
     def compatibility(self, traj2):
         if (not isinstance(traj2, Trajectory)):
-            raise self.TrajectoryError("Operation on Trajectory objects")
+            raise TypeError("traj2 <Trajectory>")
 
         if (self.dt != traj2.dt):
-            #raise self.TrajectoryError("Incompatible time increment")
             return False
         if (self.nDt != traj2.nDt):
-            #raise self.TrajectoryError("Incompatible time step number")
             return False
         if (self.t0 != traj2.t0):
             return False
         if (not self.grid == traj2.grid):
-            #print("%d %d"%(self.grid.N,traj2.grid.N))
-            #print("%g %g"%(self.grid.dx,traj2.grid.dx))
-            #print("%g %g"%(self.grid.L,traj2.grid.L))
-            #print(self.grid.N==traj2.grid.N and 
-            #      self.grid.dx==traj2.grid.dx and 
-            #      self.grid.L==traj2.grid.L)
-            #raise self.TrajectoryError("Incompatible grids")
             return False
         return True
 
@@ -458,10 +447,10 @@ class Trajectory(object):
 
     def __sub__(self, traj2):
         if (not isinstance(traj2, Trajectory)):
-            raise self.TrajectoryError("Operation on Trajectory objects")
+            raise TypeError("traj2 <Trajectory>")
 
         if (not self.compatibility(traj2)):
-           raise self.TrajectoryError("Incompatible trajectories")
+           raise ValueError("Incompatible trajectories")
 
         trajSub=self.copy()
         trajSub.putData(self.__data-traj2.__data, tReal=self.tReal,
@@ -472,10 +461,10 @@ class Trajectory(object):
 
     def __add__(self, traj2):
         if (not isinstance(traj2, Trajectory)):
-            raise self.TrajectoryError("Operation on Trajectory objects")
+            raise TypeError("traj2 <Trajectory>")
 
         if (not self.compatibility(traj2)):
-           raise self.TrajectoryError("Incompatible trajectories")
+           raise ValueError("Incompatible trajectories")
 
         trajAdd=self.copy()
         trajAdd.putData(self.__data+traj2.__data, tReal=self.tReal,
@@ -494,8 +483,6 @@ class Trajectory(object):
     #----| Public plotting methods |------------------------
     #-------------------------------------------------------
 
-    class TrajectoryPlotError(Exception):
-        pass
 
     #-------------------------------------------------------
     
@@ -563,12 +550,12 @@ class Trajectory(object):
             lIdx=self.whereTimeIdx(ylim[0])
             hIdx=self.whereTimeIdx(ylim[1])
             if len(ylim)<>2 or hIdx<lIdx:
-                raise self.TrajectoryPlotError("ylim=(tMin,tMax)")
+                raise ValueError("ylim=(tMin,tMax)")
             nDt=hIdx-lIdx
             data=self.__data[lIdx:hIdx]
             time=self.time[lIdx:hIdx]
         else:
-                raise self.TrajectoryPlotError("ylim=(tMin,tMax)")
+                raise ValueError("ylim=(tMin,tMax)")
 
         if nDt<nbLines:
             nbLines=nDt
@@ -661,7 +648,7 @@ class Trajectory(object):
 
     def _checkAxe(self, axe):
         if not self.isIntegrated:
-            raise self.TrajectoryPlotError(
+            raise ValueError(
                 "Trajectory not integrated: nothing to plot")
 
         if axe==None:
@@ -676,7 +663,7 @@ class Trajectory(object):
         elif isinstance(axe,Axes):
             pass
         else:
-            raise self.TrajectoryPlotError(
+            raise TypeError(
                 "axe < matplotlib.axes.Axes | matplotlib.gridspec.GridSpec >")
         return axe
 
@@ -694,8 +681,6 @@ class SpectralTrajectory(Trajectory):
         Ntrc    :   truncature <int>
     """
 
-    class SpectralTrajectoryError(Exception):
-        pass
 
     #------------------------------------------------------
     #----| Init |------------------------------------------

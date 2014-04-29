@@ -69,7 +69,7 @@ function kdvTLMPropagator(N, Ntrc, L, dt, nDt, nDtParam, tReal, &
     end if
     
     !Fr : Filtration
-    !call specFilt(pf, N, Ntrc)
+    call specFilt(pf, N, Ntrc)
 end function kdvTLMPropagator
 
 
@@ -95,7 +95,7 @@ function kdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, nDtParam, tReal,&
     double precision, dimension(nDt+1, N)   ::  u, aTraj
     
     ! Fr* : Filtration
-    !call specFilt(pf, N, Ntrc)
+    call specFilt(pf, N, Ntrc)
 
     ! R*
     if (nDt.eq.1) then
@@ -114,7 +114,7 @@ function kdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, nDtParam, tReal,&
     ! Qj*, j=nDt,2
     if (nDt.ne.1) then
     do j=nDt, 2, -1
-        if (present(aTraj)) aTraj(j+1,:)=aBuff(3,:)
+        if (present(aTraj)) aTraj(j+1,:)=aBuff(2,:)
         tReal=tReal+dt
         ! S*
         aBuff=opSAdj(N, aBuff)
@@ -225,7 +225,7 @@ function opPn(N, Ntrc, L, dt, u, pBuff, alph, beta, gamm, rho)
 
     denom=(1.0D0+dt*rho)
 
-    ! F1
+    ! F1 <!> not necessary
     !call specFilt(pBuff(1,:), N, Ntrc)
     !call specFilt(pBuff(2,:), N, Ntrc)
 
@@ -271,7 +271,7 @@ function opPnAdj(N, Ntrc, L, dt, u, aBuff, alph, beta, gamm, rho)
                   +aBuff(2,:)
     opPnAdj(1,:)=aBuff(1,:)+aBuff(3,:)/denom
     
-    ! F1*
+    ! F1*  <!> not necessary
     !call specFilt(opPnAdj(2,:), N, Ntrc)
     !call specFilt(opPnAdj(1,:), N, Ntrc)
     

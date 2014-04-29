@@ -64,7 +64,7 @@ class kdvTLMLauncher(TLMLauncher):
     #----| Diagnostics |------------------------------------
     #-------------------------------------------------------
 
-    def gradTest(self, ic, dt, nDt, t0=0., maxPow=-10):
+    def gradTestFortran(self, ic, dt, nDt, t0=0., maxPow=-10):
         """
         Gradient test
 
@@ -75,7 +75,7 @@ class kdvTLMLauncher(TLMLauncher):
             gradJ(x)=L*M(x)
 
 
-            kdvTLMLauncher.gradTest(ic, tInt=None, t0=0., maxPow=-10)
+            kdvTLMLauncher.gradTest(ic, dt, nDt, t0=0., maxPow=-10)
 
             ic      :   initial condition of the model <numpy.ndarray>
             dt      :   integration step <float>
@@ -90,7 +90,6 @@ class kdvTLMLauncher(TLMLauncher):
             raise TypeError("ic <numpy.ndarray>")
         if ic.ndim <> 1 or ic.size <> self.grid.N:
             raise TypeError("ic.shape = (launcher.grid.N,)")
-
         self.propagatorGradTest(ic, dt, nDt, maxPow, t0=t0)
 
 
@@ -108,14 +107,14 @@ class kdvTLMLauncher(TLMLauncher):
         
         trajData=fKdV.fKdVTLMPropagator(
                     grid.N, grid.Ntrc, grid.L, self.dt,
-                    self.nDt, param.nDt, pert, 
-                    self.refTraj.getData()[self.nDt0:
-                                            self.nDt0+self.nDt+1],
+                    self._nDt, param.nDt, pert, 
+                    self.refTraj.getData()[self._nDt0:
+                                            self._nDt0+self._nDt+1],
                     param[1].getData(), param[2].getData(),
                     param[3].getData(),param[4].getData(), 
                     fullTraj=True)
 
-        tReal=self.nDt*self.dt
+        tReal=self._nDt*self.dt
         traj.putData(trajData)
         traj.incrmTReal(finished=True, tReal=tReal, t0=t0)
 
@@ -131,14 +130,14 @@ class kdvTLMLauncher(TLMLauncher):
         param=self.__t0AdjustParam(self.param, t0=t0)
 
         trajData=fKdV.fKdVTLMPropagatorAdj(
-                grid.N, grid.Ntrc, grid.L, self.dt, self.nDt, param.nDt,
+                grid.N, grid.Ntrc, grid.L, self.dt, self._nDt, param.nDt,
                 pert,
-                self.refTraj.getData()[self.nDt0:self.nDt0+self.nDt+1],
+                self.refTraj.getData()[self._nDt0:self._nDt0+self._nDt+1],
                 param[1].getData(), param[2].getData(),
                 param[3].getData(), param[4].getData(), 
                 fullTraj=True)
 
-        tReal=self.nDt*self.dt
+        tReal=self._nDt*self.dt
         traj.putData(trajData)
         traj.incrmTReal(finished=True, tReal=tReal, t0=t0)
 
@@ -153,13 +152,13 @@ class kdvTLMLauncher(TLMLauncher):
         param=self.__t0AdjustParam(self.param, t0=t0)
 
         LAdjLx=fKdV.fKdVTLMSingularOp(
-                grid.N, grid.Ntrc, grid.L, self.dt, self.nDt, param.nDt,
+                grid.N, grid.Ntrc, grid.L, self.dt, self._nDt, param.nDt,
                 pert,
-                self.refTraj.getData()[self.nDt0:self.nDt0+selfnDt+1],
+                self.refTraj.getData()[self._nDt0:self._nDt0+selfnDt+1],
                 param[1].getData(), param[2].getData(), param[3].getData(),
                 param[4].getData())
 
-        tReal=2.*self.nDt*self.dt
+        tReal=2.*self._nDt*self.dt
 
         self.incrmTReal(finished=True, tReal=tReal)
         return LAdjLx
@@ -210,50 +209,37 @@ if __name__=='__main__':
     from kdvMisc import *
 
     testAdjoint=True
-    tlmVsModel=False
+    
+    Ntrc=144
+    maxA=10.
+    nDt=100
+    grid=PeriodicGrid(Ntrc)
+    param=Param(grid)#, rho=-0.1*gauss(grid.x, 0., 10.))
+    dt=dtStable(param, maxA)
+    tInt=nDt*dt
 
-    grid=PeriodicGrid(150,300.)
-    tInt=3.
-    maxA=2.
-
-    param=Param(grid, beta=1., gamma=-1.)
     
     #----| Reference trajectory |-----------------
-    u0=rndSpecVec(grid, Ntrc=grid.Ntrc/5,  amp=0.3, seed=0.1)
-    M=kdvLauncher(param, maxA)
+    u0=rndSpecVec(grid, seed=0)
+    M=kdvLauncher(param, dt=dt)
     u=M.integrate(u0, tInt)
 
     
     #----| Gradient test |------------------------
     L=kdvTLMLauncher(param, traj=u)
-    L.gradTest(u0, 0.01, 1000)
-
-    #----| TLM vs NL model |----------------------
-    if tlmVsModel:
-        du=soliton(grid.x, 0. , amp=2., beta=1., gamma=-1. )
-        L=kdvTLMLauncher(param, traj=u)
-    
-        u_pert=M.integrate(u0+du)
-        pert=L.integrate(du, fullPertTraj=True)
-        plt.plot(grid.x, u_pert.final)
-        plt.plot(grid.x, u.final+pert)
+    L.gradTest(M, euclidNorm=True)
+    L.gradTestFortran(u0, dt, nDt)
 
 
     #----| Adjoint testing |----------------------
     if testAdjoint:
-        Ntrc=grid.Ntrc
         print("Testting adjoint validity")
-        L=kdvTLMLauncher(param, traj=u)
     
-        dx=rndSpecVec(grid, Ntrc=Ntrc, amp=0.2, seed=0.2)
-        dy=rndSpecVec(grid, Ntrc=Ntrc, amp=0.2, seed=0.3)
+        dx=rndSpecVec(grid, amp=0.1, seed=1)
+        dy=rndSpecVec(grid, amp=0.1, seed=2)
     
         Ldy=L.integrate(dy)
-        print("dy     >>|%3d(%.3f) - L - %3d(%.3f)|>> Ldy"%(
-                        L.nDt0,  L.t0, L.nDtFinal, L.tFinal ))
         Adx=L.adjoint(dx)
-        print("Adx    <<|%3d(%.3f) - L*- %3d(%.3f)|>>  dx"%(
-                        L.nDt0,  L.t0, L.nDtFinal, L.tFinal ))
         print("<dx, Ldy> = %+.15g"%np.dot(dx, Ldy))
         print("<Adx, dt> = %+.15g"%np.dot(Adx, dy))
         print("<dx, Ldy>-<Adx, dt> = %+.15g"%(
@@ -262,13 +248,8 @@ if __name__=='__main__':
 
     #----| partial trajectory time |----
     print("\nTestting adjoint validity for partial integration")
-    L=kdvTLMLauncher(param, traj=u)
     Ldy=L.integrate(dy, tInt=tInt/3., t0=tInt/2.)
-    print("dy     >>|%3d(%.3f) - L - %3d(%.3f)|>> Ldy"%(
-                    L.nDt0,  L.t0, L.nDtFinal, L.tFinal ))
     LAdj_x=L.adjoint(dx, tInt=tInt/3., t0=tInt/2.)
-    print("L*dx   <<|%3d(%.3f) - L*- %3d(%.3f)|>>  dx"%(
-                    L.nDt0,  L.t0, L.nDtFinal, L.tFinal ))
     print("<dx, Ldy>-<L*dx, dt> = %+.15g"%(
                 np.dot(dx, Ldy)-np.dot(LAdj_x, dy)))
 
@@ -279,21 +260,11 @@ if __name__=='__main__':
     L2=kdvTLMLauncher(param, traj=u)
 
     L1dy=L1.integrate(dy, tInt=tInt/3., t0=0.)
-    print("dy     >>|%3d(%.3f) - L1 - %3d(%.3f)|>> L1dy"%(
-                    L1.nDt0,  L1.t0, L1.nDtFinal, L1.tFinal ))
-    L2L1dy=L2.integrate(L1dy, tInt=tInt/2., t0=L1.tFinal)
-    print("L1dy   >>|%3d(%.3f) - L2 - %3d(%.3f)|>> L2L1dy"%(
-                    L2.nDt0,  L2.t0, L2.nDtFinal, L2.tFinal ))
+    L2L1dy=L2.integrate(L1dy, tInt=tInt/2., t0=tInt/3.)
 
     A1dx=L1.adjoint(dx, tInt=tInt/3., t0=0.)
-    print("A1dx   <<|%3d(%.3f) - L1*- %3d(%.3f)|<< dx"%(
-                    L1.nDt0,  L1.t0, L1.nDtFinal, L1.tFinal ))
-    A2dx=L2.adjoint(dx, tInt=tInt/2., t0=L1.tFinal)
-    print("A2dx   <<|%3d(%.3f) - L2*- %3d(%.3f)|<< dx"%(
-                    L2.nDt0,  L2.t0, L2.nDtFinal, L2.tFinal ))
+    A2dx=L2.adjoint(dx, tInt=tInt/2., t0=tInt/3.)
     A1A2dx=L1.adjoint(A2dx, tInt=tInt/3., t0=0.)
-    print("A1A2dx <<|%3d(%.3f) - L1*- %3d(%.3f)|<< A2dx"%(
-                    L1.nDt0,  L1.t0, L1.nDtFinal, L1.tFinal ))
 
 
     print("<dx,L1dy>-<A1dx, dy>     = %+.15g"%(np.dot(dx, L1dy)\

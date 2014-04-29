@@ -80,7 +80,7 @@ class kdvLauncher(Launcher):
         
 
         trajData=fKdV.fKdVPropagator(
-                    grid.N, grid.Ntrc, grid.L, self.dt, self.nDt,
+                    grid.N, grid.Ntrc, grid.L, self.dt, self._nDt,
                     param.nDt,
                     ic, param[1].getData(), param[2].getData(),
                     param[3].getData(), param[4].getData(),
@@ -110,43 +110,3 @@ class kdvLauncher(Launcher):
                     return param.cut(t0) 
         else:
             return param
-
-#====================================================================
-#--------------------------------------------------------------------
-#====================================================================
-
-if __name__=='__main__':
-    
-    from kdvMisc import gauss, soliton, dtStable
-    grid=PeriodicGrid(150,300.)
-    tInt=50.
-    maxA=2.
-    
-    def gaussNeg(x,t):
-        x0=0.
-        sig=5.
-        return -0.1*gauss(x, x0, sig) 
-    def sinus(x,t):
-        return 0.1*np.sin(2.*2*np.pi*x/150.)
-
-    def funcTimeDependant(x, t):
-        return 0.1*np.sin(x/50.)*np.cos(t/10.)
-
-    dt=dtStable(grid, Param(grid, beta=1.,gamma=-1., rho=0.1),
-                    maxA, dtMod=0.7)
-    nDtParam=int(tInt/dt)
-
-
-    param=Param(grid, beta=1., gamma=-1., rho=gaussNeg,
-                forcing=funcTimeDependant, 
-                nDt=nDtParam, dt=dt)
-    paramStatic=Param(grid, beta=1., gamma=-1.)
-
-    ic=soliton(grid.x, 1., beta=1., gamma=-1. )
-
-    # NL model integration
-    launcher=kdvLauncher(param, maxA, dt=dt)
-    
-    traj=launcher.integrate(ic, tInt)
-    axe=traj.waterfall()
-    plt.show()

@@ -57,16 +57,16 @@ class Launcher(object):
         if ic.dtype<>'float64':
             raise ValueError('Potential loss of precision')
 
-        self.nDt=int(tInt/self.dt)
+        self._nDt=int(tInt/self.dt)
         
-        if self.nDt*self.dt < tInt :
-            self.nDt+=1
+        if self._nDt*self.dt < tInt :
+            self._nDt+=1
 
-        self.tInt=self.nDt*self.dt
+        self._tInt=self._nDt*self.dt
         
         # Initialisation
         traj=Trajectory(self.grid)
-        traj.initialize(ic.copy(), self.nDt, self.dt)
+        traj.initialize(ic.copy(), self._nDt, self.dt)
 
         # calling the propagator
         if propagator==None:

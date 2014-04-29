@@ -1,21 +1,22 @@
 import numpy as np
 
-from periodicGrid import PeriodicGrid
+from grid import Grid
 from trajectory import Trajectory
-from spectralLib import specFilt
 from Launcher import Launcher
 
 
 
-class TLMLauncher(object):
+class TLMLauncher(Launcher):
     """
-    TLMLauncher master class
+    TLMLauncher sub-class
 
     TLMLauncher class has three main methods:
-        * initialize(traj <Trajectory>)
+        * reference(traj <Trajectory>)
         * integrate(ic <numpy.ndarray>, tInt <float>)
         * adjoint(fi <numpy.ndarray>, tInt <float>)
-    and  fundamental data which define the integral propagator
+
+    and two fundamental data which define the integral propagator and
+    adjoint
         * propagator <function>
         * propagatorAdj <function>
 
@@ -23,13 +24,11 @@ class TLMLauncher(object):
     be explicitly overloaded.
 
     <!> Before integration (direct or adjoint), the TLMLauncher
-        must be initialized with a reference trajectory.
+        must be referenced with a trajectory.
     
     <!> This is a dummy master class (no propagator defined), only 
         defined subclasses should be instantiated. 
     """
-    class TLMLauncherError(Exception):
-        pass
 
     #------------------------------------------------------
     #----| Init |------------------------------------------
@@ -37,16 +36,15 @@ class TLMLauncher(object):
 
     def __init__(self, grid, traj=None):
 
-        if not isinstance(grid, PeriodicGrid):
-            raise self.TLMLauncherError("grid <PeriodicGrid>")
+        if not isinstance(grid, Grid):
+            raise ValueError()
         self.grid=grid
 
         self.isReferenced=False 
-        if not traj==None: self.initialize(traj)
+        if not traj==None: self.reference(traj)
 
         # Status Attributes
         self.isIntegrated=False
-        self.fullPertTraj=False
         self.tReal=0.
 
         self.propagator=None
@@ -61,107 +59,69 @@ class TLMLauncher(object):
         Initialize the TLM by associating a reference trajectory
             (mandatory before integration)
 
-            TLMLauncher.initialize(traj)
+            TLMLauncher.reference(traj)
 
             traj    :   reference trajectory <Trajectory>
             
         """
         if not(isinstance(traj, Trajectory)):
-            raise self.TLMLauncherError("traj <Trajectory>")
+            raise TypeError() 
         if not (traj.grid==self.grid):
-            raise PeriodicGridError("traj.grid <> grid")
+            raise ValueError()
         self.refTraj=traj
         self.isReferenced=True 
     
-    def initialize(self, traj):
-        """
-        Alias of reference (for retro-compatibility)
-        """
-        return self.reference(traj)
-    #------------------------------------------------------
-    
-    def incrmTReal(self, finished=False, tReal=None):
-        if tReal<>None:
-            self.tReal=tReal
-        if finished:
-            self.isIntegrated=True
-        else:
-            self.tReal+=self.refTraj.dt
-
     #-------------------------------------------------------
 
-    def integrate(self, pert, tInt=None, t0=0., fullPertTraj=False,
-                    filtNtrc=True):
+    def integrate(self, ic, tInt=None, t0=0., fullTraj=False):
         """
         Call to the TLM propagator
 
-            TLMLauncher.integrate(pert, tInt, filtNtrc=True)
+            TLMLauncher.integrate(pert, tInt)
 
-            pert    :   initial perturbation <numpy.ndarray>
+            ic      :   initial perturbation <numpy.ndarray>
             tInt    :   integration time <float>
             t0      :   initial time <float>
         """
         
         if not self.isReferenced:
-            raise self.TLMLauncherError(
+            raise RuntimeError(
                         "Not initialized with a reference trajectory")
-        if not isinstance(pert, np.ndarray):
-            raise self.TLMLauncherError("pert <numpy.ndarray>")
-        if pert.ndim <> 1 or pert.size <> self.grid.N:
-            raise self.TLMLauncherError("pert.shape = (launcher.grid.N,)")
-        if pert.dtype<>'float64':
-            raise LauncherError('Potential loss of precision')
 
-        if filtNtrc:
-            specFilt(pert, self.grid)
-        self._timeValidation(tInt, t0)
-
-        if fullPertTraj:
-            self.fullPertTraj=True
-            self.pertTraj=Trajectory(self.grid)
-            self.pertTraj.initialize(pert, self.nDt, self.dt)
+        tInt=self._timeValidation(tInt, t0)
+        traj=super(TLMLauncher, self).integrate(ic, tInt, 
+                    propagator=self.propagator)
+        if not fullTraj:
+            return traj.final
         else:
-            self.fullPertTraj=False
-
-        fPert=self.propagator(pert.copy(), t0=t0)
-
-        if fPert.dtype<>'float64':
-            raise LauncherError('Potential loss of precision')
-        return fPert
-                                            
+            return traj
 
     #-------------------------------------------------------
 
-    def adjoint(self, pert, tInt=None, t0=0., filtNtrc=True):         
+    def adjoint(self, final, tInt=None, t0=0., fullTraj=False):         
         """
         Call to the TLM Adjoint retro-propagator
 
-            TLMLauncher.integrate(pert, tInt, filtNtrc=True)
+            TLMLauncher.integrate(pert, tInt)
 
-            pert    :   initial perturbation <numpy.ndarray>
+            final   :   final perturbation <numpy.ndarray>
             tInt    :   integration time <float>
             t0      :   initial time <float>
         """
         
         if not self.isReferenced:
-            raise self.TLMLauncherError(
+            raise RuntimeError(
                         "Not initialized with a reference trajectory")
-        if not isinstance(pert, np.ndarray):
-            raise self.TLMLauncherError("pert <numpy.ndarray>")
-        if pert.ndim <> 1 or pert.size <> self.grid.N:
-            raise self.TLMLauncherError("pert.shape = (launcher.grid.N,)")
-        if pert.dtype<>'float64':
-            raise LauncherError('Potential loss of precision')
 
-        if filtNtrc:
-            specFilt(pert, self.grid)
-        self._timeValidation(tInt, t0)
-
-        adj= self.propagatorAdj(pert.copy())
-        if adj.dtype<>'float64':
-            raise LauncherError('Potential loss of precision')
-        return adj
-    
+        tInt=self._timeValidation(tInt, t0)
+        traj=super(TLMLauncher, self).integrate(final, tInt, 
+                    propagator=self.propagatorAdj)
+        
+        if not fullTraj:
+            return traj.ic
+        else:
+            return traj
+        # verifier que c'est bien .ic et non .final
 
     #------------------------------------------------------
     #----| Private methods |-------------------------------
@@ -172,11 +132,11 @@ class TLMLauncher(object):
         # Time attributes
         if tInt==None : tInt=self.refTraj.tReal
         if t0<0.:
-            raise self.TLMLauncherError("t0>=0.")
+            raise ValueError("t0>=0.")
         elif t0<self.refTraj.t0:    
-            raise self.TLMLauncherError("t0>=self.refTraj.t0")
+            raise ValueError("t0>=self.refTraj.t0")
         if t0+tInt>self.refTraj.t0+self.refTraj.tReal:
-            raise self.TLMLauncherError("%.2f %.2f %.2f"%(t0,tInt,self.refTraj.tReal))
+            raise ValueError("%.2f %.2f %.2f"%(t0,tInt,self.refTraj.tReal))
         self.dt=self.refTraj.dt
         self.nDt0=int((t0-self.refTraj.t0)/self.dt)
         self.nDt=int((tInt)/self.dt)
@@ -186,6 +146,7 @@ class TLMLauncher(object):
         self.nDtFinal=self.nDt0+self.nDt
         self.t0=self.nDt0*self.dt
         self.tf=self.nDtFinal*self.dt+t0
+        return tInt
 
     #----| Classical overloads |----------------------------
     #-------------------------------------------------------

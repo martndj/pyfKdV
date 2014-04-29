@@ -18,8 +18,6 @@ class kdvLauncher(Launcher):
         dtMod   :   explicit modificator to neutraly stable time
                         increment
     """
-    class kdvLauncherError(Exception):
-        pass
     
     #------------------------------------------------------
     #----| Init |------------------------------------------
@@ -28,7 +26,7 @@ class kdvLauncher(Launcher):
     def __init__(self, param, dt=None, maxA=3.):
 
         if not (isinstance(param, Param)):
-            raise self.kdvLauncherError(
+            raise TypeError(
                   "param must be an instance of Param")
 
         self.grid=param.grid
@@ -48,22 +46,6 @@ class kdvLauncher(Launcher):
     #----| Public methods |--------------------------------
     #------------------------------------------------------
 
-    def integrate(self, ic, tInt, filtNtrc=False, t0=0.):
-        """
-        Call to the model propagator
-
-            Launcher.integrate(ic, tInt, filtNtrc=True)
-
-            ic  :   initial condition <numpy.ndarray>
-            tInt:   integration time <float>
-
-        """
-    
-        # the Fortran propagator filter implicitly
-        return super(kdvLauncher, self).integrate(ic, tInt,
-                                                filtNtrc=filtNtrc, t0=t0)
-
-    #------------------------------------------------------
 
     def dtStable(self, maxA, dtMod=0.7):
         """
@@ -88,7 +70,7 @@ class kdvLauncher(Launcher):
         # to be corrected (?: what is the problem?)
         if (not (self.param.nDt==0 and self.param.dt==0.)
             and (self.dt <> self.param.dt)):
-            raise self.kdvLauncherError(
+            raise RuntimeError(
                     "incompatible parameter time increment (%f, %f)"%(
                                                         self.dt, param.dt))
 

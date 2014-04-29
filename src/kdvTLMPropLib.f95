@@ -139,7 +139,7 @@ function kdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, nDtParam, tReal,&
     adj=aBuff(1,:)
     ! F* : Filtration *
     call specFilt(adj, N, Ntrc)
-    if (present(aTraj)) aTraj(1,:)=aBuff(1,:)
+    if (present(aTraj)) aTraj(1,:)=adj
 
 end function kdvTLMPropagatorAdj
 

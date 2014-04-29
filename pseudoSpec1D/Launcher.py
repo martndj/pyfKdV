@@ -1,7 +1,6 @@
 import numpy as np
-from periodicGrid import PeriodicGrid
+from grid import Grid
 from trajectory import Trajectory
-from spectralLib import specFilt 
 
 
 class Launcher(object):
@@ -10,6 +9,7 @@ class Launcher(object):
 
     Launcher class has one main method:
         * integrate(ic <numpy.ndarray>, tInt <float>)
+
     and one fundamental data which define the integral propagator
         * propagator <function>
 
@@ -19,8 +19,6 @@ class Launcher(object):
     <!> This is a dummy master class (no propagator defined), only 
         defined subclasses should be instantiated. 
     """
-    class LauncherError(Exception):
-        pass
     
     #------------------------------------------------------
     #----| Init |------------------------------------------
@@ -28,8 +26,9 @@ class Launcher(object):
 
     def __init__(self, grid, dt):
         
-        if not isinstance(grid, PeriodicGrid):
-            raise self.LauncherError("grid <PeriodicGrid>")
+        if not isinstance(grid, Grid):
+            raise TypeError("grid <PeriodicGrid>")
+            
         self.grid=grid
 
         self.dt=dt
@@ -40,11 +39,11 @@ class Launcher(object):
     #----| Public methods |--------------------------------
     #------------------------------------------------------
 
-    def integrate(self, ic, tInt, filtNtrc=True, t0=0.):
+    def integrate(self, ic, tInt, t0=0., propagator=None):
         """
         Call to the model propagator
 
-            Launcher.integrate(ic, tInt, filtNtrc=True)
+            Launcher.integrate(ic, tInt)
 
             ic  :   initial condition <numpy.ndarray>
             tInt:   integration time <float>
@@ -52,13 +51,11 @@ class Launcher(object):
         """
 
         if not isinstance(ic, np.ndarray):
-            raise self.LauncherError("ic <numpy.ndarray>")
+            raise TypeError("ic <numpy.ndarray>")
         if ic.ndim <> 1 or ic.size <> self.grid.N:
-            raise self.LauncherError("ic.shape = (grid.N,)")
+            raise ValueError("ic.shape = (grid.N,)")
         if ic.dtype<>'float64':
-            raise LauncherError('Potential loss of precision')
-        if filtNtrc:
-            specFilt(ic, self.grid)
+            raise ValueError('Potential loss of precision')
 
         self.nDt=int(tInt/self.dt)
         
@@ -72,9 +69,13 @@ class Launcher(object):
         traj.initialize(ic.copy(), self.nDt, self.dt)
 
         # calling the propagator
-        traj=self.propagator(traj.ic, traj, t0=t0)
+        if propagator==None:
+            traj=self.propagator(traj.ic, traj, t0=t0)
+        else:
+            traj=propagator(traj.ic, traj, t0=t0)
+            
         if traj.getData().dtype<>'float64':
-            raise LauncherError('Potential loss of precision')
+            raise RuntimeError('Potential loss of precision')
 
         return traj
 

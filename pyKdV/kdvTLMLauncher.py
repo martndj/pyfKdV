@@ -1,6 +1,5 @@
 import numpy as np
 
-from pseudoSpec1D import *
 from kdvParam import *
 
 import fKdV
@@ -18,8 +17,6 @@ class kdvTLMLauncher(TLMLauncher):
         must be initialized with a reference trajectory.
 
     """
-    class kdvTLMLauncherError(Exception):
-        pass
 
     #------------------------------------------------------
     #----| Init |------------------------------------------
@@ -27,20 +24,12 @@ class kdvTLMLauncher(TLMLauncher):
 
     def __init__(self, param, traj=None):
         if not(isinstance(param, Param)):
-            raise self.kdvTLMLauncherError("param <Param>")
+            raise TypeError("param <Param>")
 
-        self.grid=param.grid
         self.param=param
         self.isTimeDependant=self.param.isTimeDependant
-
-        self.isReferenced=False 
-        if not traj==None: self.initialize(traj)
-
-
-        # Status Attributes
-        self.isIntegrated=False
-        self.fullPertTraj=False
-        self.tReal=0.
+        
+        super(kdvTLMLauncher, self).__init__(param.grid, traj=traj)
 
         self.propagator=self.__kdvTLMProp_Fortran
         self.propagatorAdj=self.__kdvTLMProp_Fortran_Adj
@@ -52,7 +41,7 @@ class kdvTLMLauncher(TLMLauncher):
     #------------------------------------------------------
 
 
-    def singularOp(self, pert, tInt=None, t0=0., filtNtrc=True):
+    def singularOp(self, pert, tInt=None, t0=0.):
         """
         Call to the KdV singular operator 
 
@@ -64,12 +53,10 @@ class kdvTLMLauncher(TLMLauncher):
         """
         
         if not isinstance(pert, np.ndarray):
-            raise self.kdvTLMLauncherError("pert <numpy.ndarray>")
+            raise TypeError("pert <numpy.ndarray>")
         if pert.ndim <> 1 or pert.size <> self.grid.N:
-            raise self.kdvTLMLauncherError(
+            raise TypeError(
                                 "pert.shape = (launcher.grid.N,)")
-        if filtNtrc:
-            specFilt(pert, self.grid)
         super(kdvTLMLauncher, self)._timeValidation(tInt, t0)
 
         return self.propagatorSing(pert)
@@ -100,9 +87,9 @@ class kdvTLMLauncher(TLMLauncher):
 
         """
         if not isinstance(ic, np.ndarray):
-            raise self.kdvTLMLauncherError("ic <numpy.ndarray>")
+            raise TypeError("ic <numpy.ndarray>")
         if ic.ndim <> 1 or ic.size <> self.grid.N:
-            raise self.kdvTLMLauncherError("ic.shape = (launcher.grid.N,)")
+            raise TypeError("ic.shape = (launcher.grid.N,)")
 
         self.propagatorGradTest(ic, dt, nDt, maxPow, t0=t0)
 
@@ -113,59 +100,49 @@ class kdvTLMLauncher(TLMLauncher):
     #------------------------------------------------------
 
 
-    def __kdvTLMProp_Fortran(self, pert, t0=0.):
+    def __kdvTLMProp_Fortran(self, pert, traj, t0=0.):
 
         # Local variables names
         grid=self.grid
         param=self.__t0AdjustParam(self.param, t0=t0)
         
-        if self.fullPertTraj==True:
-            self.pertTraj.putData(
-                    fKdV.fKdVTLMPropagator(
-                        grid.N, grid.Ntrc, grid.L, self.dt,
-                        self.nDt, param.nDt, pert, 
-                        self.refTraj.getData()[self.nDt0:
-                                                self.nDt0+self.nDt+1],
-                        param[1].getData(), param[2].getData(),
-                        param[3].getData(),param[4].getData(), 
-                        fullTraj=True))
-            self.pertTraj.incrmTReal(finished=True, 
-                                    tReal=self.nDt*self.dt, t0=t0)
-            fPert=self.pertTraj.final
-
-        else:
-            fPert=fKdV.fKdVTLMPropagator(
-                    grid.N, grid.Ntrc, grid.L, self.dt, self.nDt, param.nDt,
-                    pert, 
-                    self.refTraj.getData()[self.nDt0:self.nDt0+self.nDt+1],
+        trajData=fKdV.fKdVTLMPropagator(
+                    grid.N, grid.Ntrc, grid.L, self.dt,
+                    self.nDt, param.nDt, pert, 
+                    self.refTraj.getData()[self.nDt0:
+                                            self.nDt0+self.nDt+1],
                     param[1].getData(), param[2].getData(),
-                    param[3].getData(),param[4].getData(), fullTraj=False)
+                    param[3].getData(),param[4].getData(), 
+                    fullTraj=True)
 
         tReal=self.nDt*self.dt
+        traj.putData(trajData)
+        traj.incrmTReal(finished=True, tReal=tReal, t0=t0)
 
-        self.incrmTReal(finished=True, tReal=tReal)
-        return fPert
+        return traj
 
 
     #------------------------------------------------------
 
-    def __kdvTLMProp_Fortran_Adj(self, pert, t0=0.):
+    def __kdvTLMProp_Fortran_Adj(self, pert, traj, t0=0.):
 
         # Local variables names
         grid=self.grid
         param=self.__t0AdjustParam(self.param, t0=t0)
 
-        aPert=fKdV.fKdVTLMPropagatorAdj(
+        trajData=fKdV.fKdVTLMPropagatorAdj(
                 grid.N, grid.Ntrc, grid.L, self.dt, self.nDt, param.nDt,
                 pert,
                 self.refTraj.getData()[self.nDt0:self.nDt0+self.nDt+1],
                 param[1].getData(), param[2].getData(),
-                param[3].getData(), param[4].getData())
+                param[3].getData(), param[4].getData(), 
+                fullTraj=True)
 
         tReal=self.nDt*self.dt
+        traj.putData(trajData)
+        traj.incrmTReal(finished=True, tReal=tReal, t0=t0)
 
-        self.incrmTReal(finished=True, tReal=tReal)
-        return aPert
+        return traj
 
     #------------------------------------------------------
 

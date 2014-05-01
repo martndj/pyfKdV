@@ -38,6 +38,9 @@ class kdvLauncher(Launcher):
             self.dt=self.dtStable(self.maxA)
         else:
             self.dt=dt
+            if dt>self.dtStable(self.maxA):
+                raise RuntimeError(
+                    "dt too small: potential numerical instability")
 
         self.propagator=self.__kdvProp_Fortran
 
@@ -47,7 +50,7 @@ class kdvLauncher(Launcher):
     #------------------------------------------------------
 
 
-    def dtStable(self, maxA, dtMod=0.7):
+    def dtStable(self, maxA, dtMod=1.):
         """
         Stable time incremement
 
@@ -55,7 +58,7 @@ class kdvLauncher(Launcher):
 
             maxA    :   expected maximum amplitude <float>
         """
-        return dtStable(self.grid, self.param, maxA, dtMod=dtMod)
+        return dtStable(self.param, maxA, dtMod=dtMod)
 
     #------------------------------------------------------
     #----| Private methods |-------------------------------

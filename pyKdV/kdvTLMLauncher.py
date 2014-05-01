@@ -238,8 +238,8 @@ if __name__=='__main__':
         dx=rndSpecVec(grid, amp=0.1, seed=1)
         dy=rndSpecVec(grid, amp=0.1, seed=2)
     
-        Ldy=L.integrate(dy)
-        Adx=L.adjoint(dx)
+        Ldy=L.integrate(dy).final
+        Adx=L.adjoint(dx).ic
         print("<dx, Ldy> = %+.15g"%np.dot(dx, Ldy))
         print("<Adx, dt> = %+.15g"%np.dot(Adx, dy))
         print("<dx, Ldy>-<Adx, dt> = %+.15g"%(
@@ -248,8 +248,8 @@ if __name__=='__main__':
 
     #----| partial trajectory time |----
     print("\nTestting adjoint validity for partial integration")
-    Ldy=L.integrate(dy, tInt=tInt/3., t0=tInt/2.)
-    LAdj_x=L.adjoint(dx, tInt=tInt/3., t0=tInt/2.)
+    Ldy=L.integrate(dy, tInt=tInt/3., t0=tInt/2.).final
+    LAdj_x=L.adjoint(dx, tInt=tInt/3., t0=tInt/2.).ic
     print("<dx, Ldy>-<L*dx, dt> = %+.15g"%(
                 np.dot(dx, Ldy)-np.dot(LAdj_x, dy)))
 
@@ -259,12 +259,12 @@ if __name__=='__main__':
     L1=kdvTLMLauncher(param, traj=u)
     L2=kdvTLMLauncher(param, traj=u)
 
-    L1dy=L1.integrate(dy, tInt=tInt/3., t0=0.)
-    L2L1dy=L2.integrate(L1dy, tInt=tInt/2., t0=tInt/3.)
+    L1dy=L1.integrate(dy, tInt=tInt/3., t0=0.).final
+    L2L1dy=L2.integrate(L1dy, tInt=tInt/2., t0=tInt/3.).final
 
-    A1dx=L1.adjoint(dx, tInt=tInt/3., t0=0.)
-    A2dx=L2.adjoint(dx, tInt=tInt/2., t0=tInt/3.)
-    A1A2dx=L1.adjoint(A2dx, tInt=tInt/3., t0=0.)
+    A1dx=L1.adjoint(dx, tInt=tInt/3., t0=0.).ic
+    A2dx=L2.adjoint(dx, tInt=tInt/2., t0=tInt/3.).ic
+    A1A2dx=L1.adjoint(A2dx, tInt=tInt/3., t0=0.).ic
 
 
     print("<dx,L1dy>-<A1dx, dy>     = %+.15g"%(np.dot(dx, L1dy)\

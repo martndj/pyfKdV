@@ -134,7 +134,7 @@ class TLMLauncher(Launcher):
             raise RuntimeError(
                         "Not initialized with a reference trajectory")
         tInt=self._timeValidation(tInt, t0)
-        gradJ0=self.adjoint(self.refTraj.final, tInt, t0=t0)
+        gradJ0=self.adjoint(self.refTraj.final, tInt, t0=t0).ic
         if euclidNorm:
             J0=0.5*np.dot(self.refTraj.final, self.refTraj.final)
             n2GradJ0=np.dot(gradJ0, gradJ0)

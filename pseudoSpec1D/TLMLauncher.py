@@ -72,7 +72,7 @@ class TLMLauncher(Launcher):
     
     #-------------------------------------------------------
 
-    def integrate(self, ic, tInt=None, t0=0., fullTraj=False):
+    def integrate(self, ic, tInt=None, t0=0., fullTraj=True):
         """
         Call to the TLM propagator
 
@@ -97,7 +97,7 @@ class TLMLauncher(Launcher):
 
     #-------------------------------------------------------
 
-    def adjoint(self, final, tInt=None, t0=0., fullTraj=False):         
+    def adjoint(self, final, tInt=None, t0=0., fullTraj=True):         
         """
         Call to the TLM Adjoint retro-propagator
 

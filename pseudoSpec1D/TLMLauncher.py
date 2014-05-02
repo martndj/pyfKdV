@@ -131,7 +131,7 @@ class TLMLauncher(Launcher):
         d_x={}
         # first integration I0
         t=times[0]
-        print(0, t0, t)
+        #print(0, t0, t)
         if t==t0:
             d_x[t]=ic
         else:
@@ -142,7 +142,7 @@ class TLMLauncher(Launcher):
             t_pre=t
             t=times[i]
  
-            print(i, t_pre, t)
+            #print(i, t_pre, t)
             d_x[t]=self.integrate(d_x[t_pre], t-t_pre, t0=t_pre).final
 
         return d_x
@@ -162,14 +162,14 @@ class TLMLauncher(Launcher):
         for i in xrange(nTimes-1,0,-1):
             t_pre=times[i-1]
             t=times[i]
-            print(i, t, t_pre)
+            #print(i, t, t_pre)
             d_x[t_pre]=(self.adjoint(d_x[t], t-t_pre, t0=t_pre).ic
                             + d_x[t_pre])
             d_x[t]=0.
 
         
         # I0*
-        print(0, times[0], t0)
+        #print(0, times[0], t0)
         if times[0]==t0:
             adj=d_x[times[0]]
         else:

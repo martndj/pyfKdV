@@ -207,8 +207,10 @@ if __name__=='__main__':
     import matplotlib.pyplot as plt
     from kdvLauncher import *
     from kdvMisc import *
-
-    testAdjoint=True
+    
+    testGrad=False
+    testAdjoint=False
+    testTimesInt=True
     
     Ntrc=144
     maxA=10.
@@ -224,16 +226,40 @@ if __name__=='__main__':
     M=kdvLauncher(param, dt=dt)
     u=M.integrate(u0, tInt)
 
-    
-    #----| Gradient test |------------------------
     L=kdvTLMLauncher(param, traj=u)
-    L.gradTest(M, euclidNorm=True)
-    L.gradTestFortran(u0, dt, nDt)
+
+    if testGrad:
+        #----| Gradient test |------------------------
+        print("\nGradient test\n")
+        L.gradTest(M, euclidNorm=True)
+        L.gradTestFortran(u0, dt, nDt)
+
+    if testTimesInt:
+        #----| Sequential integration adjoint test |--
+        print("\nSequential integration adjoint test\n")
+        times=[tInt/3., 2.*tInt/3., tInt]
+        dx=rndSpecVec(grid, amp=0.1, seed=1)
+        d_dy={}
+        for t in times:
+            d_dy[t]=rndSpecVec(grid, amp=0.1, seed=t)
 
 
-    #----| Adjoint testing |----------------------
+        d_Hx=L.d_intTimes(dx, times)
+        Lx=L.integrate(dx, tInt)
+        #for t in times:
+        #    print(t, grid.norm(d_Hx[t]-Lx.whereTime(t), metric=np.infty))
+        Ay=L.d_intTimesAdj(d_dy)
+
+        Hx_y=0.
+        for t in times:
+            Hx_y+=np.dot(d_Hx[t], d_dy[t])
+
+        x_Ay=np.dot(dx, Ay)
+        print(Hx_y, x_Ay, Hx_y-x_Ay)
+
     if testAdjoint:
-        print("Testting adjoint validity")
+        #----| Adjoint testing |----------------------
+        print("Testing adjoint validity")
     
         dx=rndSpecVec(grid, amp=0.1, seed=1)
         dy=rndSpecVec(grid, amp=0.1, seed=2)
@@ -246,30 +272,30 @@ if __name__=='__main__':
                     np.dot(dx, Ldy)-np.dot(Adx, dy)))
 
 
-    #----| partial trajectory time |----
-    print("\nTestting adjoint validity for partial integration")
-    Ldy=L.integrate(dy, tInt=tInt/3., t0=tInt/2.).final
-    LAdj_x=L.adjoint(dx, tInt=tInt/3., t0=tInt/2.).ic
-    print("<dx, Ldy>-<L*dx, dt> = %+.15g"%(
-                np.dot(dx, Ldy)-np.dot(LAdj_x, dy)))
-
-
-    #----| step integrations |----------
-    print("\nTestting adjoint validity for successive step integrations")
-    L1=kdvTLMLauncher(param, traj=u)
-    L2=kdvTLMLauncher(param, traj=u)
-
-    L1dy=L1.integrate(dy, tInt=tInt/3., t0=0.).final
-    L2L1dy=L2.integrate(L1dy, tInt=tInt/2., t0=tInt/3.).final
-
-    A1dx=L1.adjoint(dx, tInt=tInt/3., t0=0.).ic
-    A2dx=L2.adjoint(dx, tInt=tInt/2., t0=tInt/3.).ic
-    A1A2dx=L1.adjoint(A2dx, tInt=tInt/3., t0=0.).ic
-
-
-    print("<dx,L1dy>-<A1dx, dy>     = %+.15g"%(np.dot(dx, L1dy)\
-                                            -np.dot(A1dx, dy)))
-    print("<dx,L2L1dy>-<A2dx, L1dy> = %+.15g"%(np.dot(dx, L2L1dy)\
-                                            -np.dot(A2dx, L1dy)))
-    print("<dx,L2L1dy>-<A1A2dx, dy> = %+.15g"%(np.dot(dx, L2L1dy)\
-                                            -np.dot(A1A2dx, dy)))
+        #----| partial trajectory time |----
+        print("\nTestting adjoint validity for partial integration")
+        Ldy=L.integrate(dy, tInt=tInt/3., t0=tInt/2.).final
+        LAdj_x=L.adjoint(dx, tInt=tInt/3., t0=tInt/2.).ic
+        print("<dx, Ldy>-<L*dx, dt> = %+.15g"%(
+                    np.dot(dx, Ldy)-np.dot(LAdj_x, dy)))
+    
+    
+        #----| step integrations |----------
+        print("\nTestting adjoint validity for successive step integrations")
+        L1=kdvTLMLauncher(param, traj=u)
+        L2=kdvTLMLauncher(param, traj=u)
+    
+        L1dy=L1.integrate(dy, tInt=tInt/3., t0=0.).final
+        L2L1dy=L2.integrate(L1dy, tInt=tInt/2., t0=tInt/3.).final
+    
+        A1dx=L1.adjoint(dx, tInt=tInt/3., t0=0.).ic
+        A2dx=L2.adjoint(dx, tInt=tInt/2., t0=tInt/3.).ic
+        A1A2dx=L1.adjoint(A2dx, tInt=tInt/3., t0=0.).ic
+    
+    
+        print("<dx,L1dy>-<A1dx, dy>     = %+.15g"%(np.dot(dx, L1dy)\
+                                                -np.dot(A1dx, dy)))
+        print("<dx,L2L1dy>-<A2dx, L1dy> = %+.15g"%(np.dot(dx, L2L1dy)\
+                                                -np.dot(A2dx, L1dy)))
+        print("<dx,L2L1dy>-<A1A2dx, dy> = %+.15g"%(np.dot(dx, L2L1dy)\
+                                                -np.dot(A1A2dx, dy)))

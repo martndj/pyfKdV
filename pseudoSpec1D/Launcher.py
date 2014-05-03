@@ -79,6 +79,36 @@ class Launcher(object):
 
         return traj
 
+    #-------------------------------------------------------
+
+    def d_intTimes(self, ic, times, t0=0.):
+        """ 
+        Returns a dict with integrations at times requested
+        (usefull for data assimilation model equivalent calculation)
+        """
+        if not isinstance(times, (np.ndarray, list, set)):
+            raise TypeError()
+        times=np.array(list(set(times)))
+        times.sort()
+        nTimes=len(times)
+       
+        d_x={}
+        # first integration I0
+        t=times[0]
+        if t==t0:
+            d_x[t]=ic
+        else:
+            d_x[t]=self.integrate(ic, t-t0, t0=t0).final
+
+        # subsequent integrations Sn
+        for i in xrange(1,nTimes):
+            t_pre=t
+            t=times[i]
+ 
+            d_x[t]=self.integrate(d_x[t_pre], t-t_pre, t0=t_pre).final
+
+        return d_x
+
     #----| Classical overloads |----------------------------
     #-------------------------------------------------------
 

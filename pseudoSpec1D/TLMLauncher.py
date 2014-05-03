@@ -117,38 +117,6 @@ class TLMLauncher(Launcher):
 
     #-------------------------------------------------------
 
-    def d_intTimes(self, ic, times, t0=0.):
-        """ 
-        Returns a dict with integrations at times requested
-        (usefull for data assimilation model equivalent calculation)
-        """
-        if not isinstance(times, (np.ndarray, list, set)):
-            raise TypeError()
-        times=np.array(list(set(times)))
-        times.sort()
-        nTimes=len(times)
-       
-        d_x={}
-        # first integration I0
-        t=times[0]
-        #print(0, t0, t)
-        if t==t0:
-            d_x[t]=ic
-        else:
-            d_x[t]=self.integrate(ic, t-t0, t0=t0).final
-
-        # subsequent integrations Sn
-        for i in xrange(1,nTimes):
-            t_pre=t
-            t=times[i]
- 
-            #print(i, t_pre, t)
-            d_x[t]=self.integrate(d_x[t_pre], t-t_pre, t0=t_pre).final
-
-        return d_x
-
-    #-------------------------------------------------------
-
     def d_intTimesAdj(self, d_xIn, t0=0.):
         """
         Numerical adjoint of d_intTimes.()
@@ -162,14 +130,12 @@ class TLMLauncher(Launcher):
         for i in xrange(nTimes-1,0,-1):
             t_pre=times[i-1]
             t=times[i]
-            #print(i, t, t_pre)
             d_x[t_pre]=(self.adjoint(d_x[t], t-t_pre, t0=t_pre).ic
                             + d_x[t_pre])
             d_x[t]=0.
 
         
         # I0*
-        #print(0, times[0], t0)
         if times[0]==t0:
             adj=d_x[times[0]]
         else:

@@ -3,6 +3,7 @@ import numpy as np
 from grid import Grid
 from trajectory import Trajectory
 from Launcher import Launcher
+from gradTest import gradientTest, gradTestString
 
 
 
@@ -179,17 +180,37 @@ class TLMLauncher(Launcher):
             res=((J0-Jeps)/(eps*n2GradJ0))
             test[power]=[Jeps, res]
 
-        if output:  print(self.gradTestString(J0, n2GradJ0, test))
+        if output:  print(gradTestString(J0, n2GradJ0, test))
         return (J0, n2GradJ0, test)
 
+    def gradTest2(self, nlModel, tInt=None, t0=0., 
+                    powRange=[-1,-14], 
+                    output=True):
+        if not isinstance(nlModel, Launcher):
+            raise TypeError()
+        if nlModel.grid<>self.grid:
+            raise ValueError()
+        if not self.isReferenced:
+            raise RuntimeError(
+                        "Not initialized with a reference trajectory")
+        tInt=self._timeValidation(tInt, t0)
+        def fct(x0):
+            return 0.5*self.grid.squareNorm(
+                        nlModel.integrate(x0, tInt, t0=t0).final)
+        def gradFct(x0):
+            return self.adjoint(nlModel.integrate(x0, tInt, t0=t0).final,
+                                tInt, t0=t0).ic
+        return gradientTest(self.refTraj.ic, fct, gradFct, 
+                            powRange=powRange, output=output)
+        
 
-    def gradTestString(self, J0, n2GradJ0, test):
-        s="----| Gradient test |------------------\n"
-        s+="  J0      =%+25.15e\n"%J0
-        s+=" |grad|^2 =%+25.15e\n"%n2GradJ0
-        for i in  (np.sort(test.keys())[::-1]):
-            s+="%4d %+25.15e  %+25.15e\n"%(i, test[i][0], test[i][1])
-        return s
+#    def gradTestString(self, J0, n2GradJ0, test):
+#        s="----| Gradient test |------------------\n"
+#        s+="  J0      =%+25.15e\n"%J0
+#        s+=" |grad|^2 =%+25.15e\n"%n2GradJ0
+#        for i in  (np.sort(test.keys())[::-1]):
+#            s+="%4d %+25.15e  %+25.15e\n"%(i, test[i][0], test[i][1])
+#        return s
     
 
     #------------------------------------------------------

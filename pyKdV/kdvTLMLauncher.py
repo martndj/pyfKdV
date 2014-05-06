@@ -207,6 +207,7 @@ if __name__=='__main__':
     import matplotlib.pyplot as plt
     from kdvLauncher import *
     from kdvMisc import *
+    from pseudoSpec1D import gradientTest
     
     testGrad=False
     testAdjoint=False
@@ -234,10 +235,12 @@ if __name__=='__main__':
         L.gradTest(M, euclidNorm=True)
         L.gradTestFortran(u0, dt, nDt)
 
+
     if testTimesInt:
         #----| Sequential integration adjoint test |--
         print("\nSequential integration adjoint test\n")
-        times=[tInt/3., 2.*tInt/3., tInt]
+        #times=[tInt/3., 2.*tInt/3., tInt]
+        times=[tInt]
         dx=rndSpecVec(grid, amp=0.1, seed=1)
         d_dy={}
         for t in times:
@@ -256,6 +259,33 @@ if __name__=='__main__':
 
         x_Ay=np.dot(dx, Ay)
         print(Hx_y, x_Ay, Hx_y-x_Ay)
+        
+
+        print("\n grad test between integrate()")
+        def fct(x0):
+            x=M.integrate(x0, times[-1])
+            J=0.5*np.dot(x.final, x.final)
+            return J
+        def gradFct(x0):
+            x=M.integrate(x0, times[-1])
+            return L.adjoint(x.final, times[-1]).ic
+        
+        gradientTest(dx, fct, gradFct)
+        print("\n grad test between d_intTimes()")
+        def fct(x0):
+            d_x=M.d_intTimes(x0, times)
+            J=0.
+            for t in d_x.keys():
+                J+=0.5*np.dot(d_x[t], d_x[t])
+            return J
+        def gradFct(x0):
+            d_x=M.d_intTimes(x0, times)
+            return L.d_intTimesAdj(d_x)
+        
+        gradientTest(dx, fct, gradFct)
+            
+
+
 
     if testAdjoint:
         #----| Adjoint testing |----------------------

@@ -10,6 +10,7 @@ from spectralLib import *
 from grid import *
 from periodicGrid import *
 from trajectory import *
+from gradTest import *
 from Launcher import *
 from TLMLauncher import *
 from psMisc import *

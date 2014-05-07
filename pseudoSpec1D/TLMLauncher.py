@@ -44,9 +44,6 @@ class TLMLauncher(Launcher):
         self.isReferenced=False 
         if not traj==None: self.reference(traj)
 
-        # Status Attributes
-        self.isIntegrated=False
-
         self.propagator=None
         self.propagatorAdj=None
 

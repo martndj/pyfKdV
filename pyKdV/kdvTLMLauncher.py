@@ -218,7 +218,8 @@ if __name__=='__main__':
     nDt=100
     grid=PeriodicGrid(Ntrc)
     param=Param(grid)#, rho=-0.1*gauss(grid.x, 0., 10.))
-    dt=dtStable(param, maxA)
+    dt=0.001
+    if dt > dtStable(param, maxA): raise RuntimeError()
     tInt=nDt*dt
 
     
@@ -239,8 +240,8 @@ if __name__=='__main__':
     if testTimesInt:
         #----| Sequential integration adjoint test |--
         print("\nSequential integration adjoint test\n")
-        times=[tInt/3., 2.*tInt/3., tInt]
-        #times=[tInt]
+        freq=3
+        times=np.linspace(tInt/freq, tInt, freq)
         dx=rndSpecVec(grid, amp=0.1, seed=1)
         d_dy={}
         for t in times:
@@ -261,17 +262,17 @@ if __name__=='__main__':
         print(Hx_y, x_Ay, Hx_y-x_Ay)
         
 
-        print("\n grad test between integrate()")
-        def fct(x0):
-            x=M.integrate(x0, times[-1]).final
-            J=0.5*np.dot(x, x)
-            return J
-        def gradFct(x0):
-            x=M.integrate(x0, times[-1])
-            tlm=kdvTLMLauncher(M.param, traj=x)
-            return tlm.adjoint(x.final, times[-1]).ic
-        
-        gradientTest(dx, fct, gradFct)
+#        print("\n grad test between integrate()")
+#        def fct(x0):
+#            x=M.integrate(x0, times[-1]).final
+#            J=0.5*np.dot(x, x)
+#            return J
+#        def gradFct(x0):
+#            x=M.integrate(x0, times[-1])
+#            tlm=kdvTLMLauncher(M.param, traj=x)
+#            return tlm.adjoint(x.final, times[-1]).ic
+#        
+#        gradientTest(dx, fct, gradFct)
 
         print("\n grad test between d_intTimes()")
         def fct(x0):

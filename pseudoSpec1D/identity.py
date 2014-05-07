@@ -16,9 +16,9 @@ class IdLauncher(Launcher):
 
         self.grid=grid
         self.dt=dt
-        self.propagator=self.__identity
+        self.propagator=self._identity
 
-    def __identity(self, ic, traj, t0=0.):
+    def _identity(self, ic, traj, t0=0.):
         trajData=np.zeros(shape=(traj.nDt+1, self.grid.N))
         for i in xrange(traj.nDt+1):
             trajData[i]=ic
@@ -29,4 +29,14 @@ class IdLauncher(Launcher):
         return traj
 
 class IdTLM(IdLauncher, TLMLauncher):
-    pass
+    def __init__(self, grid, traj=None):
+        if not isinstance(grid, Grid):
+            raise TypeError("grid <Grid>")
+
+        self.grid=grid
+
+        self.isReferenced=False 
+        if not traj==None: self.reference(traj)
+
+        self.propagator=self._identity
+        self.propagatorAdj=self._identity

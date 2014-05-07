@@ -239,8 +239,8 @@ if __name__=='__main__':
     if testTimesInt:
         #----| Sequential integration adjoint test |--
         print("\nSequential integration adjoint test\n")
-        #times=[tInt/3., 2.*tInt/3., tInt]
-        times=[tInt]
+        times=[tInt/3., 2.*tInt/3., tInt]
+        #times=[tInt]
         dx=rndSpecVec(grid, amp=0.1, seed=1)
         d_dy={}
         for t in times:
@@ -263,14 +263,16 @@ if __name__=='__main__':
 
         print("\n grad test between integrate()")
         def fct(x0):
-            x=M.integrate(x0, times[-1])
-            J=0.5*np.dot(x.final, x.final)
+            x=M.integrate(x0, times[-1]).final
+            J=0.5*np.dot(x, x)
             return J
         def gradFct(x0):
             x=M.integrate(x0, times[-1])
-            return L.adjoint(x.final, times[-1]).ic
+            tlm=kdvTLMLauncher(M.param, traj=x)
+            return tlm.adjoint(x.final, times[-1]).ic
         
         gradientTest(dx, fct, gradFct)
+
         print("\n grad test between d_intTimes()")
         def fct(x0):
             d_x=M.d_intTimes(x0, times)
@@ -279,8 +281,10 @@ if __name__=='__main__':
                 J+=0.5*np.dot(d_x[t], d_x[t])
             return J
         def gradFct(x0):
+            x=M.integrate(x0, times[-1])
+            tlm=kdvTLMLauncher(M.param, traj=x)
             d_x=M.d_intTimes(x0, times)
-            return L.d_intTimesAdj(d_x)
+            return tlm.d_intTimesAdj(d_x)
         
         gradientTest(dx, fct, gradFct)
             

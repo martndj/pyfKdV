@@ -143,47 +143,12 @@ class TLMLauncher(Launcher):
             adj=(self.adjoint(d_x[times[0]], times[0]-t0, t0=t0).ic)
 
         return adj
-        
-    
 
 
     #-------------------------------------------------------
 
+
     def gradTest(self, nlModel, tInt=None, t0=0., 
-                    powRange=[-1,-14], euclidNorm=False,
-                    output=True):
-        if not isinstance(nlModel, Launcher):
-            raise TypeError()
-        if nlModel.grid<>self.grid:
-            raise ValueError()
-        if not self.isReferenced:
-            raise RuntimeError(
-                        "Not initialized with a reference trajectory")
-        tInt=self._timeValidation(tInt, t0)
-        gradJ0=self.adjoint(self.refTraj.final, tInt, t0=t0).ic
-        if euclidNorm:
-            J0=0.5*np.dot(self.refTraj.final, self.refTraj.final)
-            n2GradJ0=np.dot(gradJ0, gradJ0)
-        else:
-            J0=0.5*self.grid.squareNorm(self.refTraj.final)
-            n2GradJ0=self.grid.squareNorm(gradJ0)
-
-        test={}
-        for power in xrange(powRange[0],powRange[1], -1):
-            eps=10.**(power)
-            Mx=nlModel.integrate(self.refTraj.whereTime(t0)-eps*gradJ0, 
-                                    tInt, t0=t0).final
-            if euclidNorm:
-                Jeps=0.5*np.dot(Mx, Mx)
-            else:
-                Jeps=0.5*self.grid.squareNorm(Mx)
-            res=((J0-Jeps)/(eps*n2GradJ0))
-            test[power]=[Jeps, res]
-
-        if output:  print(gradTestString(J0, n2GradJ0, test))
-        return (J0, n2GradJ0, test)
-
-    def gradTest2(self, nlModel, tInt=None, t0=0., 
                     powRange=[-1,-14], 
                     output=True):
         if not isinstance(nlModel, Launcher):
@@ -195,8 +160,8 @@ class TLMLauncher(Launcher):
                         "Not initialized with a reference trajectory")
         tInt=self._timeValidation(tInt, t0)
         def fct(x0):
-            return 0.5*self.grid.squareNorm(
-                        nlModel.integrate(x0, tInt, t0=t0).final)
+            xf=nlModel.integrate(x0, tInt, t0=t0).final
+            return 0.5*np.dot(xf,xf)
         def gradFct(x0):
             return self.adjoint(nlModel.integrate(x0, tInt, t0=t0).final,
                                 tInt, t0=t0).ic
@@ -204,13 +169,6 @@ class TLMLauncher(Launcher):
                             powRange=powRange, output=output)
         
 
-#    def gradTestString(self, J0, n2GradJ0, test):
-#        s="----| Gradient test |------------------\n"
-#        s+="  J0      =%+25.15e\n"%J0
-#        s+=" |grad|^2 =%+25.15e\n"%n2GradJ0
-#        for i in  (np.sort(test.keys())[::-1]):
-#            s+="%4d %+25.15e  %+25.15e\n"%(i, test[i][0], test[i][1])
-#        return s
     
 
     #------------------------------------------------------

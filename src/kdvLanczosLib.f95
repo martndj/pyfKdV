@@ -4,15 +4,16 @@ use kdvTLMProp
 
 contains
 function lanczos(N, Ntrc, L, dt, nDt, nDtParam, tReal, u, &
-                    alph, beta, gamm, rho, Nev, sv, Nconv) result(V)
+                    alph, beta, gamm, rho, nu, nuN, Nev, sv, Nconv) &
+                    result(V)
 
     intent(in)              ::  N, Ntrc, L, dt, nDt, nDtParam, u,  &
-                                alph, beta, gamm, rho, &
+                                alph, beta, gamm, rho, nu, nuN, &
                                 Nev
     intent(out)             ::  sv, Nconv
 
-    double precision        ::  L, dt, tReal
-    integer                 ::  N, Ntrc, nDt, nDtParam, j
+    double precision        ::  L, dt, tReal, nu
+    integer                 ::  N, Ntrc, nDt, nDtParam, j, nuN
 
     double precision, dimension(nDtParam+1, N)::  alph, beta, gamm, rho
 
@@ -63,7 +64,7 @@ function lanczos(N, Ntrc, L, dt, nDt, nDtParam, tReal, u, &
         if (ido .eq. 1 .or. ido .eq. -1) then 
             call oper(N, Ntrc, L, dt, nDt, nDtParam, u, &
                         workd(ipntr(1)), workd(ipntr(2)),&
-                        alph, beta, gamm, rho)
+                        alph, beta, gamm, rho, nu, nuN)
 
         else
             exit
@@ -98,13 +99,13 @@ function lanczos(N, Ntrc, L, dt, nDt, nDtParam, tReal, u, &
     
     contains
     subroutine oper(N, Ntrc, L, dt, nDt, nDtParam, u, x, y,&
-                    alph, beta, gamm, rho)
+                    alph, beta, gamm, rho, nu, nuN)
         intent(in)              ::  N, Ntrc, L, dt, nDt, nDtParam, &
-                                    u, x, alph, beta, gamm, rho
+                                    u, x, alph, beta, gamm, rho, nu, nuN
         intent(out)             ::  y
 
-        double precision        ::  L, dt, tReal
-        integer                 ::  N, Ntrc, nDt, nDtParam, j
+        double precision        ::  L, dt, tReal, nu
+        integer                 ::  N, Ntrc, nDt, nDtParam, j, nuN
 
         double precision, dimension(N)  ::  x, y
 
@@ -114,11 +115,13 @@ function lanczos(N, Ntrc, L, dt, nDt, nDtParam, tReal, u, &
 
 
             y=kdvTLMPropagator(N, Ntrc, L, dt, nDt, nDtParam, &
-                                tReal, u, x, alph, beta, gamm, rho) 
+                                tReal, u, x, alph, beta, gamm, rho, &
+                                nu, nuN) 
             ! <TODO> external function 'metric' here!
             ! (see interface in fKdV4/src/kdvLanczosLib.f95)
             y=kdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, nDtParam, &
-                                    tReal, u, y, alph, beta, gamm, rho)
+                                    tReal, u, y, alph, beta, gamm, rho, & 
+                                    nu, nuN)
 
         end subroutine oper
 end function lanczos

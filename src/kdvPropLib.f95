@@ -7,17 +7,17 @@ contains
 !====================================================================
 
 function kdvPropagator(N, Ntrc, L, dt, nDt, nDtParam, tReal, ic, &
-                            alph, beta, gamm, rho, forc) &
+                            alph, beta, gamm, rho, nu, nuN, forc) &
                             result(traj)
     !    Integral propagator
     !
     !       parameters localized and time dependent
     !-----------------------------------------------------------
     intent(in)              ::  N, Ntrc, L, dt, nDt, nDtParam,&
-                                alph, beta, gamm, rho, forc
+                                alph, beta, gamm, rho, forc, nu, nuN
 
-    double precision        ::  L, dt, tReal
-    integer                 ::  N, Ntrc, nDt, nDtParam, j, i
+    double precision        ::  L, dt, tReal, nu
+    integer                 ::  N, Ntrc, nDt, nDtParam, j, i, nuN
     
     double precision, dimension(N)          ::  ic
 
@@ -33,7 +33,7 @@ function kdvPropagator(N, Ntrc, L, dt, nDt, nDtParam, tReal, ic, &
     traj(1,:)=ic
     traj(2,:)=eulerStep(N, Ntrc, L, traj(1,:), dt, &
                         alph(1,:), beta(1,:), gamm(1,:), rho(1,:), &
-                        forc(1,:))
+                        nu, nuN, forc(1,:))
     tReal=tReal+dt
 
     ! subsequent step with mised Leapfrog-trapezoidal scheme
@@ -42,13 +42,13 @@ function kdvPropagator(N, Ntrc, L, dt, nDt, nDtParam, tReal, ic, &
             traj(j+1,:)=leapfrogTrapezStep(N, Ntrc, L, &
                             traj(j,:), traj(j-1,:), dt,&
                             alph(j,:), beta(j,:), gamm(j,:), rho(j,:),&
-                            forc(j,:))
+                            nu, nuN, forc(j,:))
         else
             traj(j+1,:)=leapfrogTrapezStep(N, Ntrc, L, &
                             traj(j,:), traj(j-1,:), dt,&
                             alph(nDtParam+1,:), beta(nDtParam+1,:),&
                             gamm(nDtParam+1,:), rho(nDtParam+1,:),&
-                            forc(nDtParam+1,:))
+                            nu, nuN, forc(nDtParam+1,:))
         end if
         tReal=tReal+dt
     end do
@@ -58,18 +58,21 @@ end function kdvPropagator
 !--------------------------------------------------------------------!
 !--------------------------------------------------------------------!
 
-function eulerStep(N, Ntrc, L, preState, dt, alph, beta, gamm, rho, forc)
+function eulerStep(N, Ntrc, L, preState, dt, alph, beta, gamm, rho, &
+                    nu, nuN, forc)
     intent(in)                      ::  N, Ntrc, L, preState, dt, &
-                                        alph, beta, gamm, rho, forc
-    integer                         ::  N, Ntrc 
-    double precision                ::  L, dt
+                                        alph, beta, gamm, rho, forc, &
+                                        nu, nuN
+    integer                         ::  N, Ntrc, nuN 
+    double precision                ::  L, dt, nu
     double precision, dimension(N)  ::  preState, eulerStep, &
                                         alph, beta, gamm, rho, forc
 
     eulerStep=preState+dt*kdvPseudoSpec(N, Ntrc, L, preState, &
                                          alph, beta, gamm)&
                 +dt*forc &
-                -dt*rho*preState 
+                -dt*rho*preState &
+                -dt*lowPassVisco(N, Ntrc, L, preState, nu, nuN)
     ! prevent aliasing from multiplication (localised parameters)
     call specFilt(eulerStep, N, Ntrc)
 end function eulerStep
@@ -77,11 +80,12 @@ end function eulerStep
 !--------------------------------------------------------------------!
 
 function leapfrogTrapezStep(N, Ntrc, L, pre, pre2,  dt, &
-                            alph, beta, gamm, rho, forc)
+                            alph, beta, gamm, rho, nu, nuN, forc)
     intent(in)                      ::  N, Ntrc, L, pre, pre2, dt, &
-                                        alph, beta, gamm, rho, forc
-    integer                         ::  N, Ntrc 
-    double precision                ::  L, dt
+                                        alph, beta, gamm, rho, forc, &
+                                        nu, nuN
+    integer                         ::  N, Ntrc, nuN 
+    double precision                ::  L, dt, nu
     double precision, dimension(N)  ::  leapfrogTrapezStep, pre, pre2, &
                                         alph, beta, gamm, rho, forc, denom
 
@@ -93,6 +97,7 @@ function leapfrogTrapezStep(N, Ntrc, L, pre, pre2,  dt, &
     leapfrogTrapezStep=(pre2 &
                         +(2.0D0*dt)*kdvPseudoSpec(N, Ntrc, L, pre,&
                                           alph, beta, gamm)&
+                        +(2.0D0*dt)*lowPassVisco(N, Ntrc, L, pre, nu, nuN) &
                         -dt*rho*pre &
                         +(2.0D0*dt)*forc &
                         )/denom
@@ -146,6 +151,20 @@ function kdvPseudoSpec(N, Ntrc, L, u, alph, beta, gamm, forc)
     call specFilt(kdvPseudoSpec, N, Ntrc)
 
 end function kdvPseudoSpec
+
+!--------------------------------------------------------------------!
+
+function lowPassVisco(N, Ntrc, L, u, nu, nuN)
+    intent(in)                      ::  N, Ntrc, L, u, nu, nuN
+    integer                         ::  N, Ntrc, j, nuN
+    double precision                ::  L, nu
+    double precision, dimension(N)  ::  lowPassVisco, &
+                                        u, d2Nu
+
+    d2Nu=specDiff(u, 2*nuN, N, Ntrc, L)
+    lowPassVisco=nu*d2Nu
+
+end function lowPassVisco
 
 !====================================================================
 end module kdvProp

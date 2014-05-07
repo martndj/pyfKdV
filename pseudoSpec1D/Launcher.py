@@ -27,7 +27,7 @@ class Launcher(object):
     def __init__(self, grid, dt):
         
         if not isinstance(grid, Grid):
-            raise TypeError("grid <PeriodicGrid>")
+            raise TypeError("grid <Grid>")
             
         self.grid=grid
 

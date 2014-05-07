@@ -210,8 +210,8 @@ if __name__=='__main__':
     from pseudoSpec1D import gradientTest
     
     testGrad=False
-    testAdjoint=False
     testTimesInt=True
+    testAdjoint=False
     
     Ntrc=144
     maxA=10.
@@ -233,35 +233,11 @@ if __name__=='__main__':
     if testGrad:
         #----| Gradient test |------------------------
         print("\nGradient test\n")
-        L.gradTest(M, euclidNorm=True)
+        L.gradTest(M)
         L.gradTestFortran(u0, dt, nDt)
 
 
     if testTimesInt:
-        #----| Sequential integration adjoint test |--
-        print("\nSequential integration adjoint test\n")
-        freq=3
-        times=np.linspace(tInt/freq, tInt, freq)
-        dx=rndSpecVec(grid, amp=0.1, seed=1)
-        d_dy={}
-        for t in times:
-            d_dy[t]=rndSpecVec(grid, amp=0.1, seed=t)
-
-
-        d_Hx=L.d_intTimes(dx, times)
-        Lx=L.integrate(dx, tInt)
-        #for t in times:
-        #    print(t, grid.norm(d_Hx[t]-Lx.whereTime(t), metric=np.infty))
-        Ay=L.d_intTimesAdj(d_dy)
-
-        Hx_y=0.
-        for t in times:
-            Hx_y+=np.dot(d_Hx[t], d_dy[t])
-
-        x_Ay=np.dot(dx, Ay)
-        print(Hx_y, x_Ay, Hx_y-x_Ay)
-        
-
 #        print("\n grad test between integrate()")
 #        def fct(x0):
 #            x=M.integrate(x0, times[-1]).final
@@ -275,6 +251,9 @@ if __name__=='__main__':
 #        gradientTest(dx, fct, gradFct)
 
         print("\n grad test between d_intTimes()")
+        freq=1
+        times=np.linspace(tInt/freq, tInt, freq)
+        dx=rndSpecVec(grid, amp=0.1, seed=1)
         def fct(x0):
             d_x=M.d_intTimes(x0, times)
             J=0.
@@ -289,6 +268,24 @@ if __name__=='__main__':
         
         gradientTest(dx, fct, gradFct)
             
+        if testAdjoint:
+            #----| Sequential integration adjoint test |--
+            print("\nSequential integration adjoint test\n")
+            d_dy={}
+            for t in times:
+                d_dy[t]=rndSpecVec(grid, amp=0.1, seed=t)
+    
+    
+            d_Hx=L.d_intTimes(dx, times)
+            Lx=L.integrate(dx, tInt)
+            Ay=L.d_intTimesAdj(d_dy)
+    
+            Hx_y=0.
+            for t in times:
+                Hx_y+=np.dot(d_Hx[t], d_dy[t])
+    
+            x_Ay=np.dot(dx, Ay)
+            print(Hx_y, x_Ay, Hx_y-x_Ay)
 
 
 
@@ -316,7 +313,8 @@ if __name__=='__main__':
     
     
         #----| step integrations |----------
-        print("\nTestting adjoint validity for successive step integrations")
+        print("\nTestting adjoint validity"
+                +" for successive step integrations")
         L1=kdvTLMLauncher(param, traj=u)
         L2=kdvTLMLauncher(param, traj=u)
     

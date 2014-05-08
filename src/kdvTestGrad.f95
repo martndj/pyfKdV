@@ -6,7 +6,7 @@ use kdvTLMTest
 implicit none
 
 integer                 ::  N, Ntrc, nDt, nDtParam, maxPower,&
-                            i, NNDt, NtrcRho, nuN
+                            i, NNDt, NtrcParam, nuN
 double precision        ::  L, pAmp, diff, dt, tReal, rhoAmp, nu, nuAmp
 logical                 ::  test, rhoZero, forcZero, rhoCte, & 
                             nuZero, outputVec, testFullModel
@@ -25,7 +25,7 @@ Ntrc=100
 N=3*Ntrc+1
 L=3.D2
 
-NtrcRho=5
+NtrcParam=30
 rhoZero=.False.
 !rhoZero=.True.
 rhoCte=.False.
@@ -60,9 +60,9 @@ ic=initRandVec(N)
 xBuff=pAmp*initRandVec(N)
 yBuff=pAmp*initRandVec(N)
 !   filtered parameters vectors
-alph(1,:)=initRandVec(N, Ntrc)
-beta(1,:)=initRandVec(N, Ntrc)
-gamm(1,:)=initRandVec(N, Ntrc)
+alph(1,:)=initRandVec(N, NtrcParam)
+beta(1,:)=initRandVec(N, NtrcParam)
+gamm(1,:)=initRandVec(N, NtrcParam)
 if (rhoZero) then
     do i=1,N
         rho(1,i)=0D0
@@ -73,7 +73,7 @@ else
             rho(1,i)=rhoAmp
         end do
     else
-        rho(1,:)=rhoAmp*initRandVec(N, NtrcRho)
+        rho(1,:)=rhoAmp*initRandVec(N, NtrcParam)
     end if
 end if 
 if (forcZero) then
@@ -104,44 +104,35 @@ if (outputVec) then
                             beta(1,i), gamm(1,i), rho(1,i), forc(1,i)
     end do
 end if
-
-
-if (testFullModel) then
-    print *, 
-    print *, '============================================================='
-    print *, '====| Full model test |======================================'
-    print *, '============================================================='
-    print *, 
-    if (.not. nuZero) then
-        print *, ' nuN=',nuN
-        print *, ' nu=',nu
-    end if
-    do i=1,NNDt
-        nDt=nDtVec(i)
-        print *, '============================================================='
-        print *, '============================================================='
-        print *, 'nDt=',nDt
-        allocate(u(nDt+1, N))
-        u=kdvPropagator(N, Ntrc, L, dt, nDt, nDtParam, tReal, ic, &
-                                alph, beta, gamm, rho, nu, nuN, forc)
-    
-        print *, '============================================================='
-        print *, 'Testing adjoint validity of kdvTLMPropagator'
-        if (testKdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, nDtParam,&
-                            pAmp, diff, u, xBuff, yBuff, &
-                            alph, beta, gamm, rho, nu, nuN)) then 
-            print *, ' >>Test succeeded:', diff
-        else
-            print *, ' >>Test FAILED', diff
-            test=.false.
-        end if
-    
-        print *, 
-        print *, '============================================================='
-        print *, 'Gradient test'
-        call NLTestGradient(N, Ntrc, L, dt, nDt, nDtParam, maxPower,&
-                            ic, alph, beta, gamm, rho, nu, nuN, forc)
-        deallocate(u)
-    end do
+if (.not. nuZero) then
+    print *, ' nuN=',nuN
+    print *, ' nu=',nu
 end if
+do i=1,NNDt
+    nDt=nDtVec(i)
+    print *, '============================================================='
+    print *, '============================================================='
+    print *, 'nDt=',nDt
+    allocate(u(nDt+1, N))
+    u=kdvPropagator(N, Ntrc, L, dt, nDt, nDtParam, tReal, ic, &
+                            alph, beta, gamm, rho, nu, nuN, forc)
+
+    print *, '============================================================='
+    print *, 'Testing adjoint validity of kdvTLMPropagator'
+    if (testKdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, nDtParam,&
+                        pAmp, diff, u, xBuff, yBuff, &
+                        alph, beta, gamm, rho, nu, nuN)) then 
+        print *, ' >>Test succeeded:', diff
+    else
+        print *, ' >>Test FAILED', diff
+        test=.false.
+    end if
+
+    print *, 
+    print *, '============================================================='
+    print *, 'Gradient test'
+    call NLTestGradient(N, Ntrc, L, dt, nDt, nDtParam, maxPower,&
+                        ic, alph, beta, gamm, rho, nu, nuN, forc)
+    deallocate(u)
+end do
 end program kdvTestGrad

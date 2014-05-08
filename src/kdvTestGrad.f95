@@ -6,10 +6,10 @@ use kdvTLMTest
 implicit none
 
 integer                 ::  N, Ntrc, nDt, nDtParam, maxPower,&
-                            i, NNDt, NtrcRho
-double precision        ::  L, pAmp, diff, dt, tReal, rhoAmp
+                            i, NNDt, NtrcRho, nuN
+double precision        ::  L, pAmp, diff, dt, tReal, rhoAmp, nu, nuAmp
 logical                 ::  test, rhoZero, forcZero, rhoCte, & 
-                            testFullModel
+                            nuZero, outputVec, testFullModel
 
 double precision, dimension(:), allocatable     ::  ic
 double precision, dimension(:), allocatable  :: xBuff, yBuff
@@ -20,7 +20,7 @@ double precision, dimension(:,:), allocatable   ::  alph, beta, gamm,&
                                                     rho, forc
 double precision, dimension(:, :), allocatable  ::  u
 
-NNDt=7
+NNDt=4
 Ntrc=100
 N=3*Ntrc+1
 L=3.D2
@@ -31,8 +31,9 @@ rhoZero=.False.
 rhoCte=.False.
 !rhoCte=.True.
 forcZero=.False.
+nuZero=.False.
 
-
+outputVec=.False.
 testFullModel=.True.
 
 
@@ -42,6 +43,8 @@ allocate(ic(N))
 
 pAmp=1.0D-1
 rhoAmp=1.0D-1
+nuAmp=1.0D-2
+nuN=8
 dt=1.0D-2
 
 maxPower=-14
@@ -80,7 +83,11 @@ if (forcZero) then
 else
     forc(1,:)=pAmp*initRandVec(N, Ntrc)
 end if
-
+if (nuZero) then
+    nu=0.0D0
+else
+    nu=nuAmp
+end if
 
 
 print *, 
@@ -89,12 +96,14 @@ print *, '====| Gradient test : validity of TLM adjoint |=============='
 print *, '====|                 compared with NL model  |=============='
 print *, '============================================================='
 print *, 
-write(*, "(9A)"),  "   ic    ", "  xBuff  ", "  yBuff  ", "   alph  ",&
-                   "   beta  ", "   gamm  ", "    rho  ", "   forc  "
-do i=1, N
-    write(*, "(8(F9.4 ))"), ic(i), xBuff(i), yBuff(i), alph(1,i), &
-                        beta(1,i), gamm(1,i), rho(1,i), forc(1,i)
-end do
+if (outputVec) then
+    write(*, "(9A)"),  "   ic    ", "  xBuff  ", "  yBuff  ", "   alph  ",&
+                       "   beta  ", "   gamm  ", "    rho  ", "   forc  "
+    do i=1, N
+        write(*, "(8(F9.4 ))"), ic(i), xBuff(i), yBuff(i), alph(1,i), &
+                            beta(1,i), gamm(1,i), rho(1,i), forc(1,i)
+    end do
+end if
 
 
 if (testFullModel) then
@@ -103,6 +112,10 @@ if (testFullModel) then
     print *, '====| Full model test |======================================'
     print *, '============================================================='
     print *, 
+    if (.not. nuZero) then
+        print *, ' nuN=',nuN
+        print *, ' nu=',nu
+    end if
     do i=1,NNDt
         nDt=nDtVec(i)
         print *, '============================================================='
@@ -110,13 +123,13 @@ if (testFullModel) then
         print *, 'nDt=',nDt
         allocate(u(nDt+1, N))
         u=kdvPropagator(N, Ntrc, L, dt, nDt, nDtParam, tReal, ic, &
-                                alph, beta, gamm, rho, forc)
+                                alph, beta, gamm, rho, nu, nuN, forc)
     
         print *, '============================================================='
         print *, 'Testing adjoint validity of kdvTLMPropagator'
         if (testKdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, nDtParam,&
                             pAmp, diff, u, xBuff, yBuff, &
-                            alph, beta, gamm, rho)) then 
+                            alph, beta, gamm, rho, nu, nuN)) then 
             print *, ' >>Test succeeded:', diff
         else
             print *, ' >>Test FAILED', diff
@@ -127,7 +140,7 @@ if (testFullModel) then
         print *, '============================================================='
         print *, 'Gradient test'
         call NLTestGradient(N, Ntrc, L, dt, nDt, nDtParam, maxPower,&
-                            ic, alph, beta, gamm, rho, forc)
+                            ic, alph, beta, gamm, rho, nu, nuN, forc)
         deallocate(u)
     end do
 end if

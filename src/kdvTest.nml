@@ -1,5 +1,5 @@
 &GridBloc
-    Ntrc=50,
+    Ntrc=48,
     L=3.0D2
  /
 
@@ -27,6 +27,6 @@
  /
 
 &TestGradBloc
-    NNDt=4,
+    NNDt=8,
     maxPower=-14
  /

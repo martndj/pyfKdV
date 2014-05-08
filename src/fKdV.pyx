@@ -5,7 +5,7 @@ cdef extern:
                             double dt, int nDt, int nDtParam, 
                             double* ic, double* traj, 
                             double* alph, double* beta, double* gamm,
-                            double* rho, double* forc)
+                            double* rho, double nu, int nuN, double* forc)
 
 def fKdVPropagator(int N, int Ntrc, double L,
                     double dt, int nDt, int nDtParam, 
@@ -14,6 +14,7 @@ def fKdVPropagator(int N, int Ntrc, double L,
                     double[:,::1] beta not None,
                     double[:,::1] gamm not None,
                     double[:,::1] rho not None,
+                    double nu, int nuN,
                     double[:,::1] forc not None):
 
     traj=np.empty(shape=(nDt+1, N))
@@ -22,7 +23,7 @@ def fKdVPropagator(int N, int Ntrc, double L,
     c_kdvpropagator(N, Ntrc, L, dt, nDt, nDtParam,
                     &ic[0], &c_traj[0,0], 
                     &alph[0,0], &beta[0,0], &gamm[0,0], &rho[0,0],
-                    &forc[0,0])
+                    nu, nuN, &forc[0,0])
 
     return np.array(c_traj)
 
@@ -35,7 +36,7 @@ cdef extern:
                             double* u,
                             double* p0, double* pf, 
                             double* alph, double* beta, double* gamm,
-                            double* rho)
+                            double* rho, double nu, int nuN)
 
 cdef extern:
     void c_kdvtlmpropagatorfulltraj(int N, int Ntrc, double L,
@@ -43,7 +44,8 @@ cdef extern:
                                     double* u, double* p0, double* pf, 
                                     double* pTraj, 
                                     double* alph, double* beta,
-                                    double* gamm, double* rho)
+                                    double* gamm, double* rho, 
+                                    double nu, int nuN)
 
 def fKdVTLMPropagator(int N, int Ntrc, double L,
                     double dt, int nDt, int nDtParam, 
@@ -53,6 +55,7 @@ def fKdVTLMPropagator(int N, int Ntrc, double L,
                     double[:,::1] beta not None,
                     double[:,::1] gamm not None,
                     double[:,::1] rho not None,
+                    double nu, int nuN,
                     fullTraj=False):
 
     pTraj=np.empty(shape=(nDt+1, N))
@@ -63,13 +66,14 @@ def fKdVTLMPropagator(int N, int Ntrc, double L,
         c_kdvtlmpropagatorfulltraj(N, Ntrc, L, dt, nDt, nDtParam,
                                     &u[0,0], &p0[0], &pf[0], 
                                     &c_pTraj[0,0], &alph[0,0], 
-                                    &beta[0,0], &gamm[0,0], &rho[0,0])
+                                    &beta[0,0], &gamm[0,0], &rho[0,0], 
+                                    nu, nuN)
 
         return np.array(c_pTraj)
     else:
         c_kdvtlmpropagator(N, Ntrc, L, dt, nDt, nDtParam, &u[0,0], 
                             &p0[0], &pf[0], &alph[0,0], &beta[0,0],
-                            &gamm[0,0], &rho[0,0])
+                            &gamm[0,0], &rho[0,0], nu, nuN)
         return np.array(pf)
 
 
@@ -82,7 +86,7 @@ cdef extern:
                             double dt, int nDt, int nDtParam, double* u,
                             double* pf, double* adj, 
                             double* alph, double* beta, double* gamm,
-                            double* rho)
+                            double* rho, double nu, int nuN)
 
 cdef extern:
     void c_kdvtlmpropagatoradjfulltraj(int N, int Ntrc, double L,
@@ -90,7 +94,8 @@ cdef extern:
                                     double* u, double* pf, double* adj, 
                                     double* aTraj, 
                                     double* alph, double* beta,
-                                    double* gamm, double* rho)
+                                    double* gamm, double* rho, 
+                                    double nu, int nuN)
 
 def fKdVTLMPropagatorAdj(int N, int Ntrc, double L,
                     double dt, int nDt, int nDtParam, 
@@ -100,6 +105,7 @@ def fKdVTLMPropagatorAdj(int N, int Ntrc, double L,
                     double[:,::1] beta not None,
                     double[:,::1] gamm not None,
                     double[:,::1] rho not None,
+                    double nu, int nuN,
                     fullTraj=False):
 
     aTraj=np.empty(shape=(nDt+1, N))
@@ -110,13 +116,14 @@ def fKdVTLMPropagatorAdj(int N, int Ntrc, double L,
         c_kdvtlmpropagatoradjfulltraj(N, Ntrc, L, dt, nDt, nDtParam,
                                     &u[0,0], &pf[0], &adj[0], 
                                     &c_aTraj[0,0], &alph[0,0], 
-                                    &beta[0,0], &gamm[0,0], &rho[0,0])
+                                    &beta[0,0], &gamm[0,0], &rho[0,0], 
+                                    nu, nuN)
 
         return np.array(c_aTraj)
     else:
         c_kdvtlmpropagatoradj(N, Ntrc, L, dt, nDt, nDtParam, &u[0,0], 
                         &pf[0], &adj[0], &alph[0,0], &beta[0,0],
-                        &gamm[0,0], &rho[0,0])
+                        &gamm[0,0], &rho[0,0], nu, nuN)
         return np.array(adj)
 
 #--------------------------------------------------------------------
@@ -128,7 +135,7 @@ cdef extern:
                             double dt, int nDt, int nDtParam, double* u,
                             double* x, double* y, 
                             double* alph, double* beta, double* gamm,
-                            double* rho)
+                            double* rho, double nu, int nuN)
 
 def fKdVTLMSingularOp(int N, int Ntrc, double L,
                     double dt, int nDt, int nDtParam,
@@ -137,13 +144,14 @@ def fKdVTLMSingularOp(int N, int Ntrc, double L,
                     double[:,::1] alph not None,
                     double[:,::1] beta not None,
                     double[:,::1] gamm not None,
-                    double[:,::1] rho not None):
+                    double[:,::1] rho not None,
+                    double nu, int nuN):
 
     cdef double[::1] y = np.empty(N)
 
     c_kdvtlmsingularop(N, Ntrc, L, dt, nDt, nDtParam, &u[0,0], 
                         &x[0], &y[0], &alph[0,0], &beta[0,0], 
-                        &gamm[0,0], &rho[0,0])
+                        &gamm[0,0], &rho[0,0], nu, nuN)
     return np.array(y)
 
 #--------------------------------------------------------------------
@@ -154,7 +162,7 @@ cdef extern:
                             double dt, int nDt, int nDtParam, double* u,
                             int Nev, double* V, double* sv, 
                             double* alph, double* beta, double* gamm,
-                            double* rho)
+                            double* rho, double nu, int nuN)
 
 def fKdVLanczos(int N, int Ntrc, double L,
                     double dt, int nDt, int nDtParam,
@@ -163,14 +171,15 @@ def fKdVLanczos(int N, int Ntrc, double L,
                     double[:,::1] alph not None,
                     double[:,::1] beta not None,
                     double[:,::1] gamm not None,
-                    double[:,::1] rho not None):
+                    double[:,::1] rho not None,
+                    double nu, int nuN):
 
     cdef double[:,::1] V = np.empty(shape=(N, Nev))
     cdef double[::1] sv = np.empty(Nev)
 
     c_kdvlanczos(N, Ntrc, L, dt, nDt, nDtParam, &u[0,0], 
                     Nev, &V[0,0], &sv[0], 
-                    &alph[0,0], &beta[0,0], &gamm[0,0], &rho[0,0])
+                    &alph[0,0], &beta[0,0], &gamm[0,0], &rho[0,0], nu, nuN)
 
     # descending sv order
     return np.array(sv[::-1]), np.array(V[:,::-1]).transpose()
@@ -183,7 +192,7 @@ cdef extern:
                             double dt, int nDt, int nDtParam, 
                             int maxPower,  double* p, 
                             double* alph, double* beta, double* gamm,
-                            double* rho, double* forc)
+                            double* rho, double nu, int nuN, double* forc)
 
 def fKdVTestGradient(int N, int Ntrc, double L,
                     double dt, int nDt, int nDtParam, int maxPower,
@@ -192,9 +201,10 @@ def fKdVTestGradient(int N, int Ntrc, double L,
                     double[:,::1] beta not None,
                     double[:,::1] gamm not None,
                     double[:,::1] rho not None,
+                    double nu, int nuN,
                     double[:,::1] forc not None):
 
 
     c_testgradient(N, Ntrc, L, dt, nDt, nDtParam, maxPower, 
                     &p[0], &alph[0,0], &beta[0,0], &gamm[0,0],
-                    &rho[0,0], &forc[0,0])
+                    &rho[0,0], nu, nuN, &forc[0,0])

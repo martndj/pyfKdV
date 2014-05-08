@@ -11,11 +11,12 @@ contains
 
 
 subroutine c_kdvPropagator(N, Ntrc, L, dt, nDt, nDtParam, ic, traj, &
-                                alph, beta, gamm, rho, forc) bind(c)
+                                alph, beta, gamm, rho, nu, nuN, forc) &
+                                bind(c)
 
     integer(c_int), intent(in), value           ::  N, Ntrc, nDt,&
-                                                    nDtParam
-    real(c_double), intent(in), value           ::  L, dt
+                                                    nDtParam, nuN
+    real(c_double), intent(in), value           ::  L, dt, nu
     real(c_double)               ::  tReal
 
     real(c_double), dimension(N) ::  ic
@@ -30,7 +31,7 @@ subroutine c_kdvPropagator(N, Ntrc, L, dt, nDt, nDtParam, ic, traj, &
                                     tReal, ic, &
                                     transpose(alph), transpose(beta),&
                                     transpose(gamm), transpose(rho),&
-                                    transpose(forc))&
+                                    nu, nuN, transpose(forc))&
                                     )
 
 end subroutine c_kdvPropagator
@@ -42,11 +43,11 @@ end subroutine c_kdvPropagator
 
 subroutine c_kdvTLMPropagator(N, Ntrc, L, dt, nDt, nDtParam,&
                                     u, p0, pf, &
-                                    alph, beta, gamm, rho) bind(c)
+                                    alph, beta, gamm, rho, nu, nuN) bind(c)
 
     integer(c_int), intent(in), value           ::  N, Ntrc, nDt,&
-                                                    nDtParam
-    real(c_double), intent(in), value           ::  L, dt
+                                                    nDtParam, nuN
+    real(c_double), intent(in), value           ::  L, dt, nu
     real(c_double)               ::  tReal
 
                                                    
@@ -62,7 +63,7 @@ subroutine c_kdvTLMPropagator(N, Ntrc, L, dt, nDt, nDtParam,&
     pf=kdvTLMPropagator(N, Ntrc, L, dt, nDt, nDtParam, tReal,&
                         transpose(u), p0, transpose(alph), &
                         transpose(beta), transpose(gamm), &
-                        transpose(rho))
+                        transpose(rho), nu, nuN)
 
 end subroutine c_kdvTLMPropagator
 
@@ -70,11 +71,11 @@ end subroutine c_kdvTLMPropagator
 
 subroutine c_kdvTLMPropagatorFullTraj(N, Ntrc, L, dt, nDt, nDtParam,&
                                          u, p0, pf, pTraj, alph, &
-                                         beta, gamm, rho) bind(c)
+                                         beta, gamm, rho, nu, nuN) bind(c)
 
     integer(c_int), intent(in), value           ::  N, Ntrc, nDt, &
-                                                    nDtParam
-    real(c_double), intent(in), value           ::  L, dt
+                                                    nDtParam, nuN
+    real(c_double), intent(in), value           ::  L, dt, nu
     real(c_double)               ::  tReal
 
     real(c_double), intent(in), dimension(N)   ::  p0
@@ -91,7 +92,7 @@ subroutine c_kdvTLMPropagatorFullTraj(N, Ntrc, L, dt, nDt, nDtParam,&
     pf=kdvTLMPropagator(N, Ntrc, L, dt, nDt, nDtParam, tReal, &
                         transpose(u), p0, transpose(alph), &
                         transpose(beta), transpose(gamm), &
-                        transpose(rho), f_pTraj)
+                        transpose(rho), nu, nuN, f_pTraj)
 
     pTraj=transpose(f_pTraj)
 
@@ -103,11 +104,11 @@ end subroutine c_kdvTLMPropagatorFullTraj
 
 subroutine c_kdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, nDtParam, &
                                     u, pf, adj, &
-                                    alph, beta, gamm, rho) bind(c)
+                                    alph, beta, gamm, rho, nu, nuN) bind(c)
 
     integer(c_int), intent(in), value           ::  N, Ntrc, nDt, &
-                                                    nDtParam
-    real(c_double), intent(in), value           ::  L, dt
+                                                    nDtParam, nuN
+    real(c_double), intent(in), value           ::  L, dt, nu
     real(c_double)               ::  tReal
 
     real(c_double), intent(in), dimension(N)    ::  pf
@@ -122,7 +123,7 @@ subroutine c_kdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, nDtParam, &
     adj=kdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, nDtParam, tReal,&
                         transpose(u), pf, transpose(alph), &
                         transpose(beta), transpose(gamm), &
-                        transpose(rho))
+                        transpose(rho), nu, nuN)
 
 end subroutine c_kdvTLMPropagatorAdj
 
@@ -130,11 +131,12 @@ end subroutine c_kdvTLMPropagatorAdj
 
 subroutine c_kdvTLMPropagatorAdjFullTraj(N, Ntrc, L, dt, nDt,nDtParam, &
                                             u, pf, adj, aTraj, alph,&
-                                            beta, gamm, rho) bind(c)
+                                            beta, gamm, rho, nu, nuN) &
+                                            bind(c)
 
     integer(c_int), intent(in), value           ::  N, Ntrc, nDt, &
-                                                    nDtParam
-    real(c_double), intent(in), value           ::  L, dt
+                                                    nDtParam, nuN
+    real(c_double), intent(in), value           ::  L, dt, nu
     real(c_double)               ::  tReal
 
     real(c_double), intent(in), dimension(N)    ::  pf
@@ -151,7 +153,7 @@ subroutine c_kdvTLMPropagatorAdjFullTraj(N, Ntrc, L, dt, nDt,nDtParam, &
     adj=kdvTLMPropagatorAdj(N, Ntrc, L, dt, nDt, nDtParam, tReal, &
                         transpose(u), pf, transpose(alph), &
                         transpose(beta), transpose(gamm), &
-                        transpose(rho), f_aTraj)
+                        transpose(rho), nu, nuN, f_aTraj)
     aTraj=transpose(f_aTraj)
 
 end subroutine c_kdvTLMPropagatorAdjFullTraj
@@ -162,11 +164,11 @@ end subroutine c_kdvTLMPropagatorAdjFullTraj
 
 subroutine c_kdvTLMSingularOp(N, Ntrc, L, dt, nDt, nDtParam, &
                                     u, x, y, &
-                                    alph, beta, gamm, rho) bind(c)
+                                    alph, beta, gamm, rho, nu, nuN) bind(c)
 
     integer(c_int), intent(in), value           ::  N, Ntrc, nDt, &
-                                                    nDtParam
-    real(c_double), intent(in), value           ::  L, dt
+                                                    nDtParam, nuN
+    real(c_double), intent(in), value           ::  L, dt, nu
     real(c_double)               ::  tReal
 
     real(c_double), intent(in), dimension(N)    ::  x
@@ -181,7 +183,7 @@ subroutine c_kdvTLMSingularOp(N, Ntrc, L, dt, nDt, nDtParam, &
     y=kdvTLMSingularOp(N, Ntrc, L, dt, nDt, nDtParam, tReal,&
                         transpose(u), x, transpose(alph), &
                         transpose(beta), transpose(gamm), &
-                        transpose(rho))
+                        transpose(rho), nu, nuN)
 
 end subroutine c_kdvTLMSingularOp
 
@@ -190,11 +192,11 @@ end subroutine c_kdvTLMSingularOp
 
 
 subroutine c_kdvLanczos(N, Ntrc, L, dt, nDt, nDtParam, u, Nev, V, sv, &
-                             alph, beta, gamm, rho) bind(c)
+                             alph, beta, gamm, rho, nu, nuN) bind(c)
 
     integer(c_int), intent(in), value           ::  N, Ntrc, nDt, Nev,&
-                                                    nDtParam
-    real(c_double), intent(in), value           ::  L, dt
+                                                    nDtParam, nuN
+    real(c_double), intent(in), value           ::  L, dt, nu
     real(c_double)               ::  tReal
 
     real(c_double), intent(out), dimension(Nev)     ::  sv
@@ -208,7 +210,7 @@ subroutine c_kdvLanczos(N, Ntrc, L, dt, nDt, nDtParam, u, Nev, V, sv, &
     ! ...hence the transpose:
     V=transpose(lanczos(N, Ntrc, L, dt, nDt, nDtParam, tReal, &
                 transpose(u), transpose(alph), transpose(beta), &
-                transpose(gamm), transpose(rho), Nev, sv, Nconv))
+                transpose(gamm), transpose(rho), nu, nuN, Nev, sv, Nconv))
 
 end subroutine c_kdvLanczos
 
@@ -216,10 +218,10 @@ end subroutine c_kdvLanczos
 !--------------------------------------------------------------------
 
 subroutine c_testGradient(N, Ntrc, L, dt, nDt, nDtParam, maxPower, &
-                            p, alph, beta, gamm, rho, forc) bind(c)
+                            p, alph, beta, gamm, rho, nu, nuN, forc) bind(c)
     integer(c_int), intent(in), value           ::  N, Ntrc, nDt, &
-                                                    nDtParam, maxPower
-    real(c_double), intent(in), value           ::  L, dt
+                                                    nDtParam, maxPower, nuN
+    real(c_double), intent(in), value           ::  L, dt, nu
 
     real(c_double), intent(in), dimension(N)    ::  p
     
@@ -228,7 +230,7 @@ subroutine c_testGradient(N, Ntrc, L, dt, nDt, nDtParam, maxPower, &
                                         ::  alph, beta, gamm, rho, forc
     call NLTestGradient(N, Ntrc, L, dt, nDt, nDtParam, maxPower, &
                             p, transpose(alph), transpose(beta), &
-                            transpose(gamm), transpose(rho), &
+                            transpose(gamm), transpose(rho), nu, nuN, &
                             transpose(forc))
 
 end subroutine c_testGradient

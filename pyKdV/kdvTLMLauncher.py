@@ -111,7 +111,8 @@ class kdvTLMLauncher(TLMLauncher):
                     self.refTraj.getData()[self._nDt0:
                                             self._nDt0+self._nDt+1],
                     param[1].getData(), param[2].getData(),
-                    param[3].getData(),param[4].getData(), 
+                    param[3].getData(),param[4].getData(),
+                    param.nu, param.nuN,
                     fullTraj=True)
 
         tReal=self._nDt*self.dt
@@ -135,6 +136,7 @@ class kdvTLMLauncher(TLMLauncher):
                 self.refTraj.getData()[self._nDt0:self._nDt0+self._nDt+1],
                 param[1].getData(), param[2].getData(),
                 param[3].getData(), param[4].getData(), 
+                param.nu, param.nuN, 
                 fullTraj=True)
 
         tReal=self._nDt*self.dt
@@ -156,7 +158,7 @@ class kdvTLMLauncher(TLMLauncher):
                 pert,
                 self.refTraj.getData()[self._nDt0:self._nDt0+selfnDt+1],
                 param[1].getData(), param[2].getData(), param[3].getData(),
-                param[4].getData())
+                param[4].getData(), param.nu, param.nuN)
 
         tReal=2.*self._nDt*self.dt
 
@@ -177,6 +179,7 @@ class kdvTLMLauncher(TLMLauncher):
                 dt, nDt, param.nDt, maxPow, ic,
                 param[1].getData(), param[2].getData(), 
                 param[3].getData(), param[4].getData(),
+                param.nu, param.nuN,
                 param[0].getData())
 
     #------------------------------------------------------

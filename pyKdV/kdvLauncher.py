@@ -87,7 +87,7 @@ class kdvLauncher(Launcher):
                     param.nDt,
                     ic, param[1].getData(), param[2].getData(),
                     param[3].getData(), param[4].getData(),
-                    param[0].getData()
+                    param.nu, param.nuN, param[0].getData()
                     )
 
         tReal=traj.nDt*traj.dt
@@ -113,3 +113,42 @@ class kdvLauncher(Launcher):
                     return param.cut(t0) 
         else:
             return param
+
+#--------------------------------------------------------------------
+#====================================================================
+#--------------------------------------------------------------------
+if __name__=='__main__':
+    import matplotlib.pyplot as plt
+    from kdvMisc import *
+    
+    Ntrc=42
+    maxA=10.
+    tInt=10.
+    grid=PeriodicGrid(Ntrc)
+
+    paramNu=Param(grid, nu=10., nuN=Ntrc/4)
+    param=Param(grid)
+    
+    dt=0.01
+    if dt > dtStable(param, maxA): raise RuntimeError()
+
+    modelNu=kdvLauncher(paramNu, dt=dt)
+    model=kdvLauncher(param, dt=dt)
+    
+    x0=soliton(grid.x,0.)
+    trajNu=modelNu.integrate(x0, tInt)
+    traj=model.integrate(x0, tInt)
+
+    clf()
+    ax1=plt.subplot(311)
+    ax2=plt.subplot(312)
+    ax3=plt.subplot(313)
+    grid.plotAll(traj.ic, axeD=ax1, axeS=ax2, label='IC')
+    grid.plotAll(trajNu.final, axeD=ax1, axeS=ax2, color='r', 
+                 label=r'$\nu=%.3f\ \ N_\nu=%d$'%(paramNu.nu, paramNu.nuN))
+    grid.plotAll(traj.final, axeD=ax1, axeS=ax2, color='g', label=r'$\nu=0$')
+
+    grid.plotPSpec(trajNu.final-traj.final, axe=ax3, color='r',
+                   label=r'$x_f^\nu-x_f^0$')
+    ax2.legend()
+    ax3.legend()

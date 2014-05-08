@@ -86,7 +86,8 @@ class kdvSVLauncher(object):
                                     param[1].getData(), 
                                     param[2].getData(),
                                     param[3].getData(), 
-                                    param[4].getData())
+                                    param[4].getData(),
+                                    param.nu, param.nuN)
 
         self.sVal=sVal
         self.sVec=sVec

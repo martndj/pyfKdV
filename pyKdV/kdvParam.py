@@ -8,19 +8,21 @@ class Param(object):
         \partial_t A(x,t)= forcing(x) - \alpha(x) A 
                            - \beta(x)A \partial_x A 
                            - \gamma(x) \partial_x^3 A - \rho(x) A 
+                           - \nu \partial_x^{2N} A
 
         Param(grid, alpha=0., beta=0., gamma=0., rho=0., forcing=0.,
+                nu=0., nuN=8,
                 nDt=0, dt=0., tInt=0.)
 
         Parameters can be specified either as constant, function
         or Trajectory object.
-        None will
         In the function case, function must be of two variables
-        (the space variable 'x' and time variable 'y')
+        (the space variable 'x' and time variable 't') even if it is 
+        time independant.
 
             def func(x,t):
                 ...
-                return <some expression of x and t>
+                return <some expression of x and/or t>
 
             <@> although both must be in the function declaration
                 it is not necessary for anyone of them to actually
@@ -29,7 +31,8 @@ class Param(object):
     """
 
     def __init__(self, grid, forcing=0., alpha=0., beta=1.,
-                    gamma=-1.,  rho=0., nDt=0, dt=0., tInt=0., t0=0.):
+                    gamma=-1.,  rho=0., nu=0., nuN=8,
+                    nDt=0, dt=0., tInt=0., t0=0.):
 
         if not (isinstance(grid, PeriodicGrid)):
             raise TypeError("grid <PeriodicGrid>")
@@ -73,6 +76,9 @@ class Param(object):
         self.dt=dt
         self.t0=t0
 
+        self.nu=nu
+        self.nuN=nuN
+        
         self.__initTraj(forcing, alpha, beta, gamma, rho, t0=t0)
         self.__finalize()
     #----------------------------------------------------------------
@@ -139,7 +145,9 @@ class Param(object):
                             alpha=self.alpha.final,
                             beta=self.beta.final,
                             gamma=self.gamma.final,
-                            rho=self.rho.final, t0=self.tf)
+                            rho=self.rho.final, 
+                            nu=self.nu, nuN=self.nuN,
+                            t0=self.tf)
                
         self.fluxR=self.alpha.gradient()-self.rho
         self.fluxR.setLabel(r'$r$')
@@ -253,7 +261,7 @@ class Param(object):
             output+="\n  :: "+paramList[i]+" ::"
             output+="\n  min= %f"%self[i].min()
             output+="\n  max= %f\n"%self[i].max()
-
+        output+="\n\n  nu= %f   nuN= %d"%(self.nu, self.nuN)
         output+="\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
         return output
 

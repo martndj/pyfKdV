@@ -6,7 +6,9 @@ use kdvTLMTest
 implicit none
 
 
-integer                 ::  N, Ntrc, nDt, nDtParam, i, NtrcParam, nuN
+character*64            ::  nmlFile
+
+integer                 ::  fun, N, Ntrc, nDt, nDtParam, i, NtrcParam, nuN
 double precision        ::  L, pAmp, diff, dt, tReal, rhoAmp, nu, nuAmp
 logical                 ::  test, rhoZero, forcZero, paramCte, rhoCte,&
                             nuZero, outputVec
@@ -17,32 +19,28 @@ double precision, dimension(:,:), allocatable   ::  alph, beta, gamm,&
 double precision, dimension(:, :), allocatable  ::  xBuff, yBuff
 double precision, dimension(:, :), allocatable  ::  u
 
-Ntrc=50
+
+namelist /GridBloc/ Ntrc, L
+namelist /ParamBloc/ dt, pAmp, rhoAmp, nuAmp, nuN, nDtParam, NtrcParam
+namelist /ConfigBloc/ paramCte, rhoZero, rhoCte, forcZero, nuZero, &
+                      outputVec
+namelist /TestAdjBloc/ nDt
+
+nmlFile='kdvTest.nml'
+open(fun, file=nmlFile)
+    read(fun, nml=GridBloc)
+    read(fun, nml=ParamBloc)
+    read(fun, nml=ConfigBloc)
+    read(fun, nml=TestAdjBloc)
+close(fun)
 N=3*Ntrc+1
-L=3.D2
+
+
+
 
 
 allocate(xBuff(3,N), yBuff(3, N))
 allocate(ic(N))
-
-pAmp=1.0D-1
-rhoAmp=1.0D-1
-nuAmp=1.0D-2
-
-dt=1.0D-2
-nDt=50
-nDtParam=0
-nuN=8
-
-NtrcParam=30
-paramCte=.False.
-rhoZero=.False.
-rhoCte=.False.
-forcZero=.False.
-nuZero=.False.
-
-outputVec=.False.
-
 allocate(alph(nDtParam+1,N), beta(nDtParam+1,N), gamm(nDtParam+1,N), &
             rho(nDtParam+1,N), forc(nDtParam+1,N))
 allocate(u(nDt+1, N))

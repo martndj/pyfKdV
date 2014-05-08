@@ -1,0 +1,32 @@
+&GridBloc
+    Ntrc=50,
+    L=3.0D2
+ /
+
+&ParamBloc
+    dt=1.0D-2,
+    pAmp=1.0D-1,
+    rhoAmp=1.0D-1,
+    nuAmp=1.0D-2,
+    nuN=8,
+    nDtParam=0,
+    NtrcParam=30
+ /
+
+&ConfigBloc
+    paramCte=.False.,
+    rhoZero=.False.,
+    rhoCte=.False.,
+    forcZero=.False.,
+    nuZero=.False.,
+    outputVec=.False.
+ /
+
+&TestAdjBloc
+    nDt=50
+ /
+
+&TestGradBloc
+    NNDt=4,
+    maxPower=-14
+ /

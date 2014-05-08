@@ -5,11 +5,13 @@ use kdvTLMProp
 use kdvTLMTest
 implicit none
 
-integer                 ::  N, Ntrc, nDt, nDtParam, maxPower,&
+character*64            ::  nmlFile
+
+integer                 ::  fun, N, Ntrc, nDt, nDtParam, maxPower,&
                             i, NNDt, NtrcParam, nuN
 double precision        ::  L, pAmp, diff, dt, tReal, rhoAmp, nu, nuAmp
-logical                 ::  test, rhoZero, forcZero, rhoCte, & 
-                            nuZero, outputVec, testFullModel
+logical                 ::  test, rhoZero, forcZero, rhoCte, paramCte, & 
+                            nuZero, outputVec
 
 double precision, dimension(:), allocatable     ::  ic
 double precision, dimension(:), allocatable  :: xBuff, yBuff
@@ -20,39 +22,30 @@ double precision, dimension(:,:), allocatable   ::  alph, beta, gamm,&
                                                     rho, forc
 double precision, dimension(:, :), allocatable  ::  u
 
-NNDt=4
-Ntrc=100
+namelist /GridBloc/ Ntrc, L
+namelist /ParamBloc/ dt, pAmp, rhoAmp, nuAmp, nuN, nDtParam, NtrcParam
+namelist /ConfigBloc/ paramCte, rhoZero, rhoCte, forcZero, nuZero, &
+                      outputVec
+namelist /TestGradBloc/ NNDt, maxPower, nDtVec 
+
+nmlFile='kdvTest.nml'
+open(fun, file=nmlFile)
+    read(fun, nml=GridBloc)
+    read(fun, nml=ParamBloc)
+    read(fun, nml=ConfigBloc)
+    read(fun, nml=TestGradBloc)
+close(fun)
+
+
+
 N=3*Ntrc+1
-L=3.D2
-
-NtrcParam=30
-rhoZero=.False.
-!rhoZero=.True.
-rhoCte=.False.
-!rhoCte=.True.
-forcZero=.False.
-nuZero=.False.
-
-outputVec=.False.
-testFullModel=.True.
-
-
 allocate(nDtVec(NNDt))
 allocate(xBuff(N), yBuff(N))
 allocate(ic(N))
-
-pAmp=1.0D-1
-rhoAmp=1.0D-1
-nuAmp=1.0D-2
-nuN=8
-dt=1.0D-2
-
-maxPower=-14
-nDtVec=(/1, 2,10,50,100, 500, 1000/)
-nDtParam=0
 allocate(alph(nDtParam+1,N), beta(nDtParam+1,N), gamm(nDtParam+1,N), &
             rho(nDtParam+1,N), forc(nDtParam+1,N))
 
+nDtVec=(/1, 2,10,50,100, 500, 1000/)
 ! Generating random fields
 !   unfiltered state vectors
 !call init_random_seed()
@@ -60,9 +53,15 @@ ic=initRandVec(N)
 xBuff=pAmp*initRandVec(N)
 yBuff=pAmp*initRandVec(N)
 !   filtered parameters vectors
-alph(1,:)=initRandVec(N, NtrcParam)
-beta(1,:)=initRandVec(N, NtrcParam)
-gamm(1,:)=initRandVec(N, NtrcParam)
+if (paramCte) then
+    alph(1,:)=0.0D0
+    beta(1,:)=1.0D0
+    gamm(1,:)=-1.0D0
+else
+    alph(1,:)=initRandVec(N, NtrcParam)
+    beta(1,:)=initRandVec(N, NtrcParam)
+    gamm(1,:)=initRandVec(N, NtrcParam)
+end if
 if (rhoZero) then
     do i=1,N
         rho(1,i)=0D0

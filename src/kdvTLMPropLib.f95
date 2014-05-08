@@ -187,7 +187,7 @@ function opE1(N, Ntrc, L, dt, u, pBuff, alph, beta, gamm, rho, nu, nuN)
     opE1(1,:)=pBuff(1,:)
     opE1(2,:)=pBuff(1,:)+dt*kdvTLMPseudoSpec(N, Ntrc, L, u, &
                                         pBuff(1,:), alph, beta, gamm) &
-                    -dt*lowPassViscoTLM(N, Ntrc, L, pBuff(1,:), nu, nuN) &
+                    +dt*lowPassViscoTLM(N, Ntrc, L, pBuff(1,:), nu, nuN) &
                     -dt*rho*pBuff(1,:)
     opE1(3,:)=0.0D0
     
@@ -207,7 +207,7 @@ function opE1Adj(N, Ntrc, L, dt, u, aBuff, alph, beta, gamm, rho, nu, nuN)
     opE1Adj(1,:)=aBuff(1,:)+aBuff(2,:) &
                  +dt*kdvTLMPseudoSpecAdj(N, Ntrc, L, u, aBuff(2,:),&
                                             alph, beta, gamm)&
-                 -dt*lowPassViscoAdj(N, Ntrc, L, aBuff(2,:), nu, nuN) & 
+                 +dt*lowPassViscoAdj(N, Ntrc, L, aBuff(2,:), nu, nuN) & 
                  -dt*rho*aBuff(2,:)
     opE1Adj(2,:)=0.0D0
     opE1Adj(3,:)=0.0D0
@@ -239,7 +239,7 @@ function opPn(N, Ntrc, L, dt, u, pBuff, alph, beta, gamm, rho, nu, nuN)
     opPn(2,:)=pBuff(2,:)
     opPn(3,:)=((2.0D0*dt)*kdvTLMPseudoSpec(N, Ntrc, L, u, pBuff(2,:),&
                         alph, beta, gamm) &
-               -(2.0D0*dt)*lowPassViscoTLM(N, Ntrc, L, pBuff(2,:), &
+               +(2.0D0*dt)*lowPassViscoTLM(N, Ntrc, L, pBuff(2,:), &
                         nu, nuN) &
                -dt*rho*pBuff(2,:) &
                +pBuff(1,:) &
@@ -273,7 +273,7 @@ function opPnAdj(N, Ntrc, L, dt, u, aBuff, alph, beta, gamm, rho, nu, nuN)
     opPnAdj(2,:)=kdvTLMPseudoSpecAdj(N, Ntrc, L, u, &
                         (2.0D0*dt/denom)*aBuff(3,:),&
                         alph, beta, gamm) &
-                  -lowPassViscoAdj(N, Ntrc, L, &
+                  +lowPassViscoAdj(N, Ntrc, L, &
                         (2.0D0*dt/denom)*aBuff(3,:), nu, nuN) &
                   -dt*rho*aBuff(3,:)/denom &
                   +aBuff(2,:)

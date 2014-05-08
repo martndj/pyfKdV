@@ -72,7 +72,7 @@ function eulerStep(N, Ntrc, L, preState, dt, alph, beta, gamm, rho, &
                                          alph, beta, gamm)&
                 +dt*forc &
                 -dt*rho*preState &
-                -dt*lowPassVisco(N, Ntrc, L, preState, nu, nuN)
+                +dt*lowPassVisco(N, Ntrc, L, preState, nu, nuN)
     ! prevent aliasing from multiplication (localised parameters)
     call specFilt(eulerStep, N, Ntrc)
 end function eulerStep

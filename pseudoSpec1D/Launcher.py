@@ -109,6 +109,25 @@ class Launcher(object):
 
         return d_x
 
+    #-------------------------------------------------------
+
+    def d_nDtInt(self, ic, nDtList, t0=0.):
+        """ 
+        Returns a dict with integrations at time steps requested
+        (usefull for data assimilation model equivalent calculation)
+        """
+        if not isinstance(nDtList, (np.ndarray, list, set)):
+            raise TypeError()
+        nDtList=list(set(nDtList))
+        nDtList.sort()
+       
+        d_x={}
+        traj=self.integrate(ic, nDtList[-1]*self.dt-t0, t0=t0)
+        for i in xrange(len(nDtList)):
+            d_x[nDtList[i]]=traj[nDtList[i]]
+
+        return d_x
+
     #----| Classical overloads |----------------------------
     #-------------------------------------------------------
 

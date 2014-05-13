@@ -211,8 +211,9 @@ if __name__=='__main__':
     
     testGrad=False
     testTimesInt=True
-    testAdjoint=False
+    testAdjoint=True
     tObsNDtInt=False
+    useNDtMethod=True
     
     Ntrc=144
     maxA=10.
@@ -239,51 +240,78 @@ if __name__=='__main__':
 
 
     if testTimesInt:
-#        print("\n grad test between integrate()")
-#        def fct(x0):
-#            x=M.integrate(x0, times[-1]).final
-#            J=0.5*np.dot(x, x)
-#            return J
-#        def gradFct(x0):
-#            x=M.integrate(x0, times[-1])
-#            tlm=kdvTLMLauncher(M.param, traj=x)
-#            return tlm.adjoint(x.final, times[-1]).ic
-#        
-#        gradientTest(dx, fct, gradFct)
 
-        print("\n grad test between d_intTimes()")
-        freq=3
-        if tObsNDtInt==True:
-            nDtList=[i*u.nDt/freq for i in xrange(1,freq+1)]
-            times=dt*np.array(nDtList)
-        else:
-            times=np.linspace(tInt/freq, tInt, freq)
         dx=rndSpecVec(grid, amp=0.1, seed=1)
-        def fct(x0):
-            d_x=M.d_intTimes(x0, times)
-            J=0.
-            for t in d_x.keys():
-                J+=0.5*np.dot(d_x[t], d_x[t])
-            return J
-        def gradFct(x0):
-            x=M.integrate(x0, times[-1])
-            tlm=kdvTLMLauncher(M.param, traj=x)
-            d_x=M.d_intTimes(x0, times)
-            return tlm.d_intTimesAdj(d_x)
+        freq=1
+        if useNDtMethod:
+            print("\n grad test between d_nDtInt()")
+            nDtList=[i*u.nDt/freq for i in xrange(1,freq+1)]
+
+            def fct(x0):
+                d_x=M.d_nDtInt(x0, nDtList)
+                J=0.
+                for t in d_x.keys():
+                    J+=0.5*np.dot(d_x[t], d_x[t])
+                return J
+            def gradFct(x0):
+                x=M.integrate(x0, dt*nDtList[-1])
+                tlm=kdvTLMLauncher(M.param, traj=x)
+                d_x=M.d_nDtInt(x0, nDtList)
+                return tlm.d_nDtIntAdj(d_x)
+
+        else:
+            print("\n grad test between d_intTimes()")
+            if tObsNDtInt==True:
+                nDtList=[i*u.nDt/freq for i in xrange(1,freq+1)]
+                times=dt*np.array(nDtList)
+            else:
+                times=np.linspace(tInt/freq, tInt, freq)
+            def fct(x0):
+                d_x=M.d_intTimes(x0, times)
+                J=0.
+                for t in d_x.keys():
+                    J+=0.5*np.dot(d_x[t], d_x[t])
+                return J
+            def gradFct(x0):
+                x=M.integrate(x0, times[-1])
+                tlm=kdvTLMLauncher(M.param, traj=x)
+                d_x=M.d_intTimes(x0, times)
+                return tlm.d_intTimesAdj(d_x)
         
         gradientTest(dx, fct, gradFct)
             
         if testAdjoint:
             #----| Sequential integration adjoint test |--
-            print("\nSequential integration adjoint test\n")
             d_dy={}
-            for t in times:
-                d_dy[t]=rndSpecVec(grid, amp=0.1, seed=t)
+            i=123
+            if useNDtMethod:
+                print("\nSequential adjoint test with d_nDtInt()")
+                nDtList=[i*u.nDt/freq for i in xrange(1,freq+1)]
+                
+                times=dt*np.array(nDtList)
+                for t in times:
+                    d_dy[t]=rndSpecVec(grid, amp=0.1, seed=i)
+                    i+=1
     
+                d_Hx=L.d_nDtInt(dx, nDtList)
+                Lx=L.integrate(dx, tInt)
+                Ay=L.d_nDtIntAdj(d_dy)
+
+            else:
+                print("\nSequential adjoint test with d_intTimes()\n")
+                if tObsNDtInt==True:
+                    nDtList=[i*u.nDt/freq for i in xrange(1,freq+1)]
+                    times=dt*np.array(nDtList)
+                else:
+                    times=np.linspace(tInt/freq, tInt, freq)
+
+                for t in times:
+                    d_dy[t]=rndSpecVec(grid, amp=0.1, seed=i)
+                    i+=1
     
-            d_Hx=L.d_intTimes(dx, times)
-            Lx=L.integrate(dx, tInt)
-            Ay=L.d_intTimesAdj(d_dy)
+                d_Hx=L.d_intTimes(dx, times)
+                Lx=L.integrate(dx, tInt)
+                Ay=L.d_intTimesAdj(d_dy)
     
             Hx_y=0.
             for t in times:

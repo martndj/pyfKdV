@@ -66,6 +66,7 @@ class TLMLauncher(Launcher):
         if not (traj.grid==self.grid):
             raise ValueError()
         self.refTraj=traj
+        self.dt=self.refTraj.dt
         self.isReferenced=True 
     
     #-------------------------------------------------------
@@ -141,6 +142,20 @@ class TLMLauncher(Launcher):
 
         return adj
 
+
+    #-------------------------------------------------------
+
+    def d_nDtIntAdj(self, d_x, t0=0.):
+        """
+        Numerical adjoint of d_intTimes.()
+        """
+        nDtList=list(set(d_x.keys()))
+        nDtList.sort()
+
+        adj=self.adjoint(d_x[nDtList[-1]],
+                         nDtList[-1]*self.dt-t0, t0=t0).ic
+
+        return adj
 
     #-------------------------------------------------------
 

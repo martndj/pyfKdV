@@ -212,6 +212,7 @@ if __name__=='__main__':
     testGrad=False
     testTimesInt=True
     testAdjoint=False
+    tObsNDtInt=False
     
     Ntrc=144
     maxA=10.
@@ -251,8 +252,12 @@ if __name__=='__main__':
 #        gradientTest(dx, fct, gradFct)
 
         print("\n grad test between d_intTimes()")
-        freq=1
-        times=np.linspace(tInt/freq, tInt, freq)
+        freq=3
+        if tObsNDtInt==True:
+            nDtList=[i*u.nDt/freq for i in xrange(1,freq+1)]
+            times=dt*np.array(nDtList)
+        else:
+            times=np.linspace(tInt/freq, tInt, freq)
         dx=rndSpecVec(grid, amp=0.1, seed=1)
         def fct(x0):
             d_x=M.d_intTimes(x0, times)

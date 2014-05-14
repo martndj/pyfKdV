@@ -152,8 +152,11 @@ class TLMLauncher(Launcher):
         nDtList=list(set(d_x.keys()))
         nDtList.sort()
 
-        adj=self.adjoint(d_x[nDtList[-1]],
-                         nDtList[-1]*self.dt-t0, t0=t0).ic
+        # is it possible to optimize that without loosing 
+        # precision (1st Euler step)
+        adj=np.zeros(shape=d_x[d_x.keys()[0]].shape)
+        for i in nDtList:
+           adj+=self.adjoint(d_x[i],i*self.dt-t0, t0=t0).ic
 
         return adj
 

@@ -209,11 +209,9 @@ if __name__=='__main__':
     from kdvMisc import *
     from pseudoSpec1D import gradientTest
     
-    testGrad=False
-    testTimesInt=True
+    testGrad=True
     testAdjoint=True
-    tObsNDtInt=False
-    useNDtMethod=True
+    testNDtInt=True
     
     Ntrc=144
     maxA=10.
@@ -240,91 +238,6 @@ if __name__=='__main__':
         L.gradTestFortran(u0, dt, nDt)
 
 
-    if testTimesInt:
-
-        dx=rndSpecVec(grid, amp=0.1, seed=1)
-        if useNDtMethod:
-            print("\n grad test between d_nDtInt()")
-            nDtList=[i*u.nDt/freq for i in xrange(1,freq+1)]
-
-            def fct(x0, model, tlm, nDtL):
-                d_x=model.d_nDtInt(x0, nDtL)
-                J=0.
-                for t in d_x.keys():
-                    J+=0.5*np.dot(d_x[t], d_x[t])
-                return J
-            def gradFct(x0, model, tlm, nDtL):
-                x=model.integrate(x0, dt*nDtL[-1])
-                tlm.reference(x)
-                d_x=model.d_nDtInt(x0, nDtL)
-                return tlm.d_nDtIntAdj(d_x)
-
-
-            gradientTest(dx, fct, gradFct, args=(M, L, nDtList))
-
-        else:
-            print("\n grad test between d_intTimes()")
-            if tObsNDtInt==True:
-                nDtList=[i*u.nDt/freq for i in xrange(1,freq+1)]
-                times=dt*np.array(nDtList)
-            else:
-                times=np.linspace(tInt/freq, tInt, freq)
-            def fct(x0, model, tlm, tList):
-                d_x=model.d_intTimes(x0, tList)
-                J=0.
-                for t in d_x.keys():
-                    J+=0.5*np.dot(d_x[t], d_x[t])
-                return J
-            def gradFct(x0, model, tlm, tList):
-                x=model.integrate(x0, tList[-1])
-                tlm.reference(x)
-                d_x=model.d_intTimes(x0, tList)
-                return tlm.d_intTimesAdj(d_x)
-        
-            gradientTest(dx, fct, gradFct, args=(M, L, times))
-            
-        if testAdjoint:
-            #----| Sequential integration adjoint test |--
-            d_dy={}
-            i=123
-            if useNDtMethod:
-                print("\nSequential adjoint test with d_nDtInt()")
-                nDtList=[i*u.nDt/freq for i in xrange(1,freq+1)]
-                
-                times=dt*np.array(nDtList)
-                for j in nDtList:
-                    d_dy[j]=rndSpecVec(grid, amp=0.1, seed=i)
-                    i+=1
-    
-                d_Hx=L.d_nDtInt(dx, nDtList)
-                Ay=L.d_nDtIntAdj(d_dy)
-                
-
-                Hx_y=0.
-                for j in nDtList:
-                    Hx_y+=np.dot(d_Hx[j], d_dy[j])
-
-            else:
-                print("\nSequential adjoint test with d_intTimes()\n")
-                if tObsNDtInt==True:
-                    nDtList=[i*u.nDt/freq for i in xrange(1,freq+1)]
-                    times=dt*np.array(nDtList)
-                else:
-                    times=np.linspace(tInt/freq, tInt, freq)
-
-                for t in times:
-                    d_dy[t]=rndSpecVec(grid, amp=0.1, seed=i)
-                    i+=1
-    
-                d_Hx=L.d_intTimes(dx, times)
-                Ay=L.d_intTimesAdj(d_dy)
-    
-                Hx_y=0.
-                for t in times:
-                    Hx_y+=np.dot(d_Hx[t], d_dy[t])
-    
-            x_Ay=np.dot(dx, Ay)
-            print(Hx_y, x_Ay, Hx_y-x_Ay)
 
 
 
@@ -371,3 +284,44 @@ if __name__=='__main__':
                                                 -np.dot(A2dx, L1dy)))
         print("<dx,L2L1dy>-<A1A2dx, dy> = %+.15g"%(np.dot(dx, L2L1dy)\
                                                 -np.dot(A1A2dx, dy)))
+
+
+    if testNDtInt:
+        dx=rndSpecVec(grid, amp=0.1, seed=1)
+        nDtList=[i*u.nDt/freq for i in xrange(1,freq+1)]
+
+        if testAdjoint:
+            #----| Sequential integration adjoint test |--
+            d_dy={}
+            print("\nSequential adjoint test with d_nDtInt()")
+            
+            for j in nDtList:
+                d_dy[j]=rndSpecVec(grid, amp=0.1, seed=j)
+
+            d_Hx=L.d_nDtInt(dx, nDtList)
+            Ay=L.d_nDtIntAdj(d_dy)
+            
+            Hx_y=0.
+            for j in nDtList:
+                Hx_y+=np.dot(d_Hx[j], d_dy[j])
+
+            x_Ay=np.dot(dx, Ay)
+            print(Hx_y, x_Ay, Hx_y-x_Ay)
+
+        if testGrad:
+            print("\n grad test between d_nDtInt()")
+    
+            def fct(x0, model, tlm, nDtL):
+                d_x=model.d_nDtInt(x0, nDtL)
+                J=0.
+                for t in d_x.keys():
+                    J+=0.5*np.dot(d_x[t], d_x[t])
+                return J
+            def gradFct(x0, model, tlm, nDtL):
+                x=model.integrate(x0, dt*nDtL[-1])
+                tlm.reference(x)
+                d_x=model.d_nDtInt(x0, nDtL)
+                return tlm.d_nDtIntAdj(d_x)
+    
+    
+            gradientTest(dx, fct, gradFct, args=(M, L, nDtList))

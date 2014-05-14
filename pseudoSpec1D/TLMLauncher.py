@@ -116,34 +116,6 @@ class TLMLauncher(Launcher):
 
     #-------------------------------------------------------
 
-    def d_intTimesAdj(self, d_xIn, t0=0.):
-        """
-        Numerical adjoint of d_intTimes.()
-        """
-        d_x=d_xIn.copy()
-        times=sorted(d_x.keys())
-        nTimes=len(times)
-
-
-        # Sn*
-        for i in xrange(nTimes-1,0,-1):
-            t_pre=times[i-1]
-            t=times[i]
-            d_x[t_pre]=(self.adjoint(d_x[t], t-t_pre, t0=t_pre).ic
-                            + d_x[t_pre])
-            d_x[t]=0.
-
-        
-        # I0*
-        if times[0]==t0:
-            adj=d_x[times[0]]
-        else:
-            adj=(self.adjoint(d_x[times[0]], times[0]-t0, t0=t0).ic)
-
-        return adj
-
-
-    #-------------------------------------------------------
 
     def d_nDtIntAdj(self, d_x, t0=0.):
         """

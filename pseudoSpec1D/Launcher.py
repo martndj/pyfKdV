@@ -93,9 +93,9 @@ class Launcher(object):
         nDtList.sort()
        
         d_x={}
-        traj=self.integrate(ic, nDtList[-1]*self.dt-t0, t0=t0)
-        for i in xrange(len(nDtList)):
-            d_x[nDtList[i]]=traj[nDtList[i]]
+        traj=self.integrate(ic, nDtList[-1]*self.dt, t0=t0)
+        for i in nDtList:
+            d_x[i]=traj[i]
 
         return d_x
 

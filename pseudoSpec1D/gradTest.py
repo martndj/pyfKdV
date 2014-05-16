@@ -26,6 +26,57 @@ def gradTestString(J0, n2GradJ0, test):
         s+="%4d %+25.15e  %+25.15e\n"%(i, test[i][0], test[i][1])
     return s
 
+def gradTestCheck(gradTest, verbose=False):
+    """
+    Inspect a gradient test result
+    and return the number of significant digit
+        
+        consider cases of 0.999... and of 1.000...
+    """
+    def significantFigures(testValues):
+        def countFigures(figure, digits):
+            digits=digits.split('.')[1]
+            pre=True
+            count=0
+            n=0
+            while n < len(digits) and pre==True:
+                if int(digits[n])==figure:
+                    count+=1
+                else:
+                    pre=False
+                n+=1
+            return count
+
+        significant={}
+        for p in sorted(testValues.keys())[::-1]:
+            significant[p]=0
+            digits=str(testValues[p][1])
+            if digits=='nan':
+                pass
+            elif int(digits.split('.')[0])==0:
+                significant[p]=countFigures(9, digits)
+            elif int(digits.split('.')[0])==1:
+                significant[p]=countFigures(0, digits)
+            else:
+                pass
+        return significant
+    
+    significant=significantFigures(gradTest[2])
+    valid=0
+    count=0
+    i=0
+    for p in  sorted(significant.keys())[::-1]:
+        if significant[p]>count: 
+            count+=1
+        elif significant[p]==count:
+            pass
+        elif significant[p]==0:
+            count=0
+        else:
+            count=1
+        if count>valid: valid=count
+        if verbose :  print(significant[p], count, valid)
+    return valid, significant
 #--------------------------------------------------------------------
 #====================================================================
 #--------------------------------------------------------------------

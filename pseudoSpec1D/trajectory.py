@@ -49,8 +49,6 @@ class Trajectory(object):
         # Data attributes
         self.__data=None
         self.ic=None
-        self.A=None
-        self.A2=None
         self.time=None
 
         self.label=label
@@ -136,32 +134,29 @@ class Trajectory(object):
 
     #-------------------------------------------------------
 
-    def norm2(self, ret=True, metric=None):
+    def norm2(self, metric=None):
         """
         Euclidian Square norm evolution
         """
         if not self.isIntegrated:
             raise RuntimeError("Trajectory not integrated")
-        self.A2=np.zeros(self.nDt+1)
+        A2=np.zeros(self.nDt+1)
         for i in xrange(self.nDt+1):
-            self.A2[i]=self.__SquareNorm(self.__data[i], metric=metric)
-        if ret:
-            return self.A2
+            A2[i]=self.__SquareNorm(self.__data[i], metric=metric)
+        return A2
 
     #-------------------------------------------------------
 
-    def norm(self, ret=True, metric=None):
+    def norm(self, metric=None):
         """
         Euclidian Norm evolution
         """
         if not self.isIntegrated:
             raise RuntimeError("Trajectory not integrated")
-        self.A=np.zeros(self.nDt+1)
-        if (self.A2==None):
-            self.norm2(ret=False, metric=metric)
-        self.A=np.sqrt(self.A2)
-        if ret:
-            return self.A
+        A=np.zeros(self.nDt+1)
+        A2=self.norm2(metric=metric)
+        A=np.sqrt(A2)
+        return A
 
     #-------------------------------------------------------
 
@@ -608,8 +603,8 @@ class Trajectory(object):
         """
         axe=self._checkAxe(axe)
 
-        self.norm(ret=False, metric=metric)
-        axe.plot(self.time, self.A, **kwargs)
+        A=self.norm(metric=metric)
+        axe.plot(self.time, A, **kwargs)
         axe.set_xlabel("$t$")
         axe.set_ylabel(r"$\Vert A\Vert$")
         
@@ -632,8 +627,8 @@ class Trajectory(object):
 
         axe=self._checkAxe(axe)
 
-        self.norm2(ret=False, metric=metric)
-        axe.plot(self.time, self.A2, **kwargs)
+        A2=self.norm2(metric=metric)
+        axe.plot(self.time, A2, **kwargs)
         axe.set_xlabel("$t$")
         axe.set_ylabel(r"$\Vert A\Vert^2$")
  

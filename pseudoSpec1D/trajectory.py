@@ -134,7 +134,7 @@ class Trajectory(object):
 
     #-------------------------------------------------------
 
-    def norm2(self, metric=None):
+    def norm2(self, metric=None, metricArgs=()):
         """
         Euclidian Square norm evolution
         """
@@ -142,19 +142,19 @@ class Trajectory(object):
             raise RuntimeError("Trajectory not integrated")
         A2=np.zeros(self.nDt+1)
         for i in xrange(self.nDt+1):
-            A2[i]=self.__SquareNorm(self.__data[i], metric=metric)
+            A2[i]=self.__SquareNorm(self.__data[i], metric=metric, metricArgs=metricArgs)
         return A2
 
     #-------------------------------------------------------
 
-    def norm(self, metric=None):
+    def norm(self, metric=None, metricArgs=()):
         """
         Euclidian Norm evolution
         """
         if not self.isIntegrated:
             raise RuntimeError("Trajectory not integrated")
         A=np.zeros(self.nDt+1)
-        A2=self.norm2(metric=metric)
+        A2=self.norm2(metric=metric, metricArgs=metricArgs)
         A=np.sqrt(A2)
         return A
 
@@ -379,8 +379,8 @@ class Trajectory(object):
     #----| Private methods |-------------------------------
     #------------------------------------------------------
 
-    def __SquareNorm(self, z, metric=None):
-        return self.grid.squareNorm(z, metric=metric)
+    def __SquareNorm(self, z, metric=None, metricArgs=()):
+        return self.grid.squareNorm(z, metric=metric, metricArgs=metricArgs)
 
     #-------------------------------------------------------
 
@@ -592,7 +592,7 @@ class Trajectory(object):
     
     #-------------------------------------------------------
 
-    def plotA(self, title=None, axe=None,  metric=None, **kwargs):
+    def plotA(self, title=None, axe=None,  metric=None, metricArgs=(), **kwargs):
         """
         Amplitude evolution plot
 
@@ -603,7 +603,7 @@ class Trajectory(object):
         """
         axe=self._checkAxe(axe)
 
-        A=self.norm(metric=metric)
+        A=self.norm(metric=metric, metricArgs=metricArgs)
         axe.plot(self.time, A, **kwargs)
         axe.set_xlabel("$t$")
         axe.set_ylabel(r"$\Vert A\Vert$")
@@ -615,7 +615,7 @@ class Trajectory(object):
 
     #-------------------------------------------------------
 
-    def plotA2(self, title=None, axe=None, metric=None,  **kwargs):
+    def plotA2(self, title=None, axe=None, metric=None, metricArgs=(),  **kwargs):
         """
         Square Amplitude evolution plot
 
@@ -627,7 +627,7 @@ class Trajectory(object):
 
         axe=self._checkAxe(axe)
 
-        A2=self.norm2(metric=metric)
+        A2=self.norm2(metric=metric, metricArgs=metricArgs)
         axe.plot(self.time, A2, **kwargs)
         axe.set_xlabel("$t$")
         axe.set_ylabel(r"$\Vert A\Vert^2$")

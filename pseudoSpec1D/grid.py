@@ -79,7 +79,7 @@ class Grid(object):
 
     #-------------------------------------------------------
 
-    def squareNorm(self, field, metric=None):
+    def squareNorm(self, field, metric=None, metricArgs=()):
         if not isinstance(field, np.ndarray):
             raise TypeError("field <numpy.ndarray>")
         if field.ndim<>1 or field.shape[-1]<>self.N:
@@ -96,14 +96,15 @@ class Grid(object):
                     or metric.shape[-1]<>self.N):
                 raise ValueError("metric icompatible dimensions") 
             return np.dot(field, np.dot(metric, field))*self.dx
-
+        elif callable(metric):
+            return metric(field, *metricArgs)
         else:
                 raise TypeError("metric <numpy.ndarray>")
     
     #-------------------------------------------------------
 
-    def norm(self, field, metric=None):
-        return np.sqrt(self.squareNorm(field, metric=metric))
+    def norm(self, field, metric=None, metricArgs=()):
+        return np.sqrt(self.squareNorm(field, metric=metric, metricArgs=metricArgs))
     
     #-------------------------------------------------------
 

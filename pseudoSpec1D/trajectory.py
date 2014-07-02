@@ -592,7 +592,8 @@ class Trajectory(object):
     
     #-------------------------------------------------------
 
-    def plotA(self, title=None, axe=None,  metric=None, metricArgs=(), **kwargs):
+    def plotA(self, title=None, axe=None,  metric=None, 
+              metricArgs=(), ylabel=r"$\Vert A\Vert$", **kwargs):
         """
         Amplitude evolution plot
 
@@ -606,10 +607,8 @@ class Trajectory(object):
         A=self.norm(metric=metric, metricArgs=metricArgs)
         axe.plot(self.time, A, **kwargs)
         axe.set_xlabel("$t$")
-        axe.set_ylabel(r"$\Vert A\Vert$")
-        
-        if title!=None:
-            axe.set_title(title)
+        if ylabel<>None: axe.set_ylabel(ylabel)
+        if title!=None:  axe.set_title(title)
 
         return axe
 

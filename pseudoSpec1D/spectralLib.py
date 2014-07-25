@@ -167,3 +167,19 @@ def specTrunc(w, grid, Ntrc=None):
         if np.abs(n[i])>=Ntrc:
             w[i]=0.
     return w
+
+
+#----------------------------------------------------------
+
+def specShift(f, grid, dx):
+    """
+    Shift a periodic signal.
+    """
+
+    if not isinstance(grid, PeriodicGrid):
+        raise TypeError("grid <PeriodicGrid>")
+
+    kSpace=fftOrder(grid)
+    tf=fft.fft(f)
+    w=tf*np.exp(-2.j*np.pi*dx*kSpace/grid.L)
+    return fft.ifft(w).real

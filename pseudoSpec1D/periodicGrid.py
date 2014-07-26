@@ -75,19 +75,24 @@ class PeriodicGrid(Grid):
 
     #-------------------------------------------------------
 
-    def plotPSpec(self, field,  axe=None, trunc=True, **kwargs):
+    def plotPSpec(self, field,  axe=None, trunc=True, normalize=False,
+                    **kwargs):
         axe=self._checkAxe(axe)
         k=self.kGrid()
         data=self.fft(field)
+        if normalize:
+            data=data/np.max(data)
         axe=k.plot(data, axe=axe, xlabel=r'$k$', **kwargs)
         if trunc:
             axe.axvline(x=self.Ntrc, color='k', linestyle=':')
         return axe
 
-    def plotAll(self, field, label=None, axeD=None, axeS=None, **kwargs):
+    def plotAll(self, field, label=None, axeD=None, axeS=None,
+                normalize=False, **kwargs):
         axeD, axeS=self._check2Axes(axeD, axeS)
         self.plot(field, axe=axeD, **kwargs)
-        self.plotPSpec(field, axe=axeS, label=label, **kwargs)
+        self.plotPSpec(field, axe=axeS, label=label, normalize=normalize,
+                        **kwargs)
         return axeD, axeS
 
     def _check2Axes(self, axeD, axeS):

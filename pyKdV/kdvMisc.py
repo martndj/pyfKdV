@@ -50,7 +50,7 @@ def dtStable(param, maxA, dtMod=0.7):
     """
     Stable time incremement
 
-        dtStable(grid, param, maxA)
+        dtStable(param, maxA)
 
         maxA    :   expected maximum amplitude <float>
         param   :   KdV parameters <Param>

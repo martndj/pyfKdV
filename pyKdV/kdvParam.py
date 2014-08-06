@@ -141,8 +141,8 @@ class Param(object):
                             gamma=self.gamma.final,
                             rho=self.rho.final, t0=self.tf)
                
-        self.fluxR=self.alpha.gradient()-self.rho
-        self.fluxR.setLabel(r'$r$')
+        self.stability=self.alpha.gradient()-self.rho
+        self.stability.setLabel(r'$r$')
 
 
     #----------------------------------------------------------------
@@ -271,10 +271,10 @@ class Param(object):
         elif i==4:
             param=self.rho
         elif i==5:
-            param=self.fluxR
+            param=self.stability
         else:
             raise IndexError('[0:forcing(x,t), 1:alpha(x,t),'+
-                            '2:beta(x,t), 3:gamma(x,t), 4:rho(x,t), 5:fluxR(x,t)]')
+                            '2:beta(x,t), 3:gamma(x,t), 4:rho(x,t), 5:stability(x,t)]')
         if j<>None:
             if k<>None:
                 return (param.getData())[j][k]

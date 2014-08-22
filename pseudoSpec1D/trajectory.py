@@ -589,6 +589,28 @@ class Trajectory(object):
         return axe
 
     
+    #-------------------------------------------------------
+
+    def hovmoller(self, levels=None, axe=None, fill=True,
+                    extend='both', colorbar=True):
+
+        axe=self._checkAxe(axe)
+        X, T = np.meshgrid(self.grid.x, self.time)
+        Z=self.getData()
+        
+        if fill:
+            if levels<>None:
+                cb=plt.contourf(X, T, Z, levels, extend=extend)
+            else:
+                cb=plt.contourf(X, T, Z)
+        else:
+            if levels<>None:
+                cb=plt.contour(X, T, Z, levels, extend=extend)
+            else:
+                cb=plt.contour(X, T, Z)
+        if colorbar:
+            plt.colorbar(cb)
+        return  axe, cb
     
     #-------------------------------------------------------
 

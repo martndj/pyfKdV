@@ -189,55 +189,12 @@ class Param(object):
                  
             if param.nDt==self.nDt:
                 traj=param
-    
-        elif isinstance(param, (int, float)):
-            traj=Trajectory(self.grid)
-            traj.zeros(self.nDt, self.dt)
-            traj.putData(np.ones(shape=(self.nDt+1, self.grid.N))\
-                            *param)
-
-        elif callable(param):
-            data=self._matricize(param)
-            traj=Trajectory(self.grid)
-            traj.zeros(self.nDt, self.dt)
-            traj.putData(data)
-
-        elif isinstance(param, np.ndarray):
-            if param.shape[-1] <> self.grid.N:
-                raise ValueError("param.shape[-1]=self.grid.N")
-                
-            if param.ndim==1:
-                data=np.outer(np.ones(self.nDt+1), param)
-            elif param.ndim==2:
-                if param.shape[0] <> self.nDt+1:
-                    raise ValueError("param.shape[0]=self.nDt+1")
-                data=param
-            else:   
-                raise ValueError("param.ndim in [1,2]")
-            traj=Trajectory(self.grid)
-            traj.zeros(self.nDt, self.dt)
-            traj.putData(data)
-                
-
-        else:
-            raise TypeError(
-                    "<float|function(x,t)|numpy.ndarray|Trajectory>")
         
-        traj.ic=traj[0]
-        traj.incrmTReal(finished=True, tReal=self.dt*self.nDt, t0=t0)
-        if label<>None:traj.setLabel(label)
+        else:
+            traj=Trajectory(self.grid)
+            traj.func2Traj(param, self.nDt, self.dt, t0=t0, label=label)
+
         return traj
-            
-    #----------------------------------------------------------------
-
-    def _matricize(self, funcXT):
-        time=np.linspace(0., self.nDt*self.dt, self.nDt+1)
-        matrix=np.empty(shape=(self.nDt+1, self.grid.N))
-        for i in xrange(self.grid.N):
-            for j in xrange(self.nDt+1):
-                matrix[j][i]=funcXT(self.grid.x[i], time[j])
-
-        return matrix
 
     #----| Classical overloads |----------------------------
     #-------------------------------------------------------

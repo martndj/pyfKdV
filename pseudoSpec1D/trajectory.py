@@ -118,6 +118,61 @@ class Trajectory(object):
         self.incrmTReal(finished=True, tReal=self.nDt*self.dt)
     
     #-------------------------------------------------------
+ 
+    def func2Traj(self, f, nDt, dt, t0=0, label=None):
+        """
+        Build Trajectory from 
+            * f(x,t) callable function
+            * integer or float (constant trajectory)
+            * an array (constant trajectory)
+        """
+        self.initialize(np.zeros(self.grid.N), nDt, dt)
+
+        if isinstance(f, (int, float)):
+            self.initialize(np.ones(self.grid.N)*f, nDt, dt)
+            self.putData(np.ones(shape=(self.nDt+1, self.grid.N))\
+                            *f)
+
+        elif callable(f):
+            data=self._matricize(f)
+            self.zeros(self.nDt, self.dt)
+            self.putData(data)
+
+        elif isinstance(f, np.ndarray):
+            if f.shape[-1] <> self.grid.N:
+                raise ValueError("f.shape[-1]=self.grid.N")
+                
+            if f.ndim==1:
+                data=np.outer(np.ones(self.nDt+1), f)
+            elif f.ndim==2:
+                if f.shape[0] <> self.nDt+1:
+                    raise ValueError("f.shape[0]=self.nDt+1")
+                data=f
+            else:   
+                raise ValueError("f.ndim in [1,2]")
+            self.zeros(self.nDt, self.dt)
+            self.putData(data)
+                
+        else:
+            raise TypeError(
+                    "<float|function(x,t)|numpy.ndarray|Trajectory>")
+        
+        self.ic=self[0]
+        self.incrmTReal(finished=True, tReal=self.dt*self.nDt, t0=t0)
+        if label<>None:self.setLabel(label)
+
+    #-------------------------------------------------------
+
+    def _matricize(self, funcXT):
+        time=np.linspace(0., self.nDt*self.dt, self.nDt+1)
+        matrix=np.empty(shape=(self.nDt+1, self.grid.N))
+        for i in xrange(self.grid.N):
+            for j in xrange(self.nDt+1):
+                matrix[j][i]=funcXT(self.grid.x[i], time[j])
+
+        return matrix
+
+    #-------------------------------------------------------
     
     def incrmTReal(self, finished=False, tReal=None, t0=0.):
         if tReal<>None:
